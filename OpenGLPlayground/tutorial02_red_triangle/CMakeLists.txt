@@ -14,8 +14,9 @@ target_link_libraries(${PROJECT_NAME}
         glfw
         OpenGL::GL
         glm::glm
-        common
+        common::common
         )
+
 if(APPLE)
     target_link_libraries(${PROJECT_NAME}
             "-framework Cocoa"

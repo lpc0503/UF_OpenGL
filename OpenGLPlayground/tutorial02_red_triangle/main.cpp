@@ -19,7 +19,7 @@ GLFWwindow* window;
 #include <glm/glm.hpp>
 using namespace glm;
 
-#include <shader.hpp>
+#include <shader.cpp>
 
 int main( void )
 {

@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(tutorial01_first_window)
 
-add_executable(${PROJECT_NAME} main.cpp ../tutorial02_red_triangle/main.cpp)
+add_executable(${PROJECT_NAME} main.cpp)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}
