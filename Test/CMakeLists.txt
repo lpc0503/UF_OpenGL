@@ -12,8 +12,8 @@ include_directories(
 
 
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(glfw3 REQUIRED)
+#add_subdirectory(./deps/glew-2.1.0)
+add_subdirectory(./deps/glfw-3.3.8)
 
 add_executable(Test
         main.cpp
@@ -38,7 +38,7 @@ add_executable(Test
 
 target_link_libraries(Test glfw)
 target_link_libraries(Test OpenGL::GL)
-target_link_libraries(Test GLEW::GLEW)
+#target_link_libraries(Test GLEW::GLEW)
 target_link_libraries(Test glad::glad)
 target_link_libraries(Test
     "-framework Cocoa"
