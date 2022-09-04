@@ -424,7 +424,7 @@ void renderScene(void) {
 
     {
         ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-        ImGui::Text("Last picked object %s", &gMessage);
+        ImGui::Text("Last picked object %s", gMessage.c_str());
         ImGui::End();
     }
 
