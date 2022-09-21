@@ -20,6 +20,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
 // Include AntTweakBar
@@ -42,6 +43,9 @@ namespace fs = std::filesystem;
 typedef struct Vertex {
 	float Position[4];
 	float Color[4];
+    bool isSelected = false;
+    float SelectedColor[4] = {.5f, .5f, .5f, .5f};
+    bool swapped = false;
 	void SetCoords(float *coords) {
 		Position[0] = coords[0];
 		Position[1] = coords[1];
@@ -109,6 +113,7 @@ GLuint ModelMatrixID;
 GLuint PickingMatrixID;
 GLuint pickingColorArrayID;
 GLuint pickingColorID;
+GLuint SizeID;
 
 GLuint gPickedIndex;
 std::string gMessage;
@@ -127,7 +132,7 @@ size_t NumVerts[NumObjects];	// Useful for glDrawArrays command
 size_t NumIdcs[NumObjects];	// Useful for glDrawElements command
 
 // Initialize ---  global objects -- not elegant but ok for this project
-const size_t IndexCount = 4;
+const size_t IndexCount = 10;
 Vertex Vertices[IndexCount];
 GLushort Indices[IndexCount];
 
@@ -154,7 +159,7 @@ int initWindow(void) {
 
 	// ATTN: Project 1A, Task 0 == Change the name of the window
 	// Open a window and create its OpenGL context
-	window = glfwCreateWindow(window_width, window_height, "Lastname,FirstName(ufid)", NULL, NULL);
+	window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
 		glfwTerminate();
@@ -195,12 +200,6 @@ int initWindow(void) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-	// Initialize the GUI display
-//	TwInit(TW_OPENGL_CORE, NULL);
-//	TwWindowSize(window_width, window_height);
-//	TwBar * GUI = TwNewBar("Picking");
-//	TwSetParam(GUI, NULL, "refresh", TW_PARAM_CSTRING, 1, "0.1");
-//	TwAddVarRW(GUI, "Last picked object", TW_TYPE_STDSTRING, &gMessage, NULL);
 	return 0;
 }
 
@@ -236,6 +235,7 @@ void initOpenGL(void) {
 	ViewMatrixID = glGetUniformLocation(programID, "V");
 	ModelMatrixID = glGetUniformLocation(programID, "M");
 	PickingMatrixID = glGetUniformLocation(pickingProgramID, "MVP");
+    SizeID = glGetUniformLocation(programID, "Size");
 
 	// Get a handle for our "pickingColorID" uniform
 	pickingColorArrayID = glGetUniformLocation(pickingProgramID, "PickingColorArray");
@@ -243,10 +243,11 @@ void initOpenGL(void) {
 
 	// Define pickingColor array for picking program
 	// use a for-loop here
-	pickingColor[0] = 0 / 255.0f;
-	pickingColor[1] = 1 / 255.0f;
-	pickingColor[2] = 2 / 255.0f;
-	pickingColor[3] = 3 / 255.0f;
+
+    for(int i = 0 ; i < IndexCount ; i++) {
+
+        pickingColor[i] = i/255.0f;
+    }
 
 	// Define objects
 	createObjects();
@@ -304,20 +305,47 @@ void createVAOs(Vertex Vertices[], GLushort Indices[], int ObjectId) {
 	}
 }
 
+const float angle_ = 3.1415926 * 2.f / 5;
 void createObjects(void) {
+
+    float radius = 1.f;
+
 	// ATTN: DERIVE YOUR NEW OBJECTS HERE:  each object has
 	// an array of vertices {pos;color} and
 	// an array of indices (no picking needed here) (no need for indices)
 	// ATTN: Project 1A, Task 1 == Add the points in your scene
-	Vertices[0] = { { 1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f, 0.0f, 1.0f } };
-	Vertices[1] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f, 1.0f } };
-	Vertices[2] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f, 1.0f, 1.0f } };
+	Vertices[0] = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	Vertices[1] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+	Vertices[2] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
 	Vertices[3] = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+    Vertices[4] = { { 1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+    Vertices[5] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0, 1.0f, 1.0f } };
+    Vertices[6] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+    Vertices[7] = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+    Vertices[8] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
+    Vertices[9] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 01.0f, 1.0f } };
 
-	Indices[0] = 0;
-	Indices[1] = 1;
-	Indices[2] = 2;
-	Indices[3] = 3;
+    for(int i = 0 ; i < 5 ; i++) {
+
+        float newX = radius * sin(angle_*i);
+        float newY = -radius * cos(angle_*i) + 1;
+        Vertices[i].Position[0] = newX;
+        Vertices[i].Position[1] = newY;
+    }
+
+    for(int i = 0 ; i < 5 ; i++) {
+
+        float newX = radius * sin(angle_*i);
+        float newY = radius * cos(angle_*i)-1;
+        Vertices[i+5].Position[0] = newX;
+        Vertices[i+5].Position[1] = newY;
+    }
+
+
+    for(int i = 0 ; i < IndexCount ; i++) {
+
+        Indices[i] = i;
+    }
 
 	// ATTN: Project 1B, Task 1 == create line segments to connect the control points
 
@@ -372,9 +400,12 @@ void pickVertex(void) {
 	glfwGetCursorPos(window, &xpos, &ypos);
 	unsigned char data[4];  // 2x2 pixel region
 
-    printf("%d %d %d %d\n", data[0], data[1], data[2], data[3]);
+    int winX, winY;
+    int fx, fy;
+    glfwGetWindowSize(window, &winX, &winY);
+    glfwGetFramebufferSize(window, &fx, &fy);
 
-	glReadPixels(xpos, window_height - ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glReadPixels(xpos * (fx/winX), (window_height - ypos) * (fy/winY), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
        	// window_height - ypos;
 	// OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
 
@@ -384,33 +415,74 @@ void pickVertex(void) {
 	// ATTN: Project 1A, Task 2
 	// Find a way to change color of selected vertex and
 	// store original color
+    if(gPickedIndex >= IndexCount) {
 
-	// Uncomment these lines if you wan to see the picking shader in effect
-	// glfwSwapBuffers(window);
-	// continue; // skips the visible rendering
+        for(int i = 0 ; i < IndexCount ; i++) {
+
+            Vertices[i].isSelected = false;
+        }
+    }
+    else {
+
+        Vertices[gPickedIndex].isSelected = true;
+    }
+
+    for(auto &i: Vertices) {
+
+        if(i.isSelected) {
+
+            if(!i.swapped) {
+
+                std::swap(i.Color, i.SelectedColor);
+                i.swapped = true;
+            }
+        }
+    }
+
+	// Uncomment these lines if you want to see the picking shader in effect
+//	 glfwSwapBuffers(window);
+	 // continue; // skips the visible rendering
 }
 
 // ATTN: Project 1A, Task 3 == Retrieve your cursor position, get corresponding world coordinate, and move the point accordingly
 
 // ATTN: Project 1C, Task 1 == Keep track of z coordinate for selected point and adjust its value accordingly based on if certain
 // buttons are being pressed
+int prevPosX, prevPosY;
 void moveVertex(void) {
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
-	GLint viewport[4];
+	GLint viewport[4] = {};
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glm::vec4 vp = glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3]);
+	glm::vec4 vp = glm::vec4(viewport[0], viewport[1], window_width, window_height);
 
-	if (gPickedIndex >= IndexCount) {
+    double mouseX;
+    double mouseY;
+
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+    glm::vec3 tmp = glm::unProject(glm::vec3(mouseX, mouseY, 0.0), ModelMatrix, gProjectionMatrix, vp);
+
+    if (gPickedIndex >= IndexCount) {
 		// Any number > vertices-indices is background!
 		gMessage = "background";
 	}
 	else {
+
 		std::ostringstream oss;
 		oss << "point " << gPickedIndex;
 		gMessage = oss.str();
+
+        for(auto &i : Vertices) {
+
+            if(i.isSelected) {
+
+                i.Position[0] = -tmp.x;
+                i.Position[1] = -tmp.y;
+            }
+        }
 	}
 }
 
+float Size = 10.f;
 void renderScene(void) {
 
     // Dark blue background
@@ -425,10 +497,24 @@ void renderScene(void) {
     {
         ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::Text("Last picked object %s", gMessage.c_str());
+
+        if(ImGui::CollapsingHeader("Point")) {
+
+            ImGuiIO &io = ImGui::GetIO();
+            ImGui::Text("%s", gMessage.c_str());
+            for(int i = 0 ; i < IndexCount ; i++){
+
+                auto &pos = Vertices[i].Position;
+                auto label = ("Pos#" + std::to_string(i)).c_str();
+                ImGui::SliderFloat2(label, pos, -4.0, 4.0);
+            }
+        }
+
+
+        ImGui::SliderFloat("Size", &Size, 0.f, 50.f);
         ImGui::End();
     }
-
-    ImGui::Render();
+    // ICE
 
 	glUseProgram(programID);
 	{
@@ -438,10 +524,12 @@ void renderScene(void) {
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &gViewMatrix[0][0]);
+        glUniform1f(SizeID, Size);
 
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		glBindVertexArray(VertexArrayId[0]);	// Draw Vertices
+        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, VertexBufferSize[0], Vertices);		// Update buffer data
 		glDrawElements(GL_POINTS, NumIdcs[0], GL_UNSIGNED_SHORT, (void*)0);
 		// // If don't use indices
@@ -454,7 +542,7 @@ void renderScene(void) {
 		// ATTN: Project 1C, Task 2 == Refer to https://learnopengl.com/Getting-started/Transformations and
 		// https://learnopengl.com/Getting-started/Coordinate-Systems - draw all the objects associated with the
 		// curve twice in the displayed fashion using the appropriate transformations
-
+        ImGui::Render();
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
@@ -487,9 +575,22 @@ void cleanup(void) {
 static void mouseCallback(GLFWwindow* window, int button, int action, int mods) {
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-		pickVertex();
-        std::cout << "mouse click\n";
+
+        pickVertex();
 	}
+
+    if(action == GLFW_RELEASE) {
+
+        for(auto &i : Vertices) {
+
+            if(i.isSelected) {
+
+                std::swap(i.Color, i.SelectedColor);
+                i.isSelected = false;
+                i.swapped = false;
+            }
+        }
+    }
 }
 
 int main(void) {
@@ -506,14 +607,14 @@ int main(void) {
     std::cout << "Current path is " << fs::current_path() << '\n';
 	// Initialize OpenGL pipeline
 	initOpenGL();
-
+    createObjects();
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	do {
 		// Timing
 		double currentTime = glfwGetTime();
 		nbFrames++;
-		if (currentTime - lastTime >= 1.0){ // If last prinf() was more than 1sec ago
+		if (currentTime - lastTime >= 1.0){ // If last printf() was more than 1sec ago
 //			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
 			nbFrames = 0;
 			lastTime += 1.0;
@@ -528,7 +629,7 @@ int main(void) {
 		// for respective tasks
 
 		// DRAWING the SCENE
-		createObjects();	// re-evaluate curves in case vertices have been moved
+			// re-evaluate curves in case vertices have been moved
 		renderScene();
 
 	} // Check if the ESC key was pressed or the window was closed

@@ -11,9 +11,10 @@ out vec4 vs_vertexColor;
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
+uniform float Size;
 
 void main(){
-	gl_PointSize = 10.0;
+	gl_PointSize = Size;
 	// Output position of the vertex, in clip space : MVP * position
 	gl_Position =  MVP * vertexPosition_modelspace;
 	
