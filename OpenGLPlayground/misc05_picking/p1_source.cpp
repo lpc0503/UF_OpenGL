@@ -86,8 +86,8 @@ typedef struct Vertex {
         Position[2] = p.z;
         Position[3] = 1.0f;
 
-        Color[0] = 0.6;
-        Color[1] = 0.7;
+        Color[0] = 0.0f;
+        Color[1] = 1.0f;
         Color[2] = 1.0f;
         Color[3] = 1.0f;
     }
@@ -117,6 +117,7 @@ void moveVertex(void);
 void renderScene(void);
 void cleanup(void);
 static void mouseCallback(GLFWwindow*, int, int, int);
+static void keyCallback(GLFWwindow*, int, int, int, int);
 
 // GLOBAL VARIABLES
 GLFWwindow* window;
@@ -213,6 +214,7 @@ int initWindow(void) {
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetCursorPos(window, window_width / 2, window_height / 2);
     glfwSetMouseButtonCallback(window, mouseCallback);
+    glfwSetKeyCallback(window, keyCallback);
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -336,6 +338,7 @@ public:
     std::vector<Point> A, B; // K+1, K
     std::vector<Vertex> Vertices_;
     std::vector<GLushort> Indices_;
+    std::vector<Point> Origin;
     int K = 0;
 
     BSpline(Vertex P[]) {
@@ -345,18 +348,23 @@ public:
 
             B[i] = Point(Vertices[i].Position);
         }
-
-        {
-            for(int i = 0 ; i < B.size() ; i++) {
-
-                std::cout << "B P" << i << " " << B[i].x << " " << B[i].y << "\n";
-            }
-        }
+        Origin = B;
     }
 
     void SubDivide() {
 
+        if(K == 6) {
+
+            K = 0;
+            A.clear();
+            B = Origin;
+            Indices_.clear();
+            Vertices_.clear();
+            return;
+        }
+
         K++;
+
         A.clear();
         for(int i = 0 ; i < B.size() ; i++) {
 
@@ -400,6 +408,8 @@ public:
 
     void ToVertex()
     {
+        Vertices_.clear();
+
         for(auto &i : A) {
 
             Vertices_.emplace_back(i);
@@ -451,8 +461,6 @@ void createObjects(void) {
     }
 
     Curve = new BSpline(Vertices);
-    Curve->SubDivide();
-    Curve->print();
 
 	// ATTN: Project 1B, Task 1 == create line segments to connect the control points
 
@@ -602,10 +610,19 @@ void renderScene(void) {
     ImGui::NewFrame();
 
     {
-        ImGui::Begin("Another Window");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+        ImGui::Begin("Point Attribute");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::Text("Last picked object %s", gMessage.c_str());
 
-        if(ImGui::CollapsingHeader("Point")) {
+        ImGui::SliderFloat("Point Size", &Size, 0.f, 50.f);
+
+        ImGui::Text("B-Spline Level: %s", std::to_string(Curve->K).c_str());
+
+        ImGui::End();
+    }
+
+    {
+        ImGui::Begin("Point Control");
+        if(ImGui::CollapsingHeader("White Point")) {
 
             ImGuiIO &io = ImGui::GetIO();
             ImGui::Text("%s", gMessage.c_str());
@@ -613,15 +630,23 @@ void renderScene(void) {
 
                 auto &pos = Vertices[i].Position;
                 auto label = ("Pos#" + std::to_string(i)).c_str();
-                ImGui::SliderFloat2(label, pos, -4.0, 4.0);
+                ImGui::InputFloat2(label, pos);
             }
         }
 
+        if (ImGui::CollapsingHeader("Cyan Point")) {
 
-        ImGui::SliderFloat("Size", &Size, 0.f, 50.f);
+            ImGuiIO &io = ImGui::GetIO();
+            for(int i = 0 ; i < Curve->Vertices_.size() ; i++) {
+
+                auto &pos = Curve->Vertices_[i].Position;
+                auto label = ("Pos#" + std::to_string(i)).c_str();
+                ImGui::InputFloat2(label, pos);
+            }
+        }
+
         ImGui::End();
     }
-    // ICE
 
 	glUseProgram(programID);
 	{
@@ -640,12 +665,18 @@ void renderScene(void) {
 		glBufferSubData(GL_ARRAY_BUFFER, 0, VertexBufferSize[0], Vertices);		// Update buffer data
 		glDrawElements(GL_POINTS, NumIdcs[0], GL_UNSIGNED_SHORT, (void*)0);
 
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, Curve->Indices_.size() * sizeof(GLushort), Curve->Indices_.data(), GL_STATIC_DRAW);
-        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-        glBufferData(GL_ARRAY_BUFFER, (Curve->Vertices_.size() * sizeof(Vertex)), Curve->Vertices_.data(), GL_STATIC_DRAW);
-        glDrawElements(GL_POINTS, Curve->Indices_.size(), GL_UNSIGNED_SHORT, (void*)0);
+        // hotfix
 
+        {
+            if(Curve->Vertices_.size() != 0) {
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, Curve->Indices_.size() * sizeof(GLushort), Curve->Indices_.data(), GL_STATIC_DRAW);
+                glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                glBufferData(GL_ARRAY_BUFFER, (Curve->Vertices_.size() * sizeof(Vertex)), Curve->Vertices_.data(), GL_STATIC_DRAW);
+                glDrawElements(GL_POINTS, Curve->Indices_.size(), GL_UNSIGNED_SHORT, (void*)0);
+            }
+        }
 		// // If don't use indices
 		// glDrawArrays(GL_POINTS, 0, NumVerts[0]);
 
@@ -704,6 +735,23 @@ static void mouseCallback(GLFWwindow* window, int button, int action, int mods) 
                 i.swapped = false;
             }
         }
+    }
+}
+
+bool isKeyPressed = false;
+static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+
+    if(key == GLFW_KEY_1 && action == GLFW_PRESS) {
+
+        if (!isKeyPressed) {
+
+            Curve->SubDivide();
+            isKeyPressed = true;
+        }
+    }
+    else {
+
+        isKeyPressed = false;
     }
 }
 
