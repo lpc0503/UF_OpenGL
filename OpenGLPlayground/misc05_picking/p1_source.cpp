@@ -142,7 +142,7 @@ GLuint gPickedIndex;
 std::string gMessage;
 
 // ATTN: INCREASE THIS NUMBER AS YOU CREATE NEW OBJECTS
-const GLuint NumObjects = 1; // Number of objects types in the scene
+const GLuint NumObjects = 2; // Number of objects types in the scene
 
 // Keeps track of IDs associated with each object
 GLuint VertexArrayId[NumObjects];
@@ -279,6 +279,7 @@ void initOpenGL(void) {
 	NumIdcs[obj] = IndexCount;
 
 	createVAOs(Vertices, Indices, obj);
+
 }
 
 // this actually creates the VAO (structure) and the VBO (vertex data buffer)
@@ -343,6 +344,12 @@ public:
         {
             B[i] = Point(Vertices[i].Position);
         }
+        {
+            for(int i = 0 ; i < B.size() ; i++)
+            {
+                std::cout << "B P" << i << " " << B[i].x << " " << B[i].y << "\n";
+            }
+        }
     }
 
     void SubDivide()
@@ -360,7 +367,18 @@ public:
         {
             Indices_[i] = i;
         }
+        ToVertex();
     }
+
+    void print()
+    {
+        for(int i = 0 ; i < IndexCount ; i++) {
+
+            printf("A P%d : %f %f\n", i*2, A[i*2].x, A[i*2].y);
+            printf("A P%d : %f %f\n", i*2+1, A[i*2+1].x, A[i*2+1].y);
+        }
+    }
+
 
     const Point ZeroPoint = Point(0.f, 0.f, 0.f);
     void BSplineSubDividePoints(int i)
@@ -429,6 +447,7 @@ void createObjects(void) {
 
     Curve = new BSpline(Vertices);
     Curve->SubDivide();
+    Curve->print();
 
 	// ATTN: Project 1B, Task 1 == create line segments to connect the control points
 
@@ -697,7 +716,6 @@ int main(void) {
     std::cout << "Current path is " << fs::current_path() << '\n';
 	// Initialize OpenGL pipeline
 	initOpenGL();
-    createObjects();
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	do {
