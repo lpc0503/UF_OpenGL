@@ -336,68 +336,73 @@ public:
     std::vector<Point> A, B; // K+1, K
     std::vector<Vertex> Vertices_;
     std::vector<GLushort> Indices_;
+    int K = 0;
 
-    BSpline(Vertex P[])
-    {
+    BSpline(Vertex P[]) {
+
         B.resize(IndexCount);
-        for(int i = 0 ; i < IndexCount ; i++)
-        {
+        for(int i = 0 ; i < IndexCount ; i++) {
+
             B[i] = Point(Vertices[i].Position);
         }
+
         {
-            for(int i = 0 ; i < B.size() ; i++)
-            {
+            for(int i = 0 ; i < B.size() ; i++) {
+
                 std::cout << "B P" << i << " " << B[i].x << " " << B[i].y << "\n";
             }
         }
     }
 
-    void SubDivide()
-    {
+    void SubDivide() {
+
+        K++;
         A.clear();
-        for(int i = 0 ; i < B.size() ; i++)
-        {
+        for(int i = 0 ; i < B.size() ; i++) {
+
             BSplineSubDividePoints(i);
         }
         B = A;
 
         Indices_.resize(A.size());
 
-        for(int i = 0 ; i < A.size(); i++)
-        {
+        for(int i = 0 ; i < A.size(); i++) {
+
             Indices_[i] = i;
         }
         ToVertex();
     }
 
-    void print()
-    {
+    void print() {
+
         for(int i = 0 ; i < IndexCount ; i++) {
 
-            printf("A P%d : %f %f\n", i*2, A[i*2].x, A[i*2].y);
+//            printf("A P%d : %f %f\n", i*2, A[i*2].x, A[i*2].y);
             printf("A P%d : %f %f\n", i*2+1, A[i*2+1].x, A[i*2+1].y);
         }
     }
 
 
     const Point ZeroPoint = Point(0.f, 0.f, 0.f);
-    void BSplineSubDividePoints(int i)
-    {
-        Point Pi_m1 = (i-1 >= 0) ? B[i-1] : ZeroPoint;
+    void BSplineSubDividePoints(int i) {
+
+        Point a;
+        Point b;
+        Point Pi_m1 = (i-1 >= 0) ? B[i-1] : B[B.size()-1];
         Point Pi = B[i];
-        Point Pi_p1 = i+1 > IndexCount ? B[i+1] : ZeroPoint;
-        Point a = (Pi_m1 * 4.f + Pi * 4.f) / 8.f;
-        Point b = (Pi_m1 + Pi*6.f + Pi_p1) / 8.f;
-        //
+        Point Pi_p1 = i+1 < B.size() ? B[i+1] : B[0];
+        a = (Pi_m1 * 4.f + Pi * 4.f) / 8.f;
+        b = (Pi_m1 + Pi*6.f + Pi_p1) / 8.f;
+
         A.push_back(a);
         A.push_back(b);
     }
 
     void ToVertex()
     {
-        for(auto &i : A)
-        {
-            Vertices_.push_back(Vertex(i));
+        for(auto &i : A) {
+
+            Vertices_.emplace_back(i);
         }
     }
 
