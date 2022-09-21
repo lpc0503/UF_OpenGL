@@ -40,49 +40,72 @@ namespace fs = std::filesystem;
 // ATTN 1A is the general place in the program where you have to change the code base to satisfy a Task of Project 1A.
 // ATTN 1B for Project 1B. ATTN 1C for Project 1C. Focus on the ones relevant for the assignment you're working on.
 
-typedef struct Vertex {
-	float Position[4];
-	float Color[4];
-    bool isSelected = false;
-    float SelectedColor[4] = {.5f, .5f, .5f, .5f};
-    bool swapped = false;
-	void SetCoords(float *coords) {
-		Position[0] = coords[0];
-		Position[1] = coords[1];
-		Position[2] = coords[2];
-		Position[3] = coords[3];
-	}
-	void SetColor(float *color) {
-		Color[0] = color[0];
-		Color[1] = color[1];
-		Color[2] = color[2];
-		Color[3] = color[3];
-	}
-};
-
 // ATTN: use POINT structs for cleaner code (POINT is a part of a vertex)
 // allows for (1-t)*P_1+t*P_2  avoiding repeat for each coordinate (x,y,z)
-typedef struct point {
+struct Point {
 	float x, y, z;
-	point(const float x = 0, const float y = 0, const float z = 0) : x(x), y(y), z(z){};
-	point(float *coords) : x(coords[0]), y(coords[1]), z(coords[2]){};
-	point operator -(const point& a) const {
-		return point(x - a.x, y - a.y, z - a.z);
+	Point(const float x = 0, const float y = 0, const float z = 0) : x(x), y(y), z(z){};
+	Point(float *coords) : x(coords[0]), y(coords[1]), z(coords[2]){};
+	Point operator -(const Point& a) const {
+		return Point(x - a.x, y - a.y, z - a.z);
 	}
-	point operator +(const point& a) const {
-		return point(x + a.x, y + a.y, z + a.z);
+	Point operator +(const Point& a) const {
+		return Point(x + a.x, y + a.y, z + a.z);
 	}
-	point operator *(const float& a) const {
-		return point(x * a, y * a, z * a);
+	Point operator *(const float& a) const {
+		return Point(x * a, y * a, z * a);
 	}
-	point operator /(const float& a) const {
-		return point(x / a, y / a, z / a);
+	Point operator /(const float& a) const {
+		return Point(x / a, y / a, z / a);
 	}
 	float* toArray() {
 		float array[] = { x, y, z, 1.0f };
 		return array;
 	}
 };
+
+typedef struct Vertex {
+    float Position[4];
+    float Color[4];
+    bool isSelected = false;
+    float SelectedColor[4] = {.5f, .5f, .5f, .5f};
+    bool swapped = false;
+
+    Vertex(std::vector<float> pos, std::vector<float> color) {
+
+        SetCoords(pos.data());
+        SetColor(color.data());
+    }
+
+    Vertex() = default;
+
+    Vertex(const Point &p) {
+
+        Position[0] = p.x;
+        Position[1] = p.y;
+        Position[2] = p.z;
+        Position[3] = 1.0f;
+
+        Color[0] = 0.6;
+        Color[1] = 0.7;
+        Color[2] = 1.0f;
+        Color[3] = 1.0f;
+    }
+
+    void SetCoords(float *coords) {
+        Position[0] = coords[0];
+        Position[1] = coords[1];
+        Position[2] = coords[2];
+        Position[3] = coords[3];
+    }
+    void SetColor(float *color) {
+        Color[0] = color[0];
+        Color[1] = color[1];
+        Color[2] = color[2];
+        Color[3] = color[3];
+    }
+};
+
 
 // Function prototypes
 int initWindow(void);
@@ -136,6 +159,8 @@ const size_t IndexCount = 10;
 Vertex Vertices[IndexCount];
 GLushort Indices[IndexCount];
 
+
+
 // ATTN: DON'T FORGET TO INCREASE THE ARRAY SIZE IN THE PICKING VERTEX SHADER WHEN YOU ADD MORE PICKING COLORS
 float pickingColor[IndexCount];
 
@@ -173,13 +198,6 @@ int initWindow(void) {
     }
     glfwSwapInterval(1);
 
-	// Initialize GLEW
-//	glewExperimental = true; // Needed for core profile
-//	if (glewInit() != GLEW_OK) {
-//		fprintf(stderr, "Failed to initialize GLEW\n");
-//		return -1;
-//	}
-
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
@@ -203,6 +221,7 @@ int initWindow(void) {
 	return 0;
 }
 
+// Hello,
 void initOpenGL(void) {
 	// Dark blue background
 	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
@@ -305,7 +324,69 @@ void createVAOs(Vertex Vertices[], GLushort Indices[], int ObjectId) {
 	}
 }
 
+// Task 1
+// A, B  -> K+1, K
+
+
+class BSpline
+{
+public:
+
+    std::vector<Point> A, B; // K+1, K
+    std::vector<Vertex> Vertices_;
+    std::vector<GLushort> Indices_;
+
+    BSpline(Vertex P[])
+    {
+        B.resize(IndexCount);
+        for(int i = 0 ; i < IndexCount ; i++)
+        {
+            B[i] = Point(Vertices[i].Position);
+        }
+    }
+
+    void SubDivide()
+    {
+        A.clear();
+        for(int i = 0 ; i < B.size() ; i++)
+        {
+            BSplineSubDividePoints(i);
+        }
+        B = A;
+
+        Indices_.resize(A.size());
+
+        for(int i = 0 ; i < A.size(); i++)
+        {
+            Indices_[i] = i;
+        }
+    }
+
+    const Point ZeroPoint = Point(0.f, 0.f, 0.f);
+    void BSplineSubDividePoints(int i)
+    {
+        Point Pi_m1 = (i-1 >= 0) ? B[i-1] : ZeroPoint;
+        Point Pi = B[i];
+        Point Pi_p1 = i+1 > IndexCount ? B[i+1] : ZeroPoint;
+        Point a = (Pi_m1 * 4.f + Pi * 4.f) / 8.f;
+        Point b = (Pi_m1 + Pi*6.f + Pi_p1) / 8.f;
+        //
+        A.push_back(a);
+        A.push_back(b);
+    }
+
+    void ToVertex()
+    {
+        for(auto &i : A)
+        {
+            Vertices_.push_back(Vertex(i));
+        }
+    }
+
+};
+
 const float angle_ = 3.1415926 * 2.f / 5;
+BSpline *Curve;
 void createObjects(void) {
 
     float radius = 1.f;
@@ -341,11 +422,13 @@ void createObjects(void) {
         Vertices[i+5].Position[1] = newY;
     }
 
-
     for(int i = 0 ; i < IndexCount ; i++) {
 
         Indices[i] = i;
     }
+
+    Curve = new BSpline(Vertices);
+    Curve->SubDivide();
 
 	// ATTN: Project 1B, Task 1 == create line segments to connect the control points
 
@@ -532,6 +615,13 @@ void renderScene(void) {
         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
 		glBufferSubData(GL_ARRAY_BUFFER, 0, VertexBufferSize[0], Vertices);		// Update buffer data
 		glDrawElements(GL_POINTS, NumIdcs[0], GL_UNSIGNED_SHORT, (void*)0);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, Curve->Indices_.size() * sizeof(GLushort), Curve->Indices_.data(), GL_STATIC_DRAW);
+        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+        glBufferData(GL_ARRAY_BUFFER, (Curve->Vertices_.size() * sizeof(Vertex)), Curve->Vertices_.data(), GL_STATIC_DRAW);
+        glDrawElements(GL_POINTS, Curve->Indices_.size(), GL_UNSIGNED_SHORT, (void*)0);
+
 		// // If don't use indices
 		// glDrawArrays(GL_POINTS, 0, NumVerts[0]);
 
