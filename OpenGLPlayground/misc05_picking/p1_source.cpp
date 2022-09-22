@@ -617,8 +617,19 @@ void OnUpdateScene()
 {
     if(gIsPicked)
     {
-        bspline->SetVertices(Vertices);
-        bspline->Recover();
+        if(gSelectCurve == CurveType::Bezier) {
+
+            bezier->SetVertices(Vertices, IndexCount);
+            bezier->Clear();
+            bezier->Calc();
+            bezier->ToVertex();
+        }
+        else if(gSelectCurve == CurveType::BSpline) {
+
+            bspline->SetVertices(Vertices);
+            bspline->Recover();
+        }
+
     }
 
     if(gIsCycle)
