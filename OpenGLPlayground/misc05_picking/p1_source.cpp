@@ -562,9 +562,7 @@ void OnImGuiUpdate()
 
         ImGui::SliderFloat("Point Size", &gPointSize, 0.f, 50.f);
 
-        ImGui::RadioButton("B-Spline", &gSelectCurve, 0); ImGui::SameLine();
-        ImGui::RadioButton("Bezier", &gSelectCurve, 1); ImGui::SameLine();
-
+        ImGui::RadioButton("B-Spline", &gSelectCurve, 0);
         if(gSelectCurve == CurveType::BSpline)
         {
             ImGui::Text("B-Spline Level: %s", std::to_string(bspline->K).c_str());
@@ -574,7 +572,8 @@ void OnImGuiUpdate()
                 bspline->SubDivide();
             }
         }
-        else if(gSelectCurve == CurveType::Bezier)
+        ImGui::RadioButton("Bezier", &gSelectCurve, 1); ImGui::SameLine();
+        if(gSelectCurve == CurveType::Bezier)
         {
 
         }

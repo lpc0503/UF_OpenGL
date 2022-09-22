@@ -38,17 +38,14 @@ struct Vertex {
 
     Vertex() = default;
 
-    Vertex(const Point &p) {
+    Vertex(const Point &p, std::vector<float> color = {0.0f, 1.0f, 1.0f, 1.0f}) {
 
         Position[0] = p.x;
         Position[1] = p.y;
         Position[2] = p.z;
         Position[3] = 1.0f;
 
-        Color[0] = 0.0f;
-        Color[1] = 1.0f;
-        Color[2] = 1.0f;
-        Color[3] = 1.0f;
+        SetColor(color.data());
     }
 
     void SetCoords(float *coords) {

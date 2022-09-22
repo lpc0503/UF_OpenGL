@@ -33,7 +33,7 @@ void BezierCurve::ToVertex()
 {
     V.clear();
     for(const auto &i : A)
-        V.emplace_back(i);
+        V.emplace_back(Vertex(i, {1.0f, 1.0f, 0.f, 1.f}));
     for(int i = 0; i < V.size(); i++)
         I.push_back(i);
 }
@@ -44,39 +44,44 @@ void BezierCurve::Calc()
     A.resize(len);
     A[0] = B[0];
 
-    int a = 0, b = 1;
-    int i = 1, cnt = 0;
+    for(int i = 0 ; i < B.size() ; i++) {
 
-    while(i < len)
-    {
-        if(i % 3 == 0)
-        {
-            a = b;
-            b++;
-            i++;
-            continue;
-        }
+        // Ci_j where j = 0, 1, 2, 3
+        // Ci_0 = Ci-1_3
+        // Ci_0 = (Ci-1_3 + Ci_1) / 2
+        // We will calculate Ci_0 later
+        for(int j = 1 ; j < 4 ; j++) {
 
-        // odd
-        if(i % 2 != 0)
-        {
-            A[i] = (B[a] * 2.f + B[b]) / 3.f;
-        }
-        // even
-        else
-        {
-            A[i] = (B[a] + B[b] * 2.f) / 3.f;
-        }
+            if(j == 3) continue; // calculate Ci_0 later
 
-        i++;
+            // Only calculate Ci_1 and Ci_2
+            if(j % 2 != 0)
+            {
+                A[i*3+j] = (B[i] * 2.f + B[i+1 < B.size() ? i+1 : 0]) / 3.f;
+            }
+            // even
+            else
+            {
+                A[i*3+j] = (B[i] + B[i+1 < B.size() ? i+1 : 0] * 2.f) / 3.f;
+            }
+        }
     }
 
-    // TODO: BUGGGGGG
-    // calc for 3
+
+
+//
+//    // TODO: BUGGGGGG
+//    // calc for 3
     for(int j = 3; j < len; j += 3)
     {
         A[j] = (A[j-1] + A[j+1]) / 2.f;
     }
+
+    for(int l = 0 ; l < A.size() ; l++) {
+
+        printf("node %d: %f %f\n", l, A[l].x, A[l].y);
+    }
+
 }
 
 //3
