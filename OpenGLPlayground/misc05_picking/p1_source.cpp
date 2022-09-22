@@ -23,9 +23,6 @@
 #include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
-// Include AntTweakBar
-//#include <AntTweakBar.h>
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
@@ -42,70 +39,8 @@ namespace fs = std::filesystem;
 
 // ATTN: use POINT structs for cleaner code (POINT is a part of a vertex)
 // allows for (1-t)*P_1+t*P_2  avoiding repeat for each coordinate (x,y,z)
-struct Point {
-	float x, y, z;
-	Point(const float x = 0, const float y = 0, const float z = 0) : x(x), y(y), z(z){};
-	Point(float *coords) : x(coords[0]), y(coords[1]), z(coords[2]){};
-	Point operator -(const Point& a) const {
-		return Point(x - a.x, y - a.y, z - a.z);
-	}
-	Point operator +(const Point& a) const {
-		return Point(x + a.x, y + a.y, z + a.z);
-	}
-	Point operator *(const float& a) const {
-		return Point(x * a, y * a, z * a);
-	}
-	Point operator /(const float& a) const {
-		return Point(x / a, y / a, z / a);
-	}
-	float* toArray() {
-		float array[] = { x, y, z, 1.0f };
-		return array;
-	}
-};
-
-typedef struct Vertex {
-    float Position[4];
-    float Color[4];
-    bool isSelected = false;
-    float SelectedColor[4] = {.5f, .5f, .5f, .5f};
-    bool swapped = false;
-
-    Vertex(std::vector<float> pos, std::vector<float> color) {
-
-        SetCoords(pos.data());
-        SetColor(color.data());
-    }
-
-    Vertex() = default;
-
-    Vertex(const Point &p) {
-
-        Position[0] = p.x;
-        Position[1] = p.y;
-        Position[2] = p.z;
-        Position[3] = 1.0f;
-
-        Color[0] = 0.0f;
-        Color[1] = 1.0f;
-        Color[2] = 1.0f;
-        Color[3] = 1.0f;
-    }
-
-    void SetCoords(float *coords) {
-        Position[0] = coords[0];
-        Position[1] = coords[1];
-        Position[2] = coords[2];
-        Position[3] = coords[3];
-    }
-    void SetColor(float *color) {
-        Color[0] = color[0];
-        Color[1] = color[1];
-        Color[2] = color[2];
-        Color[3] = color[3];
-    }
-};
-
+#include "Geometry.h"
+#include "BezierCurve.h"
 
 // Function prototypes
 int initWindow(void);
@@ -114,7 +49,7 @@ void createVAOs(Vertex[], GLushort[], int);
 void createObjects(void);
 void pickVertex(void);
 void moveVertex(void);
-void renderScene(void);
+void OnRenderScene(void);
 void cleanup(void);
 static void mouseCallback(GLFWwindow*, int, int, int);
 static void keyCallback(GLFWwindow*, int, int, int, int);
@@ -140,6 +75,7 @@ GLuint pickingColorID;
 GLuint SizeID;
 
 GLuint gPickedIndex;
+bool gIsPicked = false;
 std::string gMessage;
 
 // ATTN: INCREASE THIS NUMBER AS YOU CREATE NEW OBJECTS
@@ -160,8 +96,6 @@ const size_t IndexCount = 10;
 Vertex Vertices[IndexCount];
 GLushort Indices[IndexCount];
 
-
-
 // ATTN: DON'T FORGET TO INCREASE THE ARRAY SIZE IN THE PICKING VERTEX SHADER WHEN YOU ADD MORE PICKING COLORS
 float pickingColor[IndexCount];
 
@@ -169,6 +103,17 @@ float pickingColor[IndexCount];
 bool show_demo_window = true;
 bool show_another_window = true;
 ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+bool gIsCycle = true;
+
+enum CurveType: int
+{
+    BSpline,
+    Bezier
+};
+int gSelectCurve = BSpline;
+
+//
+float gPointSize = 10.f;
 
 int initWindow(void) {
 	// Initialise GLFW
@@ -329,9 +274,7 @@ void createVAOs(Vertex Vertices[], GLushort Indices[], int ObjectId) {
 
 // Task 1
 // A, B  -> K+1, K
-
-
-class BSpline
+class BSplineCurve
 {
 public:
 
@@ -341,8 +284,13 @@ public:
     std::vector<Point> Origin;
     int K = 0;
 
-    BSpline(Vertex P[]) {
+    BSplineCurve(Vertex P[]) {
 
+        SetVertices(P);
+    }
+
+    void SetVertices(Vertex p[])
+    {
         B.resize(IndexCount);
         for(int i = 0 ; i < IndexCount ; i++) {
 
@@ -351,17 +299,15 @@ public:
         Origin = B;
     }
 
+    void Recover()
+    {
+        int prevK = K;
+        for(int i = 0; i < prevK; i++)
+            SubDivide();
+        K = prevK;
+    }
+
     void SubDivide() {
-
-        if(K == 6) {
-
-            K = 0;
-            A.clear();
-            B = Origin;
-            Indices_.clear();
-            Vertices_.clear();
-            return;
-        }
 
         K++;
 
@@ -391,6 +337,15 @@ public:
     }
 
 
+    void Clear()
+    {
+        K = 0;
+        A.clear();
+        B = Origin;
+        Indices_.clear();
+        Vertices_.clear();
+    }
+
     const Point ZeroPoint = Point(0.f, 0.f, 0.f);
     void BSplineSubDividePoints(int i) {
 
@@ -419,7 +374,8 @@ public:
 };
 
 const float angle_ = 3.1415926 * 2.f / 5;
-BSpline *Curve;
+BSplineCurve *bspline;
+BezierCurve *bezier;
 void createObjects(void) {
 
     float radius = 1.f;
@@ -460,7 +416,8 @@ void createObjects(void) {
         Indices[i] = i;
     }
 
-    Curve = new BSpline(Vertices);
+    bspline = new BSplineCurve(Vertices);
+    bezier = new BezierCurve(Vertices, IndexCount);
 
 	// ATTN: Project 1B, Task 1 == create line segments to connect the control points
 
@@ -531,14 +488,14 @@ void pickVertex(void) {
 	// Find a way to change color of selected vertex and
 	// store original color
     if(gPickedIndex >= IndexCount) {
-
+        gIsPicked = false;
         for(int i = 0 ; i < IndexCount ; i++) {
 
             Vertices[i].isSelected = false;
         }
     }
     else {
-
+        gIsPicked = true;
         Vertices[gPickedIndex].isSelected = true;
     }
 
@@ -597,25 +554,33 @@ void moveVertex(void) {
 	}
 }
 
-float Size = 10.f;
-void renderScene(void) {
-
-    // Dark blue background
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-	// Re-clear the screen for visible rendering
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
+void OnImGuiUpdate()
+{
     {
         ImGui::Begin("Point Attribute");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
         ImGui::Text("Last picked object %s", gMessage.c_str());
 
-        ImGui::SliderFloat("Point Size", &Size, 0.f, 50.f);
+        ImGui::SliderFloat("Point Size", &gPointSize, 0.f, 50.f);
 
-        ImGui::Text("B-Spline Level: %s", std::to_string(Curve->K).c_str());
+        ImGui::RadioButton("B-Spline", &gSelectCurve, 0); ImGui::SameLine();
+        ImGui::RadioButton("Bezier", &gSelectCurve, 1); ImGui::SameLine();
+
+        if(gSelectCurve == CurveType::BSpline)
+        {
+            ImGui::Text("B-Spline Level: %s", std::to_string(bspline->K).c_str());
+            ImGui::SameLine();
+            if (ImGui::Button("Go"))
+            {
+                bspline->SubDivide();
+            }
+        }
+        else if(gSelectCurve == CurveType::Bezier)
+        {
+
+        }
+
+        ImGui::Text("Pick: %d, isPicked = %d", gPickedIndex, gIsPicked);
+        ImGui::Checkbox("Cycle", &gIsCycle);
 
         ImGui::End();
     }
@@ -637,9 +602,9 @@ void renderScene(void) {
         if (ImGui::CollapsingHeader("Cyan Point")) {
 
             ImGuiIO &io = ImGui::GetIO();
-            for(int i = 0 ; i < Curve->Vertices_.size() ; i++) {
+            for(int i = 0 ; i < bspline->Vertices_.size() ; i++) {
 
-                auto &pos = Curve->Vertices_[i].Position;
+                auto &pos = bspline->Vertices_[i].Position;
                 auto label = ("Pos#" + std::to_string(i)).c_str();
                 ImGui::InputFloat2(label, pos);
             }
@@ -647,6 +612,35 @@ void renderScene(void) {
 
         ImGui::End();
     }
+}
+
+void OnUpdateScene()
+{
+    if(gIsPicked)
+    {
+        bspline->SetVertices(Vertices);
+        bspline->Recover();
+    }
+
+    if(gIsCycle)
+    {
+        if(bspline->K >= 6)
+        {
+            bspline->Clear();
+        }
+    }
+}
+
+void OnRenderScene(void) {
+
+	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    OnImGuiUpdate();
 
 	glUseProgram(programID);
 	{
@@ -656,7 +650,7 @@ void renderScene(void) {
 		glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &gViewMatrix[0][0]);
-        glUniform1f(SizeID, Size);
+        glUniform1f(SizeID, gPointSize);
 
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
@@ -667,16 +661,29 @@ void renderScene(void) {
 
         // hotfix
 
+        if(gSelectCurve == CurveType::BSpline)
         {
-            if(Curve->Vertices_.size() != 0) {
+            if(bspline->Vertices_.size() != 0) {
 
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, Curve->Indices_.size() * sizeof(GLushort), Curve->Indices_.data(), GL_STATIC_DRAW);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, bspline->Indices_.size() * sizeof(GLushort), bspline->Indices_.data(), GL_STATIC_DRAW);
                 glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                glBufferData(GL_ARRAY_BUFFER, (Curve->Vertices_.size() * sizeof(Vertex)), Curve->Vertices_.data(), GL_STATIC_DRAW);
-                glDrawElements(GL_POINTS, Curve->Indices_.size(), GL_UNSIGNED_SHORT, (void*)0);
+                glBufferData(GL_ARRAY_BUFFER, (bspline->Vertices_.size() * sizeof(Vertex)), bspline->Vertices_.data(), GL_STATIC_DRAW);
+                glDrawElements(GL_POINTS, bspline->Indices_.size(), GL_UNSIGNED_SHORT, (void*)0);
             }
         }
+        else if(gSelectCurve == CurveType::Bezier)
+        {
+            if(bezier->V.size() != 0) {
+
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, bezier->I.size() * sizeof(GLushort), bezier->I.data(), GL_STATIC_DRAW);
+                glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                glBufferData(GL_ARRAY_BUFFER, (bezier->V.size() * sizeof(Vertex)), bezier->V.data(), GL_STATIC_DRAW);
+                glDrawElements(GL_POINTS, bezier->I.size(), GL_UNSIGNED_SHORT, (void*)0);
+            }
+        }
+
 		// // If don't use indices
 		// glDrawArrays(GL_POINTS, 0, NumVerts[0]);
 
@@ -691,11 +698,6 @@ void renderScene(void) {
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
-	// Draw GUI
-//    	TwDraw();
-
-
-
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	// Swap buffers
 	glfwSwapBuffers(window);
@@ -720,12 +722,11 @@ void cleanup(void) {
 static void mouseCallback(GLFWwindow* window, int button, int action, int mods) {
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
-
         pickVertex();
 	}
 
     if(action == GLFW_RELEASE) {
-
+        gIsPicked = false;
         for(auto &i : Vertices) {
 
             if(i.isSelected) {
@@ -745,7 +746,7 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
         if (!isKeyPressed) {
 
-            Curve->SubDivide();
+            bspline->SubDivide();
             isKeyPressed = true;
         }
     }
@@ -789,9 +790,8 @@ int main(void) {
 		// ATTN: Project 1B, Task 2 and 4 == account for key presses to activate subdivision and hiding/showing functionality
 		// for respective tasks
 
-		// DRAWING the SCENE
-			// re-evaluate curves in case vertices have been moved
-		renderScene();
+        OnUpdateScene();
+        OnRenderScene();
 
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
