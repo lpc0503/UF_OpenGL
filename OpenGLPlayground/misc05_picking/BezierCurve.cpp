@@ -67,26 +67,15 @@ void BezierCurve::Calc()
         }
     }
 
-
-
-//
-//    // TODO: BUGGGGGG
 //    // calc for 3
     for(int j = 3; j < len; j += 3)
     {
         A[j] = (A[j-1] + A[j+1]) / 2.f;
     }
 
-    for(int l = 0 ; l < A.size() ; l++) {
-
-        printf("node %d: %f %f\n", l, A[l].x, A[l].y);
-    }
+//    for(int l = 0 ; l < A.size() ; l++) {
+//
+//        printf("node %d: %f %f\n", l, A[l].x, A[l].y);
+//    }
 
 }
-
-//3
-//A[4] = (B[1] * 2.f + B[2]) / 3.f;
-//A[5] = (B[1] + B[2] * 2.f) / 3.f;
-//6
-//A[7] = (B[2] * 2.f + B[3]) / 3.f;
-//A[8] = (B[2] + B[3] * 2.f) / 3.f;
