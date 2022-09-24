@@ -747,7 +747,7 @@ void OnRenderScene(void) {
                     glBufferData(GL_ARRAY_BUFFER, (bezier->V.size() * sizeof(Vertex)), bezier->V.data(),
                                  GL_STATIC_DRAW);
                     std::vector<GLushort> indices;
-                    for(int i = 0; i < bezier->V.size(); i++)
+                    for(int i = 0 ; i < bezier->V.size() ; i++)
                         indices.push_back(i);
                     indices.push_back(0);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
@@ -778,7 +778,7 @@ void OnRenderScene(void) {
                     glBufferData(GL_ARRAY_BUFFER, (catmull->V.size() * sizeof(Vertex)), catmull->V.data(),
                                  GL_STATIC_DRAW);
                     std::vector<GLushort> indices;
-                    for(int i = 0; i < catmull->V.size(); i++)
+                    for(int i = 0 ; i < catmull->V.size() ; i++)
                         indices.push_back(i);
                     indices.push_back(0);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
@@ -789,7 +789,7 @@ void OnRenderScene(void) {
                 if(!catmull->V2.empty())
                 {
                     std::vector<GLushort> indices;
-                    for(int i = 0; i < catmull->V2.size(); i++)
+                    for(int i = 0 ; i < catmull->V2.size() ; i++)
                         indices.push_back(i);
                     indices.push_back(0);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(),
@@ -826,6 +826,7 @@ void OnRenderScene(void) {
 void cleanup(void) {
 	// Cleanup VBO and shader
 	for (int i = 0; i < NumObjects; i++) {
+
 		glDeleteBuffers(1, &VertexBufferId[i]);
 		glDeleteBuffers(1, &IndexBufferId[i]);
 		glDeleteVertexArrays(1, &VertexArrayId[i]);
@@ -866,6 +867,23 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
         if (!isKeyPressed) {
 
             bspline->SubDivide();
+            gSelectCurve = CurveType::BSpline;
+            isKeyPressed = true;
+        }
+    }
+    else if(key == GLFW_KEY_2 && action == GLFW_PRESS) {
+
+        if(!isKeyPressed) {
+
+            gSelectCurve = CurveType::Bezier;
+            isKeyPressed = true;
+        }
+    }
+    else if(key == GLFW_KEY_3 && action == GLFW_PRESS){
+
+        if(!isKeyPressed) {
+
+            gSelectCurve = CurveType::Catmull;
             isKeyPressed = true;
         }
     }
