@@ -56,9 +56,11 @@ ex:
 ### Task 2
 
 $$
-c_{i,0} = \begin{case}
-P_0 &quad \text{When i=0} \\
-\dfrac{c_{i,1}+c_{i-1, 2}}} &quad \text{When i>0}
+c_{i, 0}=
+\begin{cases}
+0 & \quad \text{When i=0}\\ 
+\dfrac{c_{i, 1} + c_{i-1, 2}}{2} & \quad \text{When i>0}
 \end{cases}
 $$
+
 
