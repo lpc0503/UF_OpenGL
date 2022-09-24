@@ -95,6 +95,7 @@ size_t NumIdcs[NumObjects];	// Useful for glDrawElements command
 // Initialize ---  global objects -- not elegant but ok for this project
 const size_t IndexCount = 10;
 Vertex Vertices[IndexCount];
+Vertex OriginVertecies[IndexCount];
 GLushort Indices[IndexCount];
 
 // ATTN: DON'T FORGET TO INCREASE THE ARRAY SIZE IN THE PICKING VERTEX SHADER WHEN YOU ADD MORE PICKING COLORS
@@ -417,6 +418,8 @@ void createObjects(void) {
         float newY = -radius * cos(angle_*i) + 1;
         Vertices[i].Position[0] = newX;
         Vertices[i].Position[1] = newY;
+        OriginVertecies[i].Position[0] = newX;
+        OriginVertecies[i].Position[1] = newY;
     }
 
     for(int i = 0 ; i < 5 ; i++) {
@@ -425,6 +428,8 @@ void createObjects(void) {
         float newY = radius * cos(angle_*i)-1;
         Vertices[i+5].Position[0] = newX;
         Vertices[i+5].Position[1] = newY;
+        OriginVertecies[i+5].Position[0] = newX;
+        OriginVertecies[i+5].Position[1] = newY;
     }
 
     for(int i = 0 ; i < IndexCount ; i++) {
@@ -578,28 +583,35 @@ void OnImGuiUpdate()
 
         ImGui::Separator();
 
-        if(gSelectCurve == CurveType::BSpline)
-        {
+        if(gSelectCurve == CurveType::BSpline){
+
             ImGui::Text("B-Spline Level: %s", std::to_string(bspline->K).c_str());
             ImGui::SameLine();
-            if (ImGui::Button("Go"))
-            {
+            if (ImGui::Button("Go")){
+
                 bspline->SubDivide();
             }
             ImGui::Checkbox("Cycle", &gIsCycle);
         }
-        else if(gSelectCurve == CurveType::Bezier)
-        {
+        else if(gSelectCurve == CurveType::Bezier){
 
         }
-        else if(gSelectCurve == CurveType::Catmull)
-        {
+        else if(gSelectCurve == CurveType::Catmull){
+
             ImGui::SliderFloat("Step", &catmull->step, 0.01f, 1.f);
         }
 
         ImGui::Separator();
         ImGui::Text("Last picked object %s", gMessage.c_str());
         ImGui::Text("Pick: %d, isPicked = %d", gPickedIndex, gIsPicked);
+        if(ImGui::Button("Reset")) {
+
+            for(int i = 0 ; i < IndexCount ; i++) {
+
+                Vertices[i].Position[0] = OriginVertecies[i].Position[0];
+                Vertices[i].Position[1] = OriginVertecies[i].Position[1];
+            }
+        }
 
         ImGui::End();
     }
