@@ -63,4 +63,17 @@ c_{i, 0}=
 \end{cases}
 $$
 
+$$
+c_{i,3} = c_{i+1,0} = P_i
+$$
+
+### Task 3
+
+$$
+c_{i, 2}=
+\begin{cases}
+c_{i, 3} + \dfrac{P_{i} - P_{i+2}}{6} & \quad \text{Where $c_{i, 3} = c_{i+1, 0} = P_{i+1}$}
+\end{cases}
+$$
+
 
