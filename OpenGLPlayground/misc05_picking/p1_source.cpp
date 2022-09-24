@@ -40,6 +40,7 @@ namespace fs = std::filesystem;
 // ATTN: use POINT structs for cleaner code (POINT is a part of a vertex)
 // allows for (1-t)*P_1+t*P_2  avoiding repeat for each coordinate (x,y,z)
 #include "Geometry.h"
+#include "BSplineCurve.h"
 #include "BezierCurve.h"
 #include "CatmullRomCurve.h"
 
@@ -289,104 +290,6 @@ void createVAOs(Vertex Vertices[], GLushort Indices[], int ObjectId) {
 
 // Task 1
 // A, B  -> K+1, K
-class BSplineCurve
-{
-public:
-
-    std::vector<Point> A, B; // K+1, K
-    std::vector<Vertex> Vertices_;
-    std::vector<GLushort> Indices_;
-    std::vector<Point> Origin;
-    int K = 0;
-
-    BSplineCurve(Vertex P[]) {
-
-        SetVertices(P);
-    }
-
-    void SetVertices(Vertex p[])
-    {
-        B.resize(IndexCount);
-        for(int i = 0 ; i < IndexCount ; i++) {
-
-            B[i] = Point(Vertices[i].Position);
-        }
-        Origin = B;
-    }
-
-    void Recover()
-    {
-        int prevK = K;
-        for(int i = 0; i < prevK; i++)
-            SubDivide();
-        K = prevK;
-    }
-
-    void SubDivide() {
-
-        K++;
-
-        A.clear();
-        for(int i = 0 ; i < B.size() ; i++) {
-
-            BSplineSubDividePoints(i);
-        }
-        B = A;
-
-        Indices_.resize(A.size());
-
-        for(int i = 0 ; i < A.size(); i++) {
-
-            Indices_[i] = i;
-        }
-        ToVertex();
-    }
-
-    void print() {
-
-        for(int i = 0 ; i < IndexCount ; i++) {
-
-//            printf("A P%d : %f %f\n", i*2, A[i*2].x, A[i*2].y);
-            printf("A P%d : %f %f\n", i*2+1, A[i*2+1].x, A[i*2+1].y);
-        }
-    }
-
-
-    void Clear()
-    {
-        K = 0;
-        A.clear();
-        B = Origin;
-        Indices_.clear();
-        Vertices_.clear();
-    }
-
-    const Point ZeroPoint = Point(0.f, 0.f, 0.f);
-    void BSplineSubDividePoints(int i) {
-
-        Point a;
-        Point b;
-        Point Pi_m1 = (i-1 >= 0) ? B[i-1] : B[B.size()-1];
-        Point Pi = B[i];
-        Point Pi_p1 = i+1 < B.size() ? B[i+1] : B[0];
-        a = (Pi_m1 * 4.f + Pi * 4.f) / 8.f;
-        b = (Pi_m1 + Pi*6.f + Pi_p1) / 8.f;
-
-        A.push_back(a);
-        A.push_back(b);
-    }
-
-    void ToVertex()
-    {
-        Vertices_.clear();
-
-        for(auto &i : A) {
-
-            Vertices_.emplace_back(i);
-        }
-    }
-
-};
 
 const float angle_ = 3.1415926 * 2.f / 5;
 BSplineCurve *bspline;
@@ -437,7 +340,7 @@ void createObjects(void) {
         Indices[i] = i;
     }
 
-    bspline = new BSplineCurve(Vertices);
+    bspline = new BSplineCurve(Vertices, IndexCount);
     bezier = new BezierCurve(Vertices, IndexCount);
     catmull = new CatmullRomCurve(Vertices, IndexCount);
 }
@@ -501,6 +404,7 @@ void pickVertex(void) {
 	// Find a way to change color of selected vertex and
 	// store original color
     if(gPickedIndex >= IndexCount) {
+
         gIsPicked = false;
         for(int i = 0 ; i < IndexCount ; i++) {
 
@@ -508,6 +412,7 @@ void pickVertex(void) {
         }
     }
     else {
+
         gIsPicked = true;
         Vertices[gPickedIndex].isSelected = true;
     }
@@ -533,8 +438,8 @@ void pickVertex(void) {
 
 // ATTN: Project 1C, Task 1 == Keep track of z coordinate for selected point and adjust its value accordingly based on if certain
 // buttons are being pressed
-int prevPosX, prevPosY;
 void moveVertex(void) {
+
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
 	GLint viewport[4] = {};
 	glGetIntegerv(GL_VIEWPORT, viewport);
@@ -633,9 +538,9 @@ void OnImGuiUpdate()
         if (ImGui::CollapsingHeader("Cyan Point")) {
 
             ImGuiIO &io = ImGui::GetIO();
-            for(int i = 0 ; i < bspline->Vertices_.size() ; i++) {
+            for(int i = 0 ; i < bspline->V.size() ; i++) {
 
-                auto &pos = bspline->Vertices_[i].Position;
+                auto &pos = bspline->V[i].Position;
                 auto label = ("Pos#" + std::to_string(i)).c_str();
                 ImGui::InputFloat2(label, pos);
             }
@@ -645,8 +550,8 @@ void OnImGuiUpdate()
     }
 }
 
-void OnUpdateScene()
-{
+void OnUpdateScene(){
+
     if(gSelectCurve == CurveType::Bezier) {
 
         bezier->SetVertices(Vertices, IndexCount);
@@ -656,21 +561,21 @@ void OnUpdateScene()
     }
     else if(gSelectCurve == CurveType::BSpline) {
 
-        bspline->SetVertices(Vertices);
+        bspline->SetVertices(Vertices, IndexCount);
         bspline->Recover();
     }
-    else if(gSelectCurve == CurveType::Catmull)
-    {
+    else if(gSelectCurve == CurveType::Catmull){
+
         catmull->SetVertices(Vertices, IndexCount);
         catmull->Clear();
         catmull->Calc();
         catmull->ToVertex();
     }
 
-    if(gIsCycle)
-    {
-        if(bspline->K >= 6)
-        {
+    if(gIsCycle){
+
+        if(bspline->K >= 6){
+
             bspline->Clear();
         }
     }
@@ -700,8 +605,8 @@ void OnRenderScene(void) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		glBindVertexArray(VertexArrayId[0]);	// Draw Vertices
-        if(gDrawOrigPoint)
-        {
+        if(gDrawOrigPoint){
+
             glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
             glBufferSubData(GL_ARRAY_BUFFER, 0, VertexBufferSize[0], Vertices);        // Update buffer data
             glDrawElements(GL_POINTS, NumIdcs[0], GL_UNSIGNED_SHORT, (void *) 0);
@@ -709,28 +614,28 @@ void OnRenderScene(void) {
 
         // hotfix
 
-        if(gSelectCurve == CurveType::BSpline)
-        {
-            if(bspline->Vertices_.size() != 0) {
+        if(gSelectCurve == CurveType::BSpline){
 
-                if(gDrawControlPoint)
-                {
+            if(bspline->V.size() != 0) {
+
+                if(gDrawControlPoint){
+
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
-                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bspline->Indices_.size() * sizeof(GLushort),
-                                 bspline->Indices_.data(), GL_STATIC_DRAW);
+                    glBufferData(GL_ELEMENT_ARRAY_BUFFER, bspline->I.size() * sizeof(GLushort),
+                                 bspline->I.data(), GL_STATIC_DRAW);
                     glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                    glBufferData(GL_ARRAY_BUFFER, (bspline->Vertices_.size() * sizeof(Vertex)),
-                                 bspline->Vertices_.data(), GL_STATIC_DRAW);
-                    glDrawElements(GL_POINTS, bspline->Indices_.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                    glBufferData(GL_ARRAY_BUFFER, (bspline->V.size() * sizeof(Vertex)),
+                                 bspline->V.data(), GL_STATIC_DRAW);
+                    glDrawElements(GL_POINTS, bspline->I.size(), GL_UNSIGNED_SHORT, (void *) 0);
                 }
 
-                if(gDrawLine)
-                {
+                if(gDrawLine) {
+
                     glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                    glBufferData(GL_ARRAY_BUFFER, (bspline->Vertices_.size() * sizeof(Vertex)),
-                                 bspline->Vertices_.data(), GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, (bspline->V.size() * sizeof(Vertex)),
+                                 bspline->V.data(), GL_STATIC_DRAW);
                     std::vector<GLushort> indices;
-                    for(int i = 0; i < bspline->Vertices_.size(); i++)
+                    for(int i = 0; i < bspline->V.size(); i++)
                         indices.push_back(i);
                     indices.push_back(0);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), indices.data(), GL_STATIC_DRAW);
@@ -767,13 +672,13 @@ void OnRenderScene(void) {
                 }
             }
         }
-        else if(gSelectCurve == CurveType::Catmull)
-        {
-            if(!catmull->V.empty())
-            {
+        else if(gSelectCurve == CurveType::Catmull) {
+
+            if(!catmull->V.empty()){
+
                 // Draw point
-                if(gDrawControlPoint)
-                {
+                if(gDrawControlPoint){
+
                     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
                     glBufferData(GL_ELEMENT_ARRAY_BUFFER, catmull->I.size() * sizeof(GLushort), catmull->I.data(),
                                  GL_STATIC_DRAW);
@@ -784,8 +689,8 @@ void OnRenderScene(void) {
                 }
 
                 // Draw line
-                if(gDrawLine)
-                {
+                if(gDrawLine) {
+
                     glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
                     glBufferData(GL_ARRAY_BUFFER, (catmull->V.size() * sizeof(Vertex)), catmull->V.data(),
                                  GL_STATIC_DRAW);
@@ -798,8 +703,8 @@ void OnRenderScene(void) {
                 }
 
                 // Draw curve points
-                if(!catmull->V2.empty())
-                {
+                if(!catmull->V2.empty()) {
+
                     std::vector<GLushort> indices;
                     for(int i = 0 ; i < catmull->V2.size() ; i++)
                         indices.push_back(i);

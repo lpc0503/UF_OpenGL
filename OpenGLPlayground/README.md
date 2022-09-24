@@ -1,5 +1,4 @@
-# Project 1
-
+# Project 1 B
 
 # OpenGL
 
@@ -7,7 +6,7 @@
 
 OS : Mac OS
 
-I built my own environment and write my own `CMakeLists.txt`, because the GUI library this tutorial use can't run properly on my device, so I change the GUI library.
+I built my own environment and write my own `CMakeLists.txt`.
 
 I uploaded my whole project include every library that I use.
 
@@ -52,12 +51,14 @@ ex:
 
 `./misc05_picking/p1`.
 
-# WebGL
+## Formulas
 
-All files are under `OpenGLPlayground/WebGL_P1`.
+### Task 2
 
-## Execute
-
-Open `webgl-p1_source.html` on the browser.
-
+$$
+c_{i,0} = \begin{case}
+P_0 &quad \text{When i=0} \\
+\dfrac{c_{i,1}+c_{i-1, 2}}} &quad \text{When i>0}
+\end{cases}
+$$
 
