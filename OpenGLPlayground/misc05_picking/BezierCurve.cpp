@@ -4,7 +4,7 @@
 
 const Point BezierCurve::ZeroPoint = Point(0.f, 0.f, 0.f);
 
-BezierCurve::BezierCurve(Vertex *p, size_t size){
+BezierCurve::BezierCurve(Vertex *p, size_t size) {
 
     SetVertices(p, size);
     Calc();
@@ -19,7 +19,7 @@ void BezierCurve::Clear(){
     V.clear();
 }
 
-void BezierCurve::SetVertices(Vertex *p, size_t size){
+void BezierCurve::SetVertices(Vertex *p, size_t size) {
 
     B.resize(size);
     for(int i = 0 ; i < size ; i++){
@@ -29,7 +29,7 @@ void BezierCurve::SetVertices(Vertex *p, size_t size){
     Origin = B;
 }
 
-void BezierCurve::ToVertex(){
+void BezierCurve::ToVertex() {
 
     V.clear();
     for(const auto &i : A)
@@ -38,7 +38,7 @@ void BezierCurve::ToVertex(){
         I.push_back(i);
 }
 
-void BezierCurve::Calc(){
+void BezierCurve::Calc() {
 
     int len = B.size() * 3;
     A.resize(len);
