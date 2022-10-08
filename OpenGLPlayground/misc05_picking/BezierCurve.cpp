@@ -4,33 +4,33 @@
 
 const Point BezierCurve::ZeroPoint = Point(0.f, 0.f, 0.f);
 
-BezierCurve::BezierCurve(Vertex *p, size_t size)
-{
+BezierCurve::BezierCurve(Vertex *p, size_t size){
+
     SetVertices(p, size);
     Calc();
     ToVertex();
 }
 
-void BezierCurve::Clear()
-{
+void BezierCurve::Clear(){
+
     A.clear();
     B = Origin;
     I.clear();
     V.clear();
 }
 
-void BezierCurve::SetVertices(Vertex *p, size_t size)
-{
+void BezierCurve::SetVertices(Vertex *p, size_t size){
+
     B.resize(size);
-    for(int i = 0 ; i < size ; i++)
-    {
+    for(int i = 0 ; i < size ; i++){
+
         B[i] = Point(p[i].Position);
     }
     Origin = B;
 }
 
-void BezierCurve::ToVertex()
-{
+void BezierCurve::ToVertex(){
+
     V.clear();
     for(const auto &i : A)
         V.emplace_back(Vertex(i, {1.0f, 1.0f, 0.f, 1.f}));
@@ -38,8 +38,8 @@ void BezierCurve::ToVertex()
         I.push_back(i);
 }
 
-void BezierCurve::Calc()
-{
+void BezierCurve::Calc(){
+
     int len = B.size() * 3;
     A.resize(len);
     A[0] = B[0];
@@ -55,27 +55,21 @@ void BezierCurve::Calc()
             if(j == 3) continue; // calculate Ci_0 later
 
             // Only calculate Ci_1 and Ci_2
-            if(j % 2 != 0)
-            {
+            if(j % 2 != 0) {
+
                 A[i*3+j] = (B[i] * 2.f + B[i+1 < B.size() ? i+1 : 0]) / 3.f;
             }
             // even
-            else
-            {
+            else {
+
                 A[i*3+j] = (B[i] + B[i+1 < B.size() ? i+1 : 0] * 2.f) / 3.f;
             }
         }
     }
 
-//    // calc for 3
-    for(int j = 3; j < len; j += 3)
-    {
+    // calc for 3
+    for(int j = 3; j < len; j += 3) {
+
         A[j] = (A[j-1] + A[j+1]) / 2.f;
     }
-
-//    for(int l = 0 ; l < A.size() ; l++) {
-//
-//        printf("node %d: %f %f\n", l, A[l].x, A[l].y);
-//    }
-
 }

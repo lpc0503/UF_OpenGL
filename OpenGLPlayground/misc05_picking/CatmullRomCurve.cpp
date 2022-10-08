@@ -1,13 +1,13 @@
 #include "CatmullRomCurve.h"
 
-CatmullRomCurve::CatmullRomCurve(Vertex *p, size_t size){
+CatmullRomCurve::CatmullRomCurve(Vertex *p, size_t size) {
 
     SetVertices(p, size);
     Calc();
     ToVertex();
 }
 
-void CatmullRomCurve::Clear(){
+void CatmullRomCurve::Clear() {
 
     A.clear();
     B = Origin;
@@ -16,7 +16,7 @@ void CatmullRomCurve::Clear(){
     C.clear();
 }
 
-void CatmullRomCurve::ToVertex(){
+void CatmullRomCurve::ToVertex() {
 
     V.clear();
     for(const auto &i : A)
@@ -30,7 +30,7 @@ void CatmullRomCurve::ToVertex(){
         V2.emplace_back(Vertex(i, {0.0f, 1.0f, 0.0f, 1.f}));
 }
 
-void CatmullRomCurve::SetVertices(Vertex *p, size_t size){
+void CatmullRomCurve::SetVertices(Vertex *p, size_t size) {
 
     B.resize(size);
     for(int i = 0 ; i < size ; i++){
@@ -40,7 +40,7 @@ void CatmullRomCurve::SetVertices(Vertex *p, size_t size){
     Origin = B;
 }
 
-void CatmullRomCurve::Calc(){
+void CatmullRomCurve::Calc() {
 
     // Generate bezier points
     A.resize(B.size() * 3);
@@ -66,14 +66,14 @@ void CatmullRomCurve::Calc(){
     // Generate curve points (deCasteljau's Algorithm)
     // ref: https://blog.csdn.net/Fioman/article/details/2578895
     int n = 3;
-    for(int k = 0 ; k < A.size() ; k += n){
+    for(int k = 0 ; k < A.size() ; k += n) {
 
-        for (float u = 0.f ; u <= 1.f ; u += step / n){
+        for (float u = 0.f ; u <= 1.f ; u += step / n) {
 
             std::vector<Point> T = A;
-            for (int i = 0 ; i < n ; i++){
+            for (int i = 0 ; i < n ; i++) {
 
-                for (int j = k ; j < (n - i) + k ; j++){
+                for (int j = k ; j < (n - i) + k ; j++) {
 
                     T[j] = T[j] * (1 - u) + T[(j + 1) % T.size()] * u;
                 }

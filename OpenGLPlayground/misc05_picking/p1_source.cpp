@@ -299,21 +299,14 @@ CatmullRomCurve *catmull;
 void createObjects(void) {
 
     float radius = 1.f;
-
 	// ATTN: DERIVE YOUR NEW OBJECTS HERE:  each object has
 	// an array of vertices {pos;color} and
 	// an array of indices (no picking needed here) (no need for indices)
 	// ATTN: Project 1A, Task 1 == Add the points in your scene
-	Vertices[0] = { { 0.0f, 0.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-	Vertices[1] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-	Vertices[2] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-	Vertices[3] = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-    Vertices[4] = { { 1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-    Vertices[5] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0, 1.0f, 1.0f } };
-    Vertices[6] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-    Vertices[7] = { { 1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-    Vertices[8] = { { -1.0f, 1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 1.0f, 1.0f } };
-    Vertices[9] = { { -1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f, 01.0f, 1.0f } };
+    for(int i = 0 ; i < IndexCount ; i++) {
+
+        Vertices[i] = {{0.f, 0.f, 0.f, 1.f}, {1.f, 1.f, 1.f, 1.f}};
+    }
 
     for(int i = 0 ; i < 5 ; i++) {
 
@@ -472,8 +465,8 @@ void moveVertex(void) {
 	}
 }
 
-void OnImGuiUpdate()
-{
+void OnImGuiUpdate() {
+
     {
         ImGui::Begin("Point Attribute");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 
@@ -516,6 +509,7 @@ void OnImGuiUpdate()
                 Vertices[i].Position[0] = OriginVertecies[i].Position[0];
                 Vertices[i].Position[1] = OriginVertecies[i].Position[1];
             }
+            bspline->Clear();
         }
 
         ImGui::End();
@@ -523,26 +517,48 @@ void OnImGuiUpdate()
 
     {
         ImGui::Begin("Point Control");
-        if(ImGui::CollapsingHeader("White Point")) {
+        if(ImGui::CollapsingHeader("Control Point")) {
 
             ImGuiIO &io = ImGui::GetIO();
             ImGui::Text("%s", gMessage.c_str());
             for(int i = 0 ; i < IndexCount ; i++){
 
                 auto &pos = Vertices[i].Position;
-                auto label = ("Pos#" + std::to_string(i)).c_str();
+                auto label = ("Point#" + std::to_string(i)).c_str();
                 ImGui::InputFloat2(label, pos);
             }
         }
 
-        if (ImGui::CollapsingHeader("Cyan Point")) {
+        if(ImGui::CollapsingHeader("B-Spline Point")) {
 
             ImGuiIO &io = ImGui::GetIO();
             for(int i = 0 ; i < bspline->V.size() ; i++) {
 
                 auto &pos = bspline->V[i].Position;
+                auto label = ("Point#" + std::to_string(i)).c_str();
+                ImGui::InputFloat2(label, pos, "%.3f", ImGuiInputTextFlags_ReadOnly);
+            }
+        }
+
+        if(ImGui::CollapsingHeader("Bezier Point")) {
+
+            ImGuiIO &io = ImGui::GetIO();
+            for(int i = 0 ; i < bezier->V.size() ; i++) {
+
+                auto &pos = bezier->V[i].Position;
+                auto label = ("Point#" + std::to_string(i)).c_str();
+                ImGui::InputFloat2(label, pos, "%.3f", ImGuiInputTextFlags_ReadOnly);
+            }
+        }
+
+        if(ImGui::CollapsingHeader("CatmullRomCurve Point")) {
+
+            ImGuiIO &io = ImGui::GetIO();
+            for(int i = 0 ; i < catmull->V.size() ; i++) {
+
+                auto &pos = catmull->V[i].Position;
                 auto label = ("Pos#" + std::to_string(i)).c_str();
-                ImGui::InputFloat2(label, pos);
+                ImGui::InputFloat2(label, pos, "%.3f", ImGuiInputTextFlags_ReadOnly);
             }
         }
 
@@ -776,6 +792,8 @@ static void mouseCallback(GLFWwindow* window, int button, int action, int mods) 
     }
 }
 
+// ATTN: Project 1B, Task 2 and 4 == account for key presses to activate subdivision and hiding/showing functionality
+// for respective tasks
 bool isKeyPressed = false;
 static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
@@ -840,9 +858,6 @@ int main(void) {
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 			moveVertex();
 		}
-
-		// ATTN: Project 1B, Task 2 and 4 == account for key presses to activate subdivision and hiding/showing functionality
-		// for respective tasks
 
         OnUpdateScene();
         OnRenderScene();

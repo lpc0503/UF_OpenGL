@@ -6,8 +6,8 @@
 #include <glad/glad.h>
 #include "Geometry.h"
 
-class BezierCurve
-{
+class BezierCurve {
+
 public:
     BezierCurve() = default;
     BezierCurve(Vertex p[], size_t size);

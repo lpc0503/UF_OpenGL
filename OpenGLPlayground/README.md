@@ -83,4 +83,23 @@ c_{i, 3} + \dfrac{P_{i} - P_{i+2}}{6} & \quad \text{Where $c_{i, 3} = c_{i+1, 0}
 \end{cases}
 $$
 
+### File explanation
 
+* asset
+    * shader
+        * All shader
+* common
+    * All wrapped render utils
+* deps
+    * All library
+* misc05_picking
+    * BSplineCurve
+        * BSplineCurve object, calculate the subdivide point
+    * BezierCurve
+        * BezierCurve object, calculate the Bezier point
+    * CatmullRomCurve
+        * Catmull object, calculate the CatmullRomCurve using the de casteljau's algorithm.
+    * Geometry
+        * Point and Vertice declaration
+    * p1_cource
+        * Main function
