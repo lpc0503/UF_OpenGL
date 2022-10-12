@@ -110,6 +110,12 @@ bool gIsCycle = true;
 bool gDrawLine = true;
 bool gDrawControlPoint = true;
 bool gDrawOrigPoint = true;
+bool gIsShiftDown = false;
+
+float gViewport[2][4] = {
+    {0, window_height/2, window_width, window_height/2},
+    {0, 0, window_width, window_height/2}
+};
 
 enum CurveType: int
 {
@@ -436,13 +442,14 @@ void moveVertex(void) {
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
 	GLint viewport[4] = {};
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glm::vec4 vp = glm::vec4(viewport[0], viewport[1], window_width, window_height);
+//	glm::vec4 vp = glm::vec4(viewport[0], viewport[1], window_width, window_height);
+	glm::vec4 vp = glm::vec4(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
 
     double mouseX;
     double mouseY;
 
     glfwGetCursorPos(window, &mouseX, &mouseY);
-    glm::vec3 tmp = glm::unProject(glm::vec3(mouseX, mouseY, 0.0), ModelMatrix, gProjectionMatrix, vp);
+    glm::vec3 tmp = glm::unProject(glm::vec3(mouseX, mouseY, 0.0), ModelMatrix, gProjectionMatrix, vp); // TODO ?????
 
     if (gPickedIndex >= IndexCount) {
 		// Any number > vertices-indices is background!
@@ -452,14 +459,21 @@ void moveVertex(void) {
 
 		std::ostringstream oss;
 		oss << "point " << gPickedIndex;
-		gMessage = oss.str();
+		gMessage = oss.str() + std::to_string(tmp.x) + " " + std::to_string(tmp.y) + " " + std::to_string(tmp.z);
 
         for(auto &i : Vertices) {
 
             if(i.isSelected) {
 
-                i.Position[0] = -tmp.x;
-                i.Position[1] = -tmp.y;
+                if(gIsShiftDown) // Move in z axis [-2, 2]
+                {
+                    i.Position[2] = -tmp.y;
+                }
+                else
+                {
+                    i.Position[0] = -tmp.x;
+                    i.Position[1] = -tmp.y;
+                }
             }
         }
 	}
@@ -525,7 +539,7 @@ void OnImGuiUpdate() {
 
                 auto &pos = Vertices[i].Position;
                 auto label = ("Point#" + std::to_string(i)).c_str();
-                ImGui::InputFloat2(label, pos);
+                ImGui::InputFloat3(label, pos);
             }
         }
 
@@ -567,6 +581,7 @@ void OnImGuiUpdate() {
 }
 
 void OnUpdateScene(){
+    glfwPollEvents();
 
     if(gSelectCurve == CurveType::Bezier) {
 
@@ -598,15 +613,6 @@ void OnUpdateScene(){
 }
 
 void OnRenderScene(void) {
-
-	glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    OnImGuiUpdate();
 
 	glUseProgram(programID);
 	{
@@ -734,26 +740,12 @@ void OnRenderScene(void) {
             }
         }
 
-        ImGui::Render();
+
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
-    ImGuiIO& io = ImGui::GetIO();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-    {
-        GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        glfwMakeContextCurrent(backup_current_context);
-    }
-#endif
-
-	// Swap buffers
-	glfwSwapBuffers(window);
-    glfwPollEvents();
+    glfwSwapBuffers(window);
 }
 
 void cleanup(void) {
@@ -796,6 +788,10 @@ static void mouseCallback(GLFWwindow* window, int button, int action, int mods) 
 // for respective tasks
 bool isKeyPressed = false;
 static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
+        gIsShiftDown = true;
+    else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE)
+        gIsShiftDown = false;
 
     if(key == GLFW_KEY_1 && action == GLFW_PRESS) {
 
@@ -842,6 +838,7 @@ int main(void) {
     std::cout << "Current path is " << fs::current_path() << '\n';
 	// Initialize OpenGL pipeline
 	initOpenGL();
+
 	double lastTime = glfwGetTime();
 	int nbFrames = 0;
 	do {
@@ -860,7 +857,38 @@ int main(void) {
 		}
 
         OnUpdateScene();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+        OnImGuiUpdate();
+
+        glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // upper view
+        glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
+        gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
         OnRenderScene();
+
+        // lower view
+        glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
+        gViewMatrix = glm::lookAt(glm::vec3{-5.f, 0.f, 0.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
+        OnRenderScene();
+
+        // ImGui Render
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            GLFWwindow* backup_current_context = glfwGetCurrentContext();
+            ImGui::UpdatePlatformWindows();
+            ImGui::RenderPlatformWindowsDefault();
+            glfwMakeContextCurrent(backup_current_context);
+        }
+#endif
 
 	} // Check if the ESC key was pressed or the window was closed
 	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
