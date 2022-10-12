@@ -840,10 +840,7 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
         if(!isKeyPressed) {
 
-            glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gDoubleView = !gDoubleView;
-            std::cout << gDoubleView << std::endl;
         }
     }
     else {
@@ -905,7 +902,6 @@ int main(void) {
             glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
             gViewMatrix = glm::lookAt(glm::vec3{-5.f, 0.f, 0.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
             OnRenderScene();
-            glfwSwapBuffers(window);
         }
         else {
 
@@ -914,8 +910,8 @@ int main(void) {
             glViewport(gViewport[2][0], gViewport[2][1], gViewport[2][2], gViewport[2][3]);
             gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
             OnRenderScene();
-            glfwSwapBuffers(window);
         }
+        glfwSwapBuffers(window);
         // ImGui Render
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
