@@ -111,10 +111,12 @@ bool gDrawLine = true;
 bool gDrawControlPoint = true;
 bool gDrawOrigPoint = true;
 bool gIsShiftDown = false;
+bool gDoubleView = false;
 
-float gViewport[2][4] = {
-    {0, window_height/2, window_width, window_height/2},
-    {0, 0, window_width, window_height/2}
+float gViewport[3][4] = {
+    {0, window_height, window_width, window_height/2},
+    {0, 0, window_width, window_height/2},
+    {0, 0, window_width, window_height}
 };
 
 enum CurveType: int
@@ -237,6 +239,23 @@ void initOpenGL(void) {
         pickingColor[i] = i/255.0f;
     }
 
+    // init viewport
+    int fx, fy;
+    glfwGetFramebufferSize(window, &fx, &fy);
+    gViewport[0][1] = float((window_height * fy/window_height)/2);
+    gViewport[0][2] = float((window_width  * fx/window_width));
+    gViewport[0][3] = float((window_height * fy/window_height)/2);
+    gViewport[1][2] = float((window_width  * fx/window_width));
+    gViewport[1][3] = float((window_height * fy/window_height)/2);
+    gViewport[2][2] = float((window_width  * fx/window_width));
+    gViewport[2][3] = float((window_height * fy/window_height));
+
+    printf("windowX %d, fx %d, view %f\n", window_height, fy, gViewport[2][3]);
+
+//    float gViewport[2][4] = {
+//            {0, window_height/2, window_width, window_height/2},
+//            {0, 0, window_width, window_height/2}
+//    };
 	// Define objects
 	createObjects();
 
@@ -442,8 +461,8 @@ void moveVertex(void) {
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
 	GLint viewport[4] = {};
 	glGetIntegerv(GL_VIEWPORT, viewport);
-//	glm::vec4 vp = glm::vec4(viewport[0], viewport[1], window_width, window_height);
-	glm::vec4 vp = glm::vec4(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
+	glm::vec4 vp = glm::vec4(0, 0, window_width, window_height);
+//	glm::vec4 vp = glm::vec4(gViewport[2][0], gViewport[2][1], gViewport[2][2], gViewport[2][3]);
 
     double mouseX;
     double mouseY;
@@ -739,13 +758,9 @@ void OnRenderScene(void) {
                 }
             }
         }
-
-
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
-
-    glfwSwapBuffers(window);
 }
 
 void cleanup(void) {
@@ -765,6 +780,8 @@ void cleanup(void) {
 
 // Alternative way of triggering functions on mouse click and keyboard events
 static void mouseCallback(GLFWwindow* window, int button, int action, int mods) {
+
+    if(gDoubleView) return;
 
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         pickVertex();
@@ -788,6 +805,7 @@ static void mouseCallback(GLFWwindow* window, int button, int action, int mods) 
 // for respective tasks
 bool isKeyPressed = false;
 static void keyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+
     if(key == GLFW_KEY_LEFT_SHIFT && action == GLFW_PRESS)
         gIsShiftDown = true;
     else if (key == GLFW_KEY_LEFT_SHIFT && action == GLFW_RELEASE)
@@ -816,6 +834,16 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
             gSelectCurve = CurveType::Catmull;
             isKeyPressed = true;
+        }
+    }
+    else if(key == GLFW_KEY_4 && action == GLFW_PRESS) {
+
+        if(!isKeyPressed) {
+
+            glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gDoubleView = !gDoubleView;
+            std::cout << gDoubleView << std::endl;
         }
     }
     else {
@@ -863,19 +891,31 @@ int main(void) {
         ImGui::NewFrame();
         OnImGuiUpdate();
 
-        glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
         // upper view
-        glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
-        gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
-        OnRenderScene();
 
-        // lower view
-        glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
-        gViewMatrix = glm::lookAt(glm::vec3{-5.f, 0.f, 0.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
-        OnRenderScene();
+        if (gDoubleView) {
 
+            glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
+            gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
+            OnRenderScene();
+
+            // lower view
+            glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
+            gViewMatrix = glm::lookAt(glm::vec3{-5.f, 0.f, 0.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
+            OnRenderScene();
+            glfwSwapBuffers(window);
+        }
+        else {
+
+            glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glViewport(gViewport[2][0], gViewport[2][1], gViewport[2][2], gViewport[2][3]);
+            gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
+            OnRenderScene();
+            glfwSwapBuffers(window);
+        }
         // ImGui Render
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
