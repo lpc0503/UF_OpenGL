@@ -11,7 +11,7 @@ add_executable(p1
         Geometry.h
         CatmullRomCurve.cpp
         CatmullRomCurve.h
-        BSplineCurve.cpp BSplineCurve.h)
+        BSplineCurve.cpp BSplineCurve.h FrenetSerret.cpp FrenetSerret.h)
 
 find_package(OpenGL REQUIRED)
 

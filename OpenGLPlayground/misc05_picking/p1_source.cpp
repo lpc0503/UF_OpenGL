@@ -43,6 +43,7 @@ namespace fs = std::filesystem;
 #include "BSplineCurve.h"
 #include "BezierCurve.h"
 #include "CatmullRomCurve.h"
+#include "FrenetSerret.h"
 
 // Function prototypes
 int initWindow(void);
@@ -325,6 +326,7 @@ const float angle_ = 3.1415926 * 2.f / 5;
 BSplineCurve *bspline;
 BezierCurve *bezier;
 CatmullRomCurve *catmull;
+FrenetSerret *frenet;
 
 void createObjects(void) {
 
@@ -366,6 +368,8 @@ void createObjects(void) {
     bspline = new BSplineCurve(Vertices, IndexCount);
     bezier = new BezierCurve(Vertices, IndexCount);
     catmull = new CatmullRomCurve(Vertices, IndexCount);
+    // frenet
+    frenet = new FrenetSerret(catmull->C, catmull->C.size());
 }
 
 void pickVertex(void) {
@@ -666,7 +670,7 @@ void OnRenderScene(void) {
 		glEnable(GL_PROGRAM_POINT_SIZE);
 
 		glBindVertexArray(VertexArrayId[0]);	// Draw Vertices
-        if(gDrawOrigPoint){
+        if(gDrawOrigPoint) {
 
             glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
             glBufferSubData(GL_ARRAY_BUFFER, 0, VertexBufferSize[0], Vertices);        // Update buffer data
@@ -749,6 +753,38 @@ void OnRenderScene(void) {
                     glDrawElements(GL_POINTS, catmull->I.size(), GL_UNSIGNED_SHORT, (void *) 0);
                 }
 
+                // frenet
+                // only draw T and other did not display
+                if(!frenet->Tv.empty()) {
+
+                    {   // Draw T
+                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                        glBufferData(GL_ARRAY_BUFFER, (frenet->Tv.size() * sizeof(Vertex)), frenet->Tv.data(),
+                                     GL_STATIC_DRAW);
+                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->TI.size() * sizeof(GLushort), frenet->TI.data(),
+                                     GL_STATIC_DRAW);
+                        glDrawElements(GL_LINE_STRIP, frenet->TI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                    }
+                    {
+//                         Draw B
+                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                        glBufferData(GL_ARRAY_BUFFER, (frenet->Bv.size() * sizeof(Vertex)), frenet->Bv.data(),
+                                     GL_STATIC_DRAW);
+                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->BI.size() * sizeof(GLushort), frenet->BI.data(),
+                                     GL_STATIC_DRAW);
+                        glDrawElements(GL_LINE_STRIP, frenet->BI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                    }
+
+                    {
+                        // Draw N
+                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                        glBufferData(GL_ARRAY_BUFFER, (frenet->Nv.size() * sizeof(Vertex)), frenet->Nv.data(),
+                                     GL_STATIC_DRAW);
+                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->NI.size() * sizeof(GLushort), frenet->NI.data(),
+                                     GL_STATIC_DRAW);
+                        glDrawElements(GL_LINE_STRIP, frenet->NI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                    }
+                }
                 // Draw line
                 if(gDrawLine) {
 
@@ -776,6 +812,8 @@ void OnRenderScene(void) {
                                  GL_STATIC_DRAW);
                     glDrawElements(GL_LINE_STRIP, indices.size(), GL_UNSIGNED_SHORT, (void *) 0);
                 }
+                // if you put draw frenet here white point will disappear
+
             }
         }
 		glBindVertexArray(0);
