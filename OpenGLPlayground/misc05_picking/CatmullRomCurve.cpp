@@ -27,7 +27,7 @@ void CatmullRomCurve::ToVertex() {
 
     V2.clear();
     for(const auto &i : C)
-        V2.emplace_back(Vertex(i, {0.0f, 1.0f, 0.0f, 1.f}));
+        V2.emplace_back(Vertex(i, {0.0f, 0.0f, 1.0f, 1.f}));
 }
 
 void CatmullRomCurve::SetVertices(Vertex *p, size_t size) {

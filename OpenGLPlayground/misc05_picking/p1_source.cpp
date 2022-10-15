@@ -623,6 +623,7 @@ void OnImGuiUpdate() {
 }
 
 void OnUpdateScene(){
+
     glfwPollEvents();
 
     if(gSelectCurve == CurveType::Bezier) {
@@ -643,6 +644,11 @@ void OnUpdateScene(){
         catmull->Clear();
         catmull->Calc();
         catmull->ToVertex();
+
+
+        frenet->SetVertices(catmull->C, catmull->C.size());
+        frenet->index++;
+        frenet->Calc();
     }
 
     if(gIsCycle){
@@ -756,6 +762,7 @@ void OnRenderScene(void) {
                 // only draw T and other did not display
                 if(!frenet->Tv.empty()) {
 
+
                     {   // Draw T
                         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
                         glBufferData(GL_ARRAY_BUFFER, (frenet->Tv.size() * sizeof(Vertex)), frenet->Tv.data(),
@@ -765,7 +772,7 @@ void OnRenderScene(void) {
                         glDrawElements(GL_LINE_STRIP, frenet->TI.size(), GL_UNSIGNED_SHORT, (void *) 0);
                     }
                     {
-//                         Draw B
+                        // Draw B
                         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
                         glBufferData(GL_ARRAY_BUFFER, (frenet->Bv.size() * sizeof(Vertex)), frenet->Bv.data(),
                                      GL_STATIC_DRAW);
@@ -776,12 +783,14 @@ void OnRenderScene(void) {
 
                     {
                         // Draw N
+                        glBindVertexArray(VertexArrayId[0]);
                         glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
                         glBufferData(GL_ARRAY_BUFFER, (frenet->Nv.size() * sizeof(Vertex)), frenet->Nv.data(),
                                      GL_STATIC_DRAW);
                         glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->NI.size() * sizeof(GLushort), frenet->NI.data(),
                                      GL_STATIC_DRAW);
                         glDrawElements(GL_LINE_STRIP, frenet->NI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+
                     }
                 }
                 // Draw line
@@ -899,6 +908,11 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
             gDoubleView = !gDoubleView;
         }
+    }
+    else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+
+        frenet->index = 100;
+        frenet->Calc();
     }
     else {
 
