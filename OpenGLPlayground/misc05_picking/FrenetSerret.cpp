@@ -30,13 +30,14 @@ void FrenetSerret::ToVertex() {
         TI.push_back(i);
 
     for(const auto &i:B_)
-        Bv.emplace_back(Vertex(i, {1.f, 0.f, 1.f, 1.f}));
+        Bv.emplace_back(Vertex(i, {0.f, 0.f, 1.f, 1.f}));
 
     for(int i = 0; i < Tv.size(); i++)
         BI.push_back(i);
 
     for(const auto &i:N_)
         Nv.emplace_back(Vertex(i, {0.f, 1.f, 0.f, 1.f}));
+
 
     for(int i = 0; i < Tv.size(); i++)
         NI.push_back(i);

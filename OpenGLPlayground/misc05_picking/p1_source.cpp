@@ -113,6 +113,7 @@ bool gDrawControlPoint = true;
 bool gDrawOrigPoint = true;
 bool gIsShiftDown = false;
 bool gDoubleView = false;
+bool gDrawFrenet = false;
 
 float gViewport[3][4] = {
     {0, window_height, window_width, window_height/2},
@@ -129,7 +130,7 @@ enum CurveType: int
 int gSelectCurve = Catmull;
 
 //
-float gPointSize = 10.f;
+float gPointSize = 5.f;
 
 int initWindow(void) {
 	// Initialise GLFW
@@ -645,7 +646,6 @@ void OnUpdateScene(){
         catmull->Calc();
         catmull->ToVertex();
 
-
         frenet->SetVertices(catmull->C, catmull->C.size());
         frenet->index++;
         frenet->Calc();
@@ -760,37 +760,45 @@ void OnRenderScene(void) {
 
                 // frenet
                 // only draw T and other did not display
-                if(!frenet->Tv.empty()) {
 
+                if(gDrawFrenet) {
 
-                    {   // Draw T
-                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                        glBufferData(GL_ARRAY_BUFFER, (frenet->Tv.size() * sizeof(Vertex)), frenet->Tv.data(),
-                                     GL_STATIC_DRAW);
-                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->TI.size() * sizeof(GLushort), frenet->TI.data(),
-                                     GL_STATIC_DRAW);
-                        glDrawElements(GL_LINE_STRIP, frenet->TI.size(), GL_UNSIGNED_SHORT, (void *) 0);
-                    }
-                    {
-                        // Draw B
-                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                        glBufferData(GL_ARRAY_BUFFER, (frenet->Bv.size() * sizeof(Vertex)), frenet->Bv.data(),
-                                     GL_STATIC_DRAW);
-                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->BI.size() * sizeof(GLushort), frenet->BI.data(),
-                                     GL_STATIC_DRAW);
-                        glDrawElements(GL_LINE_STRIP, frenet->BI.size(), GL_UNSIGNED_SHORT, (void *) 0);
-                    }
+                    if(!frenet->Tv.empty()) {
 
-                    {
-                        // Draw N
-                        glBindVertexArray(VertexArrayId[0]);
-                        glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
-                        glBufferData(GL_ARRAY_BUFFER, (frenet->Nv.size() * sizeof(Vertex)), frenet->Nv.data(),
-                                     GL_STATIC_DRAW);
-                        glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->NI.size() * sizeof(GLushort), frenet->NI.data(),
-                                     GL_STATIC_DRAW);
-                        glDrawElements(GL_LINE_STRIP, frenet->NI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                        float tmp;
+                        glGetFloatv(GL_LINE_WIDTH, &tmp);
+                        glLineWidth(3.f);
 
+                        {   // Draw T
+                            glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                            glBufferData(GL_ARRAY_BUFFER, (frenet->Tv.size() * sizeof(Vertex)), frenet->Tv.data(),
+                                         GL_STATIC_DRAW);
+                            glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->TI.size() * sizeof(GLushort), frenet->TI.data(),
+                                         GL_STATIC_DRAW);
+                            glDrawElements(GL_LINE_STRIP, frenet->TI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                        }
+                        {
+                            // Draw B
+                            glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                            glBufferData(GL_ARRAY_BUFFER, (frenet->Bv.size() * sizeof(Vertex)), frenet->Bv.data(),
+                                         GL_STATIC_DRAW);
+                            glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->BI.size() * sizeof(GLushort), frenet->BI.data(),
+                                         GL_STATIC_DRAW);
+                            glDrawElements(GL_LINE_STRIP, frenet->BI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                        }
+
+                        {
+                            // Draw N
+                            glBindVertexArray(VertexArrayId[0]);
+                            glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                            glBufferData(GL_ARRAY_BUFFER, (frenet->Nv.size() * sizeof(Vertex)), frenet->Nv.data(),
+                                         GL_STATIC_DRAW);
+                            glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->NI.size() * sizeof(GLushort), frenet->NI.data(),
+                                         GL_STATIC_DRAW);
+                            glDrawElements(GL_LINE_STRIP, frenet->NI.size(), GL_UNSIGNED_SHORT, (void *) 0);
+
+                        }
+                        glLineWidth(tmp);
                     }
                 }
                 // Draw line
@@ -892,6 +900,7 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
             gSelectCurve = CurveType::Bezier;
             isKeyPressed = true;
+            gDrawFrenet = false;
         }
     }
     else if(key == GLFW_KEY_3 && action == GLFW_PRESS){
@@ -900,6 +909,7 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
             gSelectCurve = CurveType::Catmull;
             isKeyPressed = true;
+            gDrawFrenet = false;
         }
     }
     else if(key == GLFW_KEY_4 && action == GLFW_PRESS) {
@@ -907,12 +917,16 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
         if(!isKeyPressed) {
 
             gDoubleView = !gDoubleView;
+            gDrawFrenet = false;
         }
     }
-    else if (key == GLFW_KEY_9 && action == GLFW_PRESS) {
+    else if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
 
-        frenet->index = 100;
-        frenet->Calc();
+        if(!isKeyPressed) {
+
+            gDoubleView = true;
+            gDrawFrenet = true;
+        }
     }
     else {
 
