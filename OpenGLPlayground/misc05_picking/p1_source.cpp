@@ -144,8 +144,6 @@ int initWindow(void) {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // FOR MAC
 
-	// ATTN: Project 1A, Task 0 == Change the name of the window
-	// Open a window and create its OpenGL context
 	window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", NULL, NULL);
 	if (window == NULL) {
 		fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
@@ -163,7 +161,7 @@ int initWindow(void) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-//    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     ImGuiStyle& style = ImGui::GetStyle();
@@ -528,6 +526,7 @@ void OnImGuiUpdate() {
         ImGui::Begin("Point Attribute");   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
 
         ImGui::SliderFloat("Point Size", &gPointSize, 0.f, 50.f);
+        ImGui::Checkbox("Double View", &gDoubleView);
         ImGui::Checkbox("Draw lines", &gDrawLine);
         ImGui::Checkbox("Draw curve point", &gDrawControlPoint);
         ImGui::Checkbox("Draw control point", &gDrawOrigPoint);
@@ -908,16 +907,11 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 }
 
 int main(void) {
-	// ATTN: REFER TO https://learnopengl.com/Getting-started/Creating-a-window
-	// AND https://learnopengl.com/Getting-started/Hello-Window to familiarize yourself with the initialization of a window in OpenGL
-
 	// Initialize window
 	int errorCode = initWindow();
 	if (errorCode != 0)
 		return errorCode;
 
-	// ATTN: REFER TO https://learnopengl.com/Getting-started/Hello-Triangle to familiarize yourself with the graphics pipeline
-	// from setting up your vertex data in vertex shaders to rendering the data on screen (everything that follows)
     std::cout << "Current path is " << fs::current_path() << '\n';
 	// Initialize OpenGL pipeline
 	initOpenGL();
@@ -934,7 +928,6 @@ int main(void) {
 			lastTime += 1.0;
 		}
 
-		// DRAGGING: move current (picked) vertex with cursor
 		if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 			moveVertex();
 		}
@@ -970,7 +963,7 @@ int main(void) {
             gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
             OnRenderScene();
         }
-        glfwSwapBuffers(window);
+
         // ImGui Render
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -985,9 +978,9 @@ int main(void) {
         }
 #endif
 
-	} // Check if the ESC key was pressed or the window was closed
-	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS &&
-	glfwWindowShouldClose(window) == 0);
+        glfwSwapBuffers(window);
+	}
+	while (glfwGetKey(window, GLFW_KEY_ESCAPE) != GLFW_PRESS && glfwWindowShouldClose(window) == 0);
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
