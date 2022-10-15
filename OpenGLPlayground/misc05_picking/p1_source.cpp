@@ -769,6 +769,17 @@ void OnRenderScene(void) {
                         glGetFloatv(GL_LINE_WIDTH, &tmp);
                         glLineWidth(3.f);
 
+
+                        {
+                            // Draw Vertice
+                            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[0]);
+                            glBufferData(GL_ELEMENT_ARRAY_BUFFER, frenet->VI.size() * sizeof(GLushort), frenet->VI.data(),
+                                         GL_STATIC_DRAW);
+                            glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
+                            glBufferData(GL_ARRAY_BUFFER, (frenet->Vv.size() * sizeof(Vertex)), frenet->Vv.data(),
+                                         GL_STATIC_DRAW);
+                            glDrawElements(GL_POINTS, frenet->Vv.size(), GL_UNSIGNED_SHORT, (void *) 0);
+                        }
                         {   // Draw T
                             glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[0]);
                             glBufferData(GL_ARRAY_BUFFER, (frenet->Tv.size() * sizeof(Vertex)), frenet->Tv.data(),
@@ -926,6 +937,7 @@ static void keyCallback(GLFWwindow *window, int key, int scancode, int action, i
 
             gDoubleView = true;
             gDrawFrenet = true;
+            gSelectCurve = CurveType::Catmull;
         }
     }
     else {

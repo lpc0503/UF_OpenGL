@@ -19,9 +19,17 @@ void FrenetSerret::Clear() {
     Tv.clear();
     Bv.clear();
     Nv.clear();
+    Vv.clear();
+    VI.clear();
+    TI.clear();
+    BI.clear();
+    NI.clear();
 }
 
 void FrenetSerret::ToVertex() {
+
+    Vv.emplace_back(Vertex(curve_[index], {1.f, 1.f, 0.f, 1.f}));
+    VI.push_back(0);
 
     for(const auto &i:T_)
         Tv.emplace_back(Vertex(i, {1.f, .0f, 0.f, 1.f}));

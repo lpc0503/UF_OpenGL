@@ -25,6 +25,7 @@ public:
     std::vector<Vertex> Tv;
     std::vector<Vertex> Bv;
     std::vector<Vertex> Nv;
+    std::vector<Vertex> Vv;
 
     std::vector<Point> T_;
     std::vector<Point> B_;
@@ -33,6 +34,7 @@ public:
     std::vector<GLushort> TI;
     std::vector<GLushort> BI;
     std::vector<GLushort> NI;
+    std::vector<GLushort> VI;
 
     std::vector<Point> curve_;
 
