@@ -128,7 +128,7 @@ enum CurveType: int
 int gSelectCurve = Catmull;
 
 //
-float gPointSize = 5.f;
+float gPointSize = 10.f;
 
 int initWindow(void) {
 	// Initialise GLFW
@@ -162,7 +162,7 @@ int initWindow(void) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+//    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32)
     io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
     ImGuiStyle& style = ImGui::GetStyle();
@@ -242,11 +242,16 @@ void initOpenGL(void) {
     // init viewport
     int fx, fy;
     glfwGetFramebufferSize(window, &fx, &fy);
+    gViewport[0][0] = float((window_width  * fx/window_width)/4);
     gViewport[0][1] = float((window_height * fy/window_height)/2);
-    gViewport[0][2] = float((window_width  * fx/window_width));
+    gViewport[0][2] = float((window_width  * fx/window_width)/2);
     gViewport[0][3] = float((window_height * fy/window_height)/2);
-    gViewport[1][2] = float((window_width  * fx/window_width));
+    gViewport[1][0] = float((window_width  * fx/window_width)/4);
+    gViewport[1][1] = float((0));
+    gViewport[1][2] = float((window_width  * fx/window_width)/2);
     gViewport[1][3] = float((window_height * fy/window_height)/2);
+    gViewport[2][0] = float((0));
+    gViewport[2][1] = float((0));
     gViewport[2][2] = float((window_width  * fx/window_width));
     gViewport[2][3] = float((window_height * fy/window_height));
 
@@ -396,8 +401,12 @@ void pickVertex(void) {
 	// all the fragments completely rasterized.
 	glFinish();
 
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+//    if(gDoubleView) {
+//
+//        glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
+//    }
 	// --- Read the pixel at the center of the screen.
 	// You can also use glfwGetMousePos().
 	// Ultra-mega-over slow too, even for 1 pixel,
@@ -417,6 +426,8 @@ void pickVertex(void) {
 
 	// Convert the color back to an integer ID
 	gPickedIndex = int(data[0]);
+
+    std::cout << gPickedIndex << std::endl;
 
 	// ATTN: Project 1A, Task 2
 	// Find a way to change color of selected vertex and
@@ -461,7 +472,16 @@ void moveVertex(void) {
 	glm::mat4 ModelMatrix = glm::mat4(1.0);
 	GLint viewport[4] = {};
 	glGetIntegerv(GL_VIEWPORT, viewport);
-	glm::vec4 vp = glm::vec4(0, 0, window_width, window_height);
+    glm::vec4 vp;
+    if(gDoubleView) {
+
+        glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
+        vp = glm::vec4(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
+    }
+    else {
+
+        vp = glm::vec4(0, 0, window_width, window_height);
+    }
 //	glm::vec4 vp = glm::vec4(gViewport[2][0], gViewport[2][1], gViewport[2][2], gViewport[2][3]);
 
     double mouseX;
@@ -894,13 +914,14 @@ int main(void) {
 
             glClearColor(0.0f, 0.0f, 0.4f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
-            gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
-            OnRenderScene();
 
             // lower view
             glViewport(gViewport[1][0], gViewport[1][1], gViewport[1][2], gViewport[1][3]);
             gViewMatrix = glm::lookAt(glm::vec3{-5.f, 0.f, 0.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
+            OnRenderScene();
+
+            glViewport(gViewport[0][0], gViewport[0][1], gViewport[0][2], gViewport[0][3]);
+            gViewMatrix = glm::lookAt(glm::vec3{0.f, 0.f, -5.f}, glm::vec3{0.f, 0.f, 0.f}, glm::vec3{0.f, 1.f, 0.f});
             OnRenderScene();
         }
         else {
