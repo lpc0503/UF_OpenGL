@@ -5878,7 +5878,7 @@ GLFWAPI VkResult glfwCreateWindowSurface(VkInstance instance, GLFWwindow* window
 
 
 /*************************************************************************
- * Global definition cleanup
+ * Global definition Cleanup
  *************************************************************************/
 
 /* ------------------- BEGIN SYSTEM/COMPILER SPECIFIC -------------------- */

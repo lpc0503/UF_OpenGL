@@ -1380,7 +1380,7 @@ NK_API const struct nk_draw_command* nk__draw_next(const struct nk_draw_command*
 /// ------------------------------------|----------------------------------------
 /// nk_begin                            | Starts a new window; needs to be called every frame for every window (unless hidden) or otherwise the window gets removed
 /// nk_begin_titled                     | Extended window start with separated title and identifier to allow multiple windows with same name but not title
-/// nk_end                              | Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup
+/// nk_end                              | Needs to be called at the end of the window building process to process scaling, scrollbars and general Cleanup
 //
 /// nk_window_find                      | Finds and returns the window with give name
 /// nk_window_get_bounds                | Returns a rectangle with screen position and size of the currently processed window.
@@ -1490,7 +1490,7 @@ NK_API int nk_begin(struct nk_context *ctx, const char *title, struct nk_rect bo
 */
 NK_API int nk_begin_titled(struct nk_context *ctx, const char *name, const char *title, struct nk_rect bounds, nk_flags flags);
 /*/// #### nk_end
-/// Needs to be called at the end of the window building process to process scaling, scrollbars and general cleanup.
+/// Needs to be called at the end of the window building process to process scaling, scrollbars and general Cleanup.
 /// All widget calls after this functions will result in asserts or no state changes
 ///
 /// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~c
@@ -13730,7 +13730,7 @@ nk_font_atlas_bake(struct nk_font_atlas *atlas, int *width, int *height,
     return atlas->pixel;
 
 failed:
-    /* error so cleanup all memory */
+    /* error so Cleanup all memory */
     if (tmp) atlas->temporary.free(atlas->temporary.userdata, tmp);
     if (atlas->glyphs) {
         atlas->permanent.free(atlas->permanent.userdata, atlas->glyphs);
@@ -16759,7 +16759,7 @@ nk_popup_begin(struct nk_context *ctx, enum nk_popup_type type,
         popup->layout->parent = win->layout;
         return 1;
     } else {
-        /* popup was closed/is invalid so cleanup */
+        /* popup was closed/is invalid so Cleanup */
         struct nk_panel *root;
         root = win->layout;
         while (root) {

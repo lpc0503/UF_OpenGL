@@ -5,7 +5,7 @@
  * Modified for GLFW by Sylvain Hellegouarch - sh@programmationworld.com
  * Modified for variable frame rate by Marcus Geelnard
  * 2003-Jan-31: Minor cleanups and speedups / MG
- * 2010-10-24: Formatting and cleanup - Camilla Löwy
+ * 2010-10-24: Formatting and Cleanup - Camilla Löwy
  *****************************************************************************/
 
 #if defined(_MSC_VER)

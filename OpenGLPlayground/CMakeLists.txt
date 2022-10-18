@@ -7,7 +7,8 @@ add_subdirectory(common)
 
 add_subdirectory(tutorial01_first_window)
 add_subdirectory(tutorial02_red_triangle)
-add_subdirectory(misc05_picking)
+add_subdirectory(project1)
+add_subdirectory(project2)
 
 set(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 set(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
