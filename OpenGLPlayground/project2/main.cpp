@@ -14,6 +14,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <glm/gtc/type_ptr.hpp>
 using namespace glm;
 
 #include <imgui.h>
@@ -24,6 +25,10 @@ using namespace glm;
 #include <controls.hpp>
 #include <objloader.hpp>
 #include <vboindexer.hpp>
+
+#include "Renderer.h"
+#include "Camera.h"
+#include "Log.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -59,8 +64,8 @@ void CreateObjects();
 void PickObject();
 void OnRenderScene();
 void Cleanup();
-static void keyCallback(GLFWwindow*, int, int, int, int);
-static void mouseCallback(GLFWwindow*, int, int, int);
+static void KeyCallback(GLFWwindow*, int, int, int, int);
+static void MouseCallback(GLFWwindow*, int, int, int);
 
 // GLOBAL VARIABLES
 GLFWwindow* window;
@@ -93,6 +98,9 @@ GLint PickingMatrixID;
 GLint pickingColorID;
 GLint LightID;
 
+// TODO: to ref
+std::shared_ptr<Camera> g_Camera;
+
 // Declare global objects
 // TL
 const size_t CoordVertsCount = 6;
@@ -109,7 +117,9 @@ int InitWindow() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined(__APPLE__)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // FOR MAC
+#endif
 
     window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", NULL, NULL);
     if (window == NULL) {
@@ -146,12 +156,13 @@ int InitWindow() {
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetCursorPos(window, static_cast<float>(window_width) / 2, static_cast<float>(window_height) / 2);
-    glfwSetMouseButtonCallback(window, mouseCallback);
-    glfwSetKeyCallback(window, keyCallback);
+    glfwSetMouseButtonCallback(window, MouseCallback);
+    glfwSetKeyCallback(window, KeyCallback);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
+    Renderer::Init();
     return 0;
 }
 
@@ -172,8 +183,8 @@ void InitOpenGL() {
                               glm::vec3(0.0, 1.0, 0.0));	// up
 
 	// Create and compile our GLSL program from the shaders
-	programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
-	pickingProgramID = LoadShaders("Picking.vertexshader", "Picking.fragmentshader");
+	programID = LoadShaders("StandardShading.vert", "StandardShading.frag");
+	pickingProgramID = LoadShaders("Picking.vert", "Picking.frag");
 
 	// Get a handle for our "MVP" uniform
 	MatrixID = glGetUniformLocation(programID, "MVP");
@@ -352,31 +363,40 @@ void PickObject() {
 	//continue; // skips the normal rendering
 }
 
+void OnInitScene()
+{
+    g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
+    g_Camera->SetPosition(10.0, 10.0, 10.0f);
+    g_Camera->LookAt(0.f, 0.f, 0.f);
+}
+
 void OnImGuiUpdate()
 {
-
+    ImGui::Begin("Test");
+    ImGui::End();
 }
 
-void OnUpdateScene()
+void OnUpdateScene(float dt)
 {
     glfwPollEvents();
+
+    static float speed = 10.f;
+    glm::mat4 mat{1.f};
+    mat = glm::rotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{0.f, 1.f, 0.f});
+    glm::vec3 pos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
+    g_Camera->SetPosition(pos);
 }
 
-void OnRenderScene() {
-	//ATTN: DRAW YOUR SCENE HERE. MODIFY/ADAPT WHERE NECESSARY!
-
-	// Dark blue background
-	glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
-	// Re-clear the screen for real rendering
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+void OnRenderScene()
+{
+    // TODO: Move this to renderer
 	glUseProgram(programID);
 	{
 		glm::vec3 lightPos = glm::vec3(4, 4, 4);
 		glm::mat4x4 ModelMatrix = glm::mat4(1.0);
 		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &gViewMatrix[0][0]);
-		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, &gProjectionMatrix[0][0]);
+		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
+		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
 		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 
 		glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
@@ -385,9 +405,6 @@ void OnRenderScene() {
 		glBindVertexArray(0);
 	}
 	glUseProgram(0);
-	// Draw GUI
-//	TwDraw();
-
 }
 
 void Cleanup() {
@@ -405,7 +422,7 @@ void Cleanup() {
 }
 
 // Alternative way of triggering functions on keyboard events
-static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	// ATTN: MODIFY AS APPROPRIATE
 	if (action == GLFW_PRESS) {
 		switch (key)
@@ -427,7 +444,7 @@ static void keyCallback(GLFWwindow* window, int key, int scancode, int action, i
 }
 
 // Alternative way of triggering functions on mouse click events
-static void mouseCallback(GLFWwindow* window, int button, int action, int mods) {
+static void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         PickObject();
 	}
@@ -448,9 +465,10 @@ int main() {
 
 	// Initialize OpenGL pipeline
     InitOpenGL();
+    OnInitScene();
 
 	// For speed computation
-	double lastTime = glfwGetTime();
+	double lastTime = glfwGetTime(), preTime = lastTime;
 	int nbFrames = 0;
 	do {
 		// Measure speed
@@ -462,13 +480,16 @@ int main() {
 			lastTime += 1.0;
 		}
 
+        glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
         OnImGuiUpdate();
-
-        OnUpdateScene();
-
+        OnUpdateScene(currentTime-preTime);
+        preTime = currentTime;
         OnRenderScene();
 
         ImGui::Render();
@@ -491,6 +512,8 @@ int main() {
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
+
+    Renderer::Shutdown();
 
     Cleanup();
 }
