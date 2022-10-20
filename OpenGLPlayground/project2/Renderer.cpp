@@ -57,9 +57,18 @@ void Renderer::DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const 
 void Renderer::DrawGrid(int n, int m)
 {
     for(int x = -n; x <= n; x++)
-        for(int z = -m; z <= m; z++)
-        {
-            Renderer::DrawLine({x, 0.f, -z}, {x, 0.f, z}, {1.f, 1.f, 1.f, 1.f}); // vertical
-            Renderer::DrawLine({x, 0.f,  z}, {-x, 0.f, z}, {1.f, 1.f, 1.f, 1.f}); //
-        }
+    {
+        if(x == 0)
+            Renderer::DrawLine({x, 0.f, 0}, {x, 0.f, -m}, {1.f, 1.f, 1.f, 1.f});
+        else
+            Renderer::DrawLine({x, 0.f, m}, {x, 0.f, -m}, {1.f, 1.f, 1.f, 1.f});
+    }
+
+    for(int z = -m; z <= m; z++)
+    {
+        if(z == 0)
+            Renderer::DrawLine({0, 0.f, z}, {-n, 0.f, z}, {1.f, 1.f, 1.f, 1.f});
+        else
+            Renderer::DrawLine({n, 0.f, z}, {-n, 0.f, z}, {1.f, 1.f, 1.f, 1.f});
+    }
 }

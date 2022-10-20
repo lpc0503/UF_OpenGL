@@ -290,11 +290,11 @@ void LoadObject(char* file, glm::vec4 color, Vertex* &out_Vertices, GLushort* &o
 
 void CreateObjects() {
 	//-- COORDINATE AXES --//
-	CoordVerts[0] = { { 0.0, 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
+	CoordVerts[0] = { { 0.0, 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // x
 	CoordVerts[1] = { { 5.0, 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
-	CoordVerts[2] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 1.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
+	CoordVerts[2] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 1.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // y
 	CoordVerts[3] = { { 0.0, 5.0, 0.0, 1.0 }, { 0.0, 1.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
-	CoordVerts[4] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0, 1.0 }, { 0.0, 0.0, 1.0 } };
+	CoordVerts[4] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // z
 	CoordVerts[5] = { { 0.0, 0.0, 5.0, 1.0 }, { 0.0, 0.0, 1.0, 1.0 }, { 0.0, 0.0, 1.0 } };
 	
 	//-- GRID --//
@@ -377,15 +377,33 @@ void OnUpdateScene(float dt)
 
     static float speed = 10.f;
     glm::mat4 mat{1.f};
-    mat = glm::rotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{0.f, 1.f, 0.f});
+    /*mat = glm::rotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{0.f, 1.f, 0.f});
     glm::vec3 pos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
-    g_Camera->SetPosition(pos);
+    g_Camera->SetPosition(pos);*/
+
+    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+    {
+        INFO("LEFT");
+    }
+    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+    {
+        INFO("RIGHT");
+    }
+    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+    {
+        INFO("UP");
+    }
+    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+    {
+        INFO("DOWN");
+    }
+
+
 }
 
 void OnRenderScene()
 {
     Renderer::BeginScene(g_Camera);
-    // horizontal
     Renderer::DrawGrid(5, 5);
     Renderer::EndScene();
 
