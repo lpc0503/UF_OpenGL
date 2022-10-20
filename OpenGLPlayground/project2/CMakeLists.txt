@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(project02)
 
-add_executable(${PROJECT_NAME} main.cpp Renderer.cpp Renderer.h Camera.cpp Camera.h Log.cpp Log.h)
+add_executable(${PROJECT_NAME} main.cpp Renderer.cpp Renderer.h Camera.cpp Camera.h Log.cpp Log.h RendererData.cpp RendererData.h Core.h)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

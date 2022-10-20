@@ -2,10 +2,10 @@
 #ifndef OPENGLPLAYGROUND_RENDERER_H
 #define OPENGLPLAYGROUND_RENDERER_H
 
+#include "Camera.h"
+#include "Core.h"
+
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/quaternion.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 class Renderer
 {
@@ -13,11 +13,18 @@ public:
     static void Init();
     static void Shutdown();
 
-    static void BeginScene();
+    static void BeginScene(Ref<Camera> camera);
     static void EndScene();
 
     static void DrawPoint();
-    static void DrawLine(const glm::vec3& p0, glm::vec3& p1, const glm::vec4& color);
+    static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
+
+    static void DrawGrid(int n, int m); // draw grid on x-z plane
+
+    static void DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const glm::vec4& color, float intensity);
+
+    // these should be render api
+//    static void BindShader(GLuint shader);
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

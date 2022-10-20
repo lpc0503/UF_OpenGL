@@ -240,7 +240,6 @@ void CreateVAOs(Vertex vertices[], unsigned short indices[], int objectID) {
 	glEnableVertexAttribArray(1);	// color
 	glEnableVertexAttribArray(2);	// normal
 
-	// Disable our Vertex Buffer Object 
 	glBindVertexArray(0);
 
 	ErrorCheckValue = glGetError();
@@ -312,10 +311,6 @@ void CreateObjects() {
 }
 
 void PickObject() {
-	// Clear the screen in white
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	glUseProgram(pickingProgramID);
 	{
 		glm::mat4 ModelMatrix = glm::mat4(1.0); // TranslationMatrix * RotationMatrix;
@@ -389,22 +384,27 @@ void OnUpdateScene(float dt)
 
 void OnRenderScene()
 {
-    // TODO: Move this to renderer
-	glUseProgram(programID);
-	{
-		glm::vec3 lightPos = glm::vec3(4, 4, 4);
-		glm::mat4x4 ModelMatrix = glm::mat4(1.0);
-		glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-		glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
-		glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
-		glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+    Renderer::BeginScene(g_Camera);
+    // horizontal
+    Renderer::DrawGrid(5, 5);
+    Renderer::EndScene();
 
-		glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
-		glDrawArrays(GL_LINES, 0, NumVerts[0]);
-			
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
+    // TODO: Move this to renderer
+    glUseProgram(programID);
+    {
+        glm::vec3 lightPos = glm::vec3(4, 4, 4);
+        glm::mat4x4 ModelMatrix = glm::mat4(1.0);
+        glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+        glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
+        glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
+        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+
+        glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
+        glDrawArrays(GL_LINES, 0, NumVerts[0]);
+
+        glBindVertexArray(0);
+    }
+    glUseProgram(0);
 }
 
 void Cleanup() {
