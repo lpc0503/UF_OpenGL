@@ -1,10 +1,10 @@
-#include "RendererData.h"
+#include "RendererAPI.h"
 
 #include "shader.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
 
-void RendererData::Init()
+void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
     glGenVertexArrays(1, &m_LineVAO);
@@ -22,7 +22,7 @@ void RendererData::Init()
     m_LineShader = LoadShaders("StandardShading.vert", "StandardShading.frag");
 }
 
-void RendererData::Shutdown()
+void RendererAPI::Shutdown()
 {
     INFO_TAG("Renderer/Data", "Shutdown");
     glDeleteBuffers(1, &m_LineVBO); // TODO: delete IBO?
@@ -30,7 +30,7 @@ void RendererData::Shutdown()
     glDeleteProgram(m_LineShader);
 }
 
-void RendererData::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
+void RendererAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
 {
     Vertex v0, v1;
     v0.pos = glm::vec4(p0, 1.f);
@@ -44,26 +44,26 @@ void RendererData::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm:
     m_LineVertices.emplace_back(v1);
 }
 
-void RendererData::SetMatrix(const std::string &name, const glm::mat4 &mat)
+void RendererAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
 {
     auto id = glGetUniformLocation(m_CurrentShader, name.c_str());
     assert(id >= 0);
     glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void RendererData::SendLineData()
+void RendererAPI::SendLineData()
 {
     glBindVertexArray(m_LineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);
 }
 
-void RendererData::DrawLines()
+void RendererAPI::DrawLines()
 {
     glDrawArrays(GL_LINES, 0, m_LineVertices.size());
 }
 
-void RendererData::Clear()
+void RendererAPI::Clear()
 {
     m_LineVertices.clear();
 }

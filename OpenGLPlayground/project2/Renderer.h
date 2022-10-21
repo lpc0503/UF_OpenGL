@@ -23,8 +23,6 @@ public:
 
     static void DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const glm::vec4& color, float intensity);
 
-    // these should be render api
-//    static void BindShader(GLuint shader);
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

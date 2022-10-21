@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGLPLAYGROUND_RENDERERDATA_H
-#define OPENGLPLAYGROUND_RENDERERDATA_H
+#ifndef OPENGLPLAYGROUND_RENDERERAPI_H
+#define OPENGLPLAYGROUND_RENDERERAPI_H
 
 #include <glad/glad.h>
 #include <memory>
@@ -16,7 +16,7 @@ struct Vertex
     glm::vec3 normal;
 };
 
-class RendererData
+class RendererAPI
 {
 public:
     void Init();
@@ -40,4 +40,4 @@ private:
     std::vector<Vertex> m_LineVertices;
 };
 
-#endif //OPENGLPLAYGROUND_RENDERERDATA_H
+#endif //OPENGLPLAYGROUND_RENDERERAPI_H

@@ -375,10 +375,7 @@ double PrevMouseX, PrevMouseY;
 void OnUpdateScene(float dt)
 {
     glfwPollEvents();
-    /*glm::mat4 mat{1.f};
-    mat = glm::CameraRotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{1.f, 0.f, 0.f});
-    glm::vec3 CameraPos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
-    g_Camera->SetPosition(CameraPos);*/
+
     { // Camera rotate
         { // Camera Pan
             double x, y, offX, offY;
@@ -392,6 +389,11 @@ void OnUpdateScene(float dt)
             {
                 CameraRotate.x += static_cast<float>(-offY) * 5.f * dt;
                 CameraRotate.y += static_cast<float>(offX) * 5.f * dt;
+
+                if(CameraRotate.x >= 90.f)
+                    CameraRotate.x = 89.9f;
+                if(CameraRotate.x <= -90.f)
+                    CameraRotate.x = -89.9f;
             }
 
             PrevMouseX = x;

@@ -1,17 +1,17 @@
 #include "Renderer.h"
-#include "RendererData.h"
+#include "RendererAPI.h"
 #include "Log.h"
 
 #include <glad/glad.h>
 #include <memory>
 #include <vector>
 
-RendererData *g_RenderData;
+RendererAPI *g_RenderData;
 
 void Renderer::Init()
 {
     INFO_TAG("Renderer", "Init");
-    g_RenderData = new RendererData();
+    g_RenderData = new RendererAPI();
     g_RenderData->Init();
 }
 
