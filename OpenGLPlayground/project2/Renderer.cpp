@@ -37,6 +37,7 @@ void Renderer::EndScene()
     g_RenderData->SendLineData();
     g_RenderData->DrawLines();
     g_RenderData->UnbindShader();
+    g_RenderData->Clear();
 }
 
 void Renderer::DrawPoint()

@@ -64,8 +64,9 @@ void CreateObjects();
 void PickObject();
 void OnRenderScene();
 void Cleanup();
-static void KeyCallback(GLFWwindow*, int, int, int, int);
-static void MouseCallback(GLFWwindow*, int, int, int);
+void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
+void KeyCallback(GLFWwindow*, int, int, int, int);
+void MouseCallback(GLFWwindow*, int, int, int);
 
 // GLOBAL VARIABLES
 GLFWwindow* window;
@@ -158,6 +159,7 @@ int InitWindow() {
     glfwSetCursorPos(window, static_cast<float>(window_width) / 2, static_cast<float>(window_height) / 2);
     glfwSetMouseButtonCallback(window, MouseCallback);
     glfwSetKeyCallback(window, KeyCallback);
+    glfwSetScrollCallback(window, MouseWheelCallback);
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
@@ -361,44 +363,53 @@ void PickObject() {
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
-    g_Camera->SetPosition(10.0, 10.0, 10.0f);
+    g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 }
 
-void OnImGuiUpdate()
-{
-    ImGui::Begin("Test");
-    ImGui::End();
-}
+float CameraMoveSpeed = 1.f;
+glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
+glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 
 void OnUpdateScene(float dt)
 {
     glfwPollEvents();
-
-    static float speed = 10.f;
-    glm::mat4 mat{1.f};
-    /*mat = glm::rotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{0.f, 1.f, 0.f});
-    glm::vec3 pos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
-    g_Camera->SetPosition(pos);*/
+    /*glm::mat4 mat{1.f};
+    mat = glm::CameraRotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{1.f, 0.f, 0.f});
+    glm::vec3 CameraPos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
+    g_Camera->SetPosition(CameraPos);*/
 
     if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
     {
-        INFO("LEFT");
+        CameraRotate.y += 5.f * CameraMoveSpeed * dt;
     }
     if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
     {
-        INFO("RIGHT");
+        CameraRotate.y -= 5.f * CameraMoveSpeed * dt;
     }
     if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
     {
-        INFO("UP");
+        CameraRotate.x += 5.f * CameraMoveSpeed * dt;
     }
     if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
     {
-        INFO("DOWN");
+        CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
     }
 
+    glm::mat4 mat{1.f};
+    // The order of rotation have to be x -> y or we have to deal with the gimbal lock
+    mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
+    mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
+    g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat);
+}
 
+void OnImGuiUpdate()
+{
+    ImGui::Begin("Settings");
+    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
+    ImGui::DragFloat3("Pos", glm::value_ptr(CameraPos));
+    ImGui::DragFloat3("Rotation", glm::value_ptr(CameraRotate));
+    ImGui::End();
 }
 
 void OnRenderScene()
@@ -439,8 +450,15 @@ void Cleanup() {
 	glfwTerminate();
 }
 
+void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    CameraPos.z += -yoffset;
+    if(CameraPos.z < 0)
+        CameraPos.z = 0.f;
+}
+
 // Alternative way of triggering functions on keyboard events
-static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	// ATTN: MODIFY AS APPROPRIATE
 	if (action == GLFW_PRESS) {
 		switch (key)
@@ -462,7 +480,7 @@ static void KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
 }
 
 // Alternative way of triggering functions on mouse click events
-static void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
+void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 	if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
         PickObject();
 	}

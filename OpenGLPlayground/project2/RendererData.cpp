@@ -62,3 +62,8 @@ void RendererData::DrawLines()
 {
     glDrawArrays(GL_LINES, 0, m_LineVertices.size());
 }
+
+void RendererData::Clear()
+{
+    m_LineVertices.clear();
+}

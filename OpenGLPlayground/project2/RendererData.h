@@ -32,6 +32,7 @@ public:
     void PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color);
     void SendLineData();
     void DrawLines();
+    void Clear();
 private:
     GLuint m_LineVAO, m_LineVBO, m_LineIBO;
     GLuint m_LineShader;
