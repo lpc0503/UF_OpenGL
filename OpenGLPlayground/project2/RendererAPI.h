@@ -3,18 +3,12 @@
 #define OPENGLPLAYGROUND_RENDERERAPI_H
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 #include <memory>
 #include <vector>
 
 #include "Log.h"
-#include <glm/glm.hpp>
-
-struct Vertex
-{
-    glm::vec4 pos;
-    glm::vec4 color;
-    glm::vec3 normal;
-};
+#include "Vertex.h"
 
 class RendererAPI
 {

@@ -1,11 +1,13 @@
 #include "Log.h"
 
+#include <iostream>
+
 void Log::Output(const std::string &str)
 {
     std::cout << str;
 }
 
-void Log::OutputLine(const std::string &str)
+void Log::OutputError(const std::string &str)
 {
-    Output(str + "\n");
+    std::cerr << str;
 }

@@ -19,6 +19,9 @@ public:
     static void DrawPoint();
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 
+    static void DrawMesh();
+    static void DrawModel();
+
     // Gizmo
     static void DrawGrid(int n, int m); // draw grid on x-z plane
 
