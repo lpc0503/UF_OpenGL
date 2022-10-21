@@ -153,7 +153,6 @@ int InitWindow() {
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsLight();
 
     glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetCursorPos(window, static_cast<float>(window_width) / 2, static_cast<float>(window_height) / 2);
@@ -185,8 +184,8 @@ void InitOpenGL() {
                               glm::vec3(0.0, 1.0, 0.0));	// up
 
 	// Create and compile our GLSL program from the shaders
-	programID = LoadShaders("StandardShading.vert", "StandardShading.frag");
-	pickingProgramID = LoadShaders("Picking.vert", "Picking.frag");
+	programID = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+	pickingProgramID = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
 
 	// Get a handle for our "MVP" uniform
 	MatrixID = glGetUniformLocation(programID, "MVP");
@@ -440,7 +439,7 @@ void OnRenderScene()
     Renderer::DrawGrid(5, 5);
     Renderer::EndScene();
 
-    // TODO: Move this to renderer
+    // TODO: Use Renderer to draw this
     glUseProgram(programID);
     {
         glm::vec3 lightPos = glm::vec3(4, 4, 4);
@@ -509,13 +508,6 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 }
 
 int main() {
-	// TL
-	// ATTN: Refer to https://learnopengl.com/Getting-started/Transformations, https://learnopengl.com/Getting-started/Coordinate-Systems,
-	// and https://learnopengl.com/Getting-started/Camera to familiarize yourself with implementing the camera movement
-
-	// ATTN (Project 3 only): Refer to https://learnopengl.com/Getting-started/Textures to familiarize yourself with mapping a texture
-	// to a given mesh
-
 	// Initialize window
 	int errorCode = InitWindow();
 	if (errorCode != 0)

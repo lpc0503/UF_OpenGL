@@ -19,7 +19,7 @@ void RendererAPI::Init()
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
 
-    m_LineShader = LoadShaders("StandardShading.vert", "StandardShading.frag");
+    m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
 void RendererAPI::Shutdown()

@@ -42,7 +42,7 @@ void Renderer::EndScene()
 
 void Renderer::DrawPoint()
 {
-
+    // TODO: implement
 }
 
 void Renderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
@@ -52,8 +52,10 @@ void Renderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec
 
 void Renderer::DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const glm::vec4 &color, float intensity)
 {
-
+    // TODO: implement
 }
+
+
 
 void Renderer::DrawGrid(int n, int m)
 {
