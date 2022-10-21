@@ -370,6 +370,7 @@ void OnInitScene()
 float CameraMoveSpeed = 1.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
+double PrevMouseX, PrevMouseY;
 
 void OnUpdateScene(float dt)
 {
@@ -378,29 +379,48 @@ void OnUpdateScene(float dt)
     mat = glm::CameraRotate(mat, glm::radians(5.f) * speed * dt, glm::vec3{1.f, 0.f, 0.f});
     glm::vec3 CameraPos = glm::vec4{g_Camera->GetPosition(), 1.f} * mat;
     g_Camera->SetPosition(CameraPos);*/
+    { // Camera rotate
+        { // Camera Pan
+            double x, y, offX, offY;
+            glfwGetCursorPos(window, &x, &y);
+            x = x - window_width / 2.f;
+            y = window_height / 2.f - y;
+            offX = x - PrevMouseX;
+            offY = y - PrevMouseY;
 
-    if(glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-    {
-        CameraRotate.y += 5.f * CameraMoveSpeed * dt;
-    }
-    if(glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-    {
-        CameraRotate.y -= 5.f * CameraMoveSpeed * dt;
-    }
-    if(glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-    {
-        CameraRotate.x += 5.f * CameraMoveSpeed * dt;
-    }
-    if(glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-    {
-        CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
-    }
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+            {
+                CameraRotate.x += static_cast<float>(-offY) * 5.f * dt;
+                CameraRotate.y += static_cast<float>(offX) * 5.f * dt;
+            }
 
-    glm::mat4 mat{1.f};
-    // The order of rotation have to be x -> y or we have to deal with the gimbal lock
-    mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
-    mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
-    g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat);
+            PrevMouseX = x;
+            PrevMouseY = y;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
+            CameraRotate.y += 5.f * CameraMoveSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            CameraRotate.y -= 5.f * CameraMoveSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+        {
+            CameraRotate.x += 5.f * CameraMoveSpeed * dt;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+        {
+            CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
+        }
+
+        glm::mat4 mat{1.f};
+        // The order of rotation have to be x -> y or we have to deal with the gimbal lock
+        mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
+        mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
+        g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat);
+    }
 }
 
 void OnImGuiUpdate()
@@ -452,7 +472,7 @@ void Cleanup() {
 
 void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    CameraPos.z += -yoffset;
+    CameraPos.z += (float)-yoffset;
     if(CameraPos.z < 0)
         CameraPos.z = 0.f;
 }
