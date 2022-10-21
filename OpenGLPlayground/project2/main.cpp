@@ -32,7 +32,7 @@ using namespace glm;
 
 const int window_width = 1024, window_height = 768;
 
-struct Vertex {
+struct Vertex2 {
 	float Position[4];
 	float Color[4];
 	float Normal[3];
@@ -58,8 +58,8 @@ struct Vertex {
 // function prototypes
 int InitWindow();
 void InitOpenGL();
-void CreateVAOs(Vertex[], GLushort[], int);
-void LoadObject(char*, glm::vec4, Vertex* &, GLushort* &, int);
+void CreateVAOs(Vertex2[], GLushort[], int);
+void LoadObject(char*, glm::vec4, Vertex2* &, GLushort* &, int);
 void CreateObjects();
 void PickObject();
 void OnRenderScene();
@@ -105,7 +105,7 @@ std::shared_ptr<Camera> g_Camera;
 // Declare global objects
 // TL
 const size_t CoordVertsCount = 6;
-Vertex CoordVerts[CoordVertsCount];
+Vertex2 CoordVerts[CoordVertsCount];
 
 int InitWindow() {
     // Initialise GLFW
@@ -210,13 +210,13 @@ void InitOpenGL() {
 	CreateVAOs(CoordVerts, NULL, 0);
 }
 
-void CreateVAOs(Vertex vertices[], unsigned short indices[], int objectID) {
+void CreateVAOs(Vertex2 vertices[], unsigned short indices[], int objectID) {
 	GLenum ErrorCheckValue = glGetError();
 	const size_t VertexSize = sizeof(vertices[0]);
 	const size_t RgbOffset = sizeof(vertices[0].Position);
 	const size_t Normaloffset = sizeof(vertices[0].Color) + RgbOffset;
 
-	// Create Vertex Array Object
+	// Create Vertex2 Array Object
 	glGenVertexArrays(1, &VertexArrayId[objectID]);
 	glBindVertexArray(VertexArrayId[objectID]);
 
@@ -255,7 +255,7 @@ void CreateVAOs(Vertex vertices[], unsigned short indices[], int objectID) {
 }
 
 // Ensure your .obj files are in the correct format and properly loaded by looking at the following function
-void LoadObject(char* file, glm::vec4 color, Vertex* &out_Vertices, GLushort* &out_Indices, int objectID) {
+void LoadObject(char* file, glm::vec4 color, Vertex2* &out_Vertices, GLushort* &out_Indices, int objectID) {
 	// Read our .obj file
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
@@ -272,7 +272,7 @@ void LoadObject(char* file, glm::vec4 color, Vertex* &out_Vertices, GLushort* &o
 	const size_t idxCount = indices.size();
 
 	// populate output arrays
-	out_Vertices = new Vertex[vertCount];
+	out_Vertices = new Vertex2[vertCount];
 	for (int i = 0; i < vertCount; i++) {
 		out_Vertices[i].SetPosition(&indexed_vertices[i].x);
 		out_Vertices[i].SetNormal(&indexed_normals[i].x);
@@ -305,7 +305,7 @@ void CreateObjects() {
 	//-- .OBJs --//
 
 	// ATTN: Load your models here through .obj files -- example of how to do so is as shown
-	// Vertex* Verts;
+	// Vertex2* Verts;
 	// GLushort* Idcs;
 	// LoadObject("models/base.obj", glm::vec4(1.0, 0.0, 0.0, 1.0), Verts, Idcs, ObjectID);
 	// CreateVAOs(Verts, Idcs, ObjectID);
@@ -359,11 +359,15 @@ void PickObject() {
 	//continue; // skips the normal rendering
 }
 
+#include "Model.h"
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
+
+    auto m = Model::LoadModel("../asset/bunny.obj");
 }
 
 float CameraMoveSpeed = 1.f;
