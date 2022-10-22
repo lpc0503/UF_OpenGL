@@ -4,6 +4,18 @@
 
 #include <functional>
 
+#include "Log.h"
+#include "debugbreak.h"
+
+#define ASSERT(x, fmt, ...) \
+    do {                    \
+        if(!(x))            \
+        {                   \
+            ERROR("Assertion Failed: " fmt, ##__VA_ARGS__);  \
+            debug_break();  \
+        }                   \
+    } while(0)
+
 namespace Utils
 {
 

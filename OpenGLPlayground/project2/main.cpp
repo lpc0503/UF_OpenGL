@@ -362,6 +362,8 @@ void PickObject() {
 
 Ref<Model> BunnyModel;
 
+#include "Utils.h"
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
