@@ -15,6 +15,8 @@ public:
 
     std::string GetPath() { return m_Path; }
     std::string GetDirectory() { return std::filesystem::path(m_Path).parent_path().string(); }
+    const std::vector<Ref<Mesh>>& GetMeshes() const { return m_Meshes; }
+    size_t GetMeshCount() const { return m_Meshes.size(); }
 
     static Ref<Model> LoadModel(const std::string &path);
 private:

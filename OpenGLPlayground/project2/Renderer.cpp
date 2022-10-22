@@ -55,8 +55,6 @@ void Renderer::DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const 
     // TODO: implement
 }
 
-
-
 void Renderer::DrawGrid(int n, int m)
 {
     for(int x = -n; x <= n; x++)
@@ -74,4 +72,14 @@ void Renderer::DrawGrid(int n, int m)
         else
             Renderer::DrawLine({n, 0.f, z}, {-n, 0.f, z}, {1.f, 1.f, 1.f, 1.f});
     }
+}
+
+void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+{
+
+}
+
+void Renderer::DrawMesh(Ref<Mesh> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+{
+
 }

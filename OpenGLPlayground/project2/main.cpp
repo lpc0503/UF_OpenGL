@@ -29,6 +29,7 @@ using namespace glm;
 #include "Renderer.h"
 #include "Camera.h"
 #include "Log.h"
+#include "Model.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -359,7 +360,7 @@ void PickObject() {
 	//continue; // skips the normal rendering
 }
 
-#include "Model.h"
+Ref<Model> BunnyModel;
 
 void OnInitScene()
 {
@@ -367,7 +368,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
-    auto m = Model::LoadModel("../asset/bunny.obj");
+    BunnyModel = Model::LoadModel("../asset/bunny.obj");
 }
 
 float CameraMoveSpeed = 1.f;
@@ -430,10 +431,36 @@ void OnUpdateScene(float dt)
 
 void OnImGuiUpdate()
 {
+//    ImGui::ShowDemoWindow();
+
     ImGui::Begin("Settings");
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
     ImGui::DragFloat3("Pos", glm::value_ptr(CameraPos));
     ImGui::DragFloat3("Rotation", glm::value_ptr(CameraRotate));
+
+
+    for(int i = 0; i < BunnyModel->GetMeshCount(); i++)
+    {
+        auto &mesh = BunnyModel->GetMeshes()[i];
+
+        if(ImGui::CollapsingHeader("Vertices"))
+        {
+            for (int i = 0; i < mesh->m_Vertices.size(); i++)
+            {
+                ImGui::Text("vertex %d %.2f, %.2f, %.2f", i, mesh->m_Vertices[i].pos.x, mesh->m_Vertices[i].pos.y,
+                            mesh->m_Vertices[i].pos.z);
+            }
+        }
+
+        if(ImGui::CollapsingHeader("Indices"))
+        {
+            for (int i = 0; i < mesh->m_Indices.size(); i++)
+            {
+                ImGui::Text("indice %d", mesh->m_Indices[i]);
+            }
+        }
+    }
+
     ImGui::End();
 }
 
@@ -441,6 +468,7 @@ void OnRenderScene()
 {
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
+    Renderer::DrawModel(BunnyModel, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this
