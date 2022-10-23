@@ -59,7 +59,7 @@ Ref<Model> Model::LoadModel(const std::string &path)
                 vertex.pos.y = vy;
                 vertex.pos.z = vz;
                 vertex.pos.w = 1.f;
-                INFO("v {} {} {} {}", idx.vertex_index, vx, vy, vz);
+//                INFO("v {} {} {} {}", idx.vertex_index, vx, vy, vz);
 
                 // Check if `normal_index` is zero or positive. negative = no normal data
                 if (idx.normal_index >= 0)
@@ -70,7 +70,7 @@ Ref<Model> Model::LoadModel(const std::string &path)
                     vertex.normal.x = nx;
                     vertex.normal.y = ny;
                     vertex.normal.z = nz;
-                    INFO("n {} {} {} {}", idx.normal_index, nx, ny, nz);
+//                    INFO("n {} {} {} {}", idx.normal_index, nx, ny, nz);
                 }
 
                 // Check if `texcoord_index` is zero or positive. negative = no texcoord data

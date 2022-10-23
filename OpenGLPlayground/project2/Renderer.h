@@ -20,7 +20,7 @@ public:
     static void DrawPoint();
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 
-    static void DrawMesh(Ref<Mesh> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
+    static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
     static void DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
 
     // Gizmo

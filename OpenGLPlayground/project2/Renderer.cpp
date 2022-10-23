@@ -29,6 +29,11 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderData->SetMatrix("V", camera->GetView());
     g_RenderData->SetMatrix("P", camera->GetProjection());
     g_RenderData->UnbindShader();
+
+    g_RenderData->BindMeshShader();
+    g_RenderData->SetMatrix("V", camera->GetView());
+    g_RenderData->SetMatrix("P", camera->GetProjection());
+    g_RenderData->UnbindShader();
 }
 
 void Renderer::EndScene()
@@ -37,6 +42,15 @@ void Renderer::EndScene()
     g_RenderData->SendLineData();
     g_RenderData->DrawLines();
     g_RenderData->UnbindShader();
+
+    // TODO: figure out how to batch rendering mesh
+//    g_RenderData->BindMeshShader();
+//    g_RenderData->SendMeshData();
+//    g_RenderData->DrawMeshs();
+//    g_RenderData->UnbindShader();
+
+    g_RenderData->DrawMeshs();
+
     g_RenderData->Clear();
 }
 
@@ -79,7 +93,7 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
 
 }
 
-void Renderer::DrawMesh(Ref<Mesh> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
 {
-
+    g_RenderData->PushMesh(mesh, pos, rotate, scale);
 }

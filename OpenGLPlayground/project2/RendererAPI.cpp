@@ -19,8 +19,22 @@ void RendererAPI::Init()
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
-
     m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+
+    glGenVertexArrays(1, &m_MeshVAO);
+    glBindVertexArray(m_MeshVAO);
+    glGenBuffers(1, &m_MeshVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
+    glGenBuffers(1, &m_MeshIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glBindVertexArray(0);
+    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
 void RendererAPI::Shutdown()
@@ -29,6 +43,11 @@ void RendererAPI::Shutdown()
     glDeleteBuffers(1, &m_LineVBO); // TODO: delete IBO?
     glDeleteVertexArrays(1, &m_LineVAO);
     glDeleteProgram(m_LineShader);
+
+    glDeleteBuffers(1, &m_MeshVBO);
+    glDeleteBuffers(1, &m_MeshIBO);
+    glDeleteVertexArrays(1, &m_MeshVAO);
+    glDeleteProgram(m_MeshShader);
 }
 
 void RendererAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
@@ -59,6 +78,7 @@ GLint RendererAPI::GetUniformID(const std::string &name)
 void RendererAPI::Clear()
 {
     m_LineVertices.clear();
+    m_Meshes.clear();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -95,18 +115,48 @@ void RendererAPI::DrawLines()
 // Mesh
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushMesh(Ref <Mesh> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
 {
-
+    m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale});
 }
 
 void RendererAPI::SendMeshData()
 {
 
+    /*glBindVertexArray(m_LineVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);*/
 }
 
 void RendererAPI::DrawMeshs()
 {
+    auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+    {
+        glm::mat4 m{1.f};
+        m = glm::translate(m, pos);
+        m = glm::rotate(m, glm::radians(rotate.x), {1.f, 0.f, 0.f});
+        m = glm::rotate(m, glm::radians(rotate.y), {0.f, 1.f, 0.f});
+        m = glm::rotate(m, glm::radians(rotate.z), {0.f, 0.f, 1.f});
+        m = glm::scale(m, scale);
+        BindMeshShader();
+        SetMatrix("M", m);
+        UnbindShader();
+    };
+    auto DrawMesh = [&](Ref<Mesh> mesh)
+    {
+        glBindVertexArray(m_MeshVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+    };
 
+    BindMeshShader();
+    for(MeshData &md : m_Meshes)
+    {
+        SendModelMatrix(md.pos, md.rotate, md.scale);
+        DrawMesh(md.mesh);
+    }
+    UnbindShader();
 }
-

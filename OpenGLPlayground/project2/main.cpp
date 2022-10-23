@@ -447,18 +447,18 @@ void OnImGuiUpdate()
 
         if(ImGui::CollapsingHeader("Vertices"))
         {
-            for (int i = 0; i < mesh->m_Vertices.size(); i++)
+            for (int j = 0; j < mesh->m_Vertices.size(); j++)
             {
-                ImGui::Text("vertex %d %.2f, %.2f, %.2f", i, mesh->m_Vertices[i].pos.x, mesh->m_Vertices[i].pos.y,
-                            mesh->m_Vertices[i].pos.z);
+                ImGui::Text("vertex %d %.2f, %.2f, %.2f", j, mesh->m_Vertices[j].pos.x, mesh->m_Vertices[j].pos.y,
+                            mesh->m_Vertices[j].pos.z);
             }
         }
 
         if(ImGui::CollapsingHeader("Indices"))
         {
-            for (int i = 0; i < mesh->m_Indices.size(); i++)
+            for (int j = 0; j < mesh->m_Indices.size(); j++)
             {
-                ImGui::Text("indice %d", mesh->m_Indices[i]);
+                ImGui::Text("indice %d", mesh->m_Indices[j]);
             }
         }
     }
@@ -470,7 +470,7 @@ void OnRenderScene()
 {
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
-    Renderer::DrawModel(BunnyModel, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this

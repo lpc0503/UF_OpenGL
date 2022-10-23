@@ -46,14 +46,20 @@ private:
     // Mesh
 public:
     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }
-    void PushMesh(Ref<Mesh> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
+    void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
     void SendMeshData();
     void DrawMeshs();
 
 private:
     GLuint m_MeshShader;
     GLuint m_MeshVAO, m_MeshVBO, m_MeshIBO;
-    std::vector<Ref<Mesh>> m_MeshList;
+    struct MeshData {
+        Ref<Mesh> mesh;
+        glm::vec3 pos;
+        glm::vec3 rotate;
+        glm::vec3 scale;
+    };
+    std::vector<MeshData> m_Meshes;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H
