@@ -81,9 +81,11 @@ Ref<Model> Model::LoadModel(const std::string &path)
 //                }
 
                 // Optional: vertex colors
-                // tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
-                // tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
-                // tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
+                 tinyobj::real_t red   = attrib.colors[3*size_t(idx.vertex_index)+0];
+                 tinyobj::real_t green = attrib.colors[3*size_t(idx.vertex_index)+1];
+                 tinyobj::real_t blue  = attrib.colors[3*size_t(idx.vertex_index)+2];
+                 vertex.color = glm::vec4{red, green, blue, 1.f};
+//                 INFO("vc {} {} {}", red, green, blue);
 
                 // TODO: figure out why this doesn't work
 //                if(!vertexToId.count(vertex))

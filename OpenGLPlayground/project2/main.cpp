@@ -103,6 +103,8 @@ GLint LightID;
 // TODO: to ref
 std::shared_ptr<Camera> g_Camera;
 
+glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
+
 // Declare global objects
 // TL
 const size_t CoordVertsCount = 6;
@@ -436,6 +438,9 @@ void OnImGuiUpdate()
 //    ImGui::ShowDemoWindow();
 
     ImGui::Begin("Settings");
+
+    ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
+
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
     ImGui::DragFloat3("Pos", glm::value_ptr(CameraPos));
     ImGui::DragFloat3("Rotation", glm::value_ptr(CameraRotate));
@@ -542,6 +547,9 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 }
 
 int main() {
+
+//    getchar();
+
 	// Initialize window
 	int errorCode = InitWindow();
 	if (errorCode != 0)
@@ -564,7 +572,7 @@ int main() {
 			lastTime += 1.0;
 		}
 
-        glClearColor(0.0f, 0.0f, 0.2f, 0.0f);
+        glClearColor(g_ClearColor.x, g_ClearColor.y, g_ClearColor.z, g_ClearColor.w);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         ImGui_ImplOpenGL3_NewFrame();

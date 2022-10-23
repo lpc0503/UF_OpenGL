@@ -122,7 +122,6 @@ void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec
 
 void RendererAPI::SendMeshData()
 {
-
     /*glBindVertexArray(m_LineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);*/
