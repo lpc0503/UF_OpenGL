@@ -137,9 +137,7 @@ void RendererAPI::DrawMeshs()
         m = glm::rotate(m, glm::radians(rotate.y), {0.f, 1.f, 0.f});
         m = glm::rotate(m, glm::radians(rotate.z), {0.f, 0.f, 1.f});
         m = glm::scale(m, scale);
-        BindMeshShader();
         SetMatrix("M", m);
-        UnbindShader();
     };
     auto DrawMesh = [&](Ref<Mesh> mesh)
     {

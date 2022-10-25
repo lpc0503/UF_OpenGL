@@ -4,6 +4,8 @@
 
 #include <functional>
 
+#include <glad/glad.h>
+
 #include "Log.h"
 #include "debugbreak.h"
 
@@ -28,5 +30,13 @@ inline void hash_combine(std::size_t& seed, const T& v)
 }
 
 }
+
+void APIENTRY glDebugOutput(GLenum source,
+                            GLenum type,
+                            unsigned int id,
+                            GLenum severity,
+                            GLsizei length,
+                            const char *message,
+                            const void *userParam);
 
 #endif //OPENGLPLAYGROUND_UTILS_H

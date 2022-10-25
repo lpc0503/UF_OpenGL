@@ -30,6 +30,7 @@ using namespace glm;
 #include "Camera.h"
 #include "Log.h"
 #include "Model.h"
+#include "Utils.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -116,13 +117,21 @@ int InitWindow() {
         fprintf(stderr, "Failed to initialize GLFW\n");
         return -1;
     }
+
+#if defined(__APPLE__)
     const char* glsl_version = "#version 330";
     glfwWindowHint(GLFW_SAMPLES, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#if defined(__APPLE__)
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // FOR MAC
+#elif defined(_WIN32)
+    const char* glsl_version = "#version 460";
+    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
 
     window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", NULL, NULL);
@@ -138,6 +147,17 @@ int InitWindow() {
         return -1;
     }
     glfwSwapInterval(1);
+
+#if defined(WIN32)
+    int flags; glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glDebugOutput, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+#endif
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -364,8 +384,6 @@ void PickObject() {
 
 Ref<Model> BunnyModel;
 
-#include "Utils.h"
-
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -548,6 +566,7 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 
 int main() {
 
+//    printf(">>");
 //    getchar();
 
 	// Initialize window
