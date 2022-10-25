@@ -397,6 +397,8 @@ float CameraMoveSpeed = 1.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
+glm::vec3 BunnyPos = glm::vec3{0.f};
+glm::vec3 BunnyScale = glm::vec3{1.f};
 
 void OnUpdateScene(float dt)
 {
@@ -460,11 +462,12 @@ void OnImGuiUpdate()
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
-    ImGui::DragFloat3("Pos", glm::value_ptr(CameraPos));
-    ImGui::DragFloat3("Rotation", glm::value_ptr(CameraRotate));
+    ImGui::DragFloat3("Pos", &CameraPos);
+    ImGui::DragFloat3("Rotation", &CameraRotate);
+    ImGui::DragFloat3("Bunny Pos", &BunnyPos);
+    ImGui::DragFloat3("Bunny Scale", &BunnyScale);
 
-
-    for(int i = 0; i < BunnyModel->GetMeshCount(); i++)
+    /*for(int i = 0; i < BunnyModel->GetMeshCount(); i++)
     {
         auto &mesh = BunnyModel->GetMeshes()[i];
 
@@ -484,7 +487,7 @@ void OnImGuiUpdate()
                 ImGui::Text("indice %d", mesh->m_Indices[j]);
             }
         }
-    }
+    }*/
 
     ImGui::End();
 }
@@ -493,7 +496,7 @@ void OnRenderScene()
 {
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
-    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this
@@ -514,6 +517,7 @@ void OnRenderScene()
     glUseProgram(0);
 }
 
+// TODO: remove
 void Cleanup() {
 	// Cleanup VBO and shader
 	for (int i = 0; i < NumObjects; i++) {

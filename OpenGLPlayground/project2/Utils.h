@@ -5,6 +5,9 @@
 #include <functional>
 
 #include <glad/glad.h>
+#include <imgui.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include "Log.h"
 #include "debugbreak.h"
@@ -38,5 +41,11 @@ void APIENTRY glDebugOutput(GLenum source,
                             GLsizei length,
                             const char *message,
                             const void *userParam);
+
+namespace ImGui {
+
+bool DragFloat3(const char* label, glm::vec3 *v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
+
+}
 
 #endif //OPENGLPLAYGROUND_UTILS_H

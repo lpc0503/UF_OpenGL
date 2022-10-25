@@ -47,3 +47,9 @@ void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity,
     std::cout << std::endl;
     std::cout << std::endl;
 }
+
+bool ImGui::DragFloat3(const char *label, glm::vec3 *v, float v_speed, float v_min, float v_max, const char *format,
+                       ImGuiSliderFlags flags)
+{
+    return DragFloat3(label, glm::value_ptr(*v), v_speed, v_min, v_max, format, flags);
+}
