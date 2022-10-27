@@ -383,6 +383,7 @@ void PickObject() {
 }
 
 Ref<Model> BunnyModel;
+Ref<Model> RobotArmModel;
 
 void OnInitScene()
 {
@@ -391,6 +392,8 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
     BunnyModel = Model::LoadModel("../asset/bunny.obj");
+    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
+    INFO("size = {}", RobotArmModel->GetMeshes().size());
 }
 
 float CameraMoveSpeed = 1.f;
@@ -497,6 +500,11 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+
+    for(auto &mesh : RobotArmModel->GetMeshes())
+    {
+        Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {30.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+    }
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this

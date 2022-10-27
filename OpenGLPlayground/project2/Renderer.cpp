@@ -90,7 +90,10 @@ void Renderer::DrawGrid(int n, int m)
 
 void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
 {
+    for(auto mesh : model->GetMeshes())
+    {
 
+    }
 }
 
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
