@@ -34,8 +34,8 @@ void RendererAPI::Init()
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
-//    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
-    m_MeshShader = m_LineShader;
+    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+//    m_MeshShader = m_LineShader;
 
 //    m_LightShader = m_MeshShader;
 }
