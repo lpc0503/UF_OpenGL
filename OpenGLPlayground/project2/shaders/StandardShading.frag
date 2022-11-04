@@ -27,7 +27,10 @@ uniform bool uEnableLight;
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal)
 {
-	vec3 lightDir = normalize(-light.dir);
+	vec3 lightDir = (MV * vec4(-light.dir, 0.0)).xyz;
+	lightDir = normalize(lightDir);
+//	vec3 lightDir = normalize(-light.dir);
+//	lightDir = (MV * vec4(lightDir, 0.0)).xyz;
 	//
 	float diffuse = max(dot(lightDir, normal), 0.0);
 	vec3 diffuseColor = light.diffuse * diffuse;
@@ -35,7 +38,7 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal)
 //	float specular = pow(max(dot(reflect(-lightDir, normal), viewDir), 0.0), 32.0);
 //	vec3 specularColor = light.specular * specular;
 	//
-	return light.ambient + diffuseColor/* + specularColor*/;
+	return light.ambient * 0.3 + diffuseColor/* + specularColor*/;
 }
 
 void main()

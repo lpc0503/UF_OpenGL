@@ -467,10 +467,11 @@ void OnImGuiUpdate()
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
     auto dir = g_Camera->GetDir();
-    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z); ImGui::SameLine();
+    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z);
+    ImGui::Text("Sun Direction = %.2f %.2f %.2f", g_SunLight.x, g_SunLight.y, g_SunLight.z);
     if(ImGui::Button("Set Sun"))
     {
-        g_SunLight = g_Camera->GetDir();
+        g_SunLight = dir;
     }
 
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
@@ -512,6 +513,9 @@ void OnRenderScene()
     Renderer::DrawGrid(5, 5);
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+
+    auto sunDir = glm::normalize(g_Camera->GetDir());
+    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
 
 //    for(auto &mesh : RobotArmModel->GetMeshes())
 //    {

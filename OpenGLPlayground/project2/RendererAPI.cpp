@@ -181,5 +181,6 @@ void RendererAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &co
 void RendererAPI::SendLightData()
 {
     SetFloat3("dirLight.dir", m_DirectionalLight.dir);
+    SetFloat3("dirLight.ambient", m_DirectionalLight.color);
     SetFloat3("dirLight.diffuse", m_DirectionalLight.color);
 }
