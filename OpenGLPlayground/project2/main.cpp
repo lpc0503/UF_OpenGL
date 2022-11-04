@@ -105,6 +105,8 @@ GLint LightID;
 std::shared_ptr<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
+float g_MouseWheelFactor = 0.2;
+glm::vec3 g_SunLight = {0.f, -1.f, 0.f};
 
 // Declare global objects
 // TL
@@ -392,8 +394,8 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
     BunnyModel = Model::LoadModel("../asset/bunny.obj");
-    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
-    INFO("size = {}", RobotArmModel->GetMeshes().size());
+//    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
+//    INFO("size = {}", RobotArmModel->GetMeshes().size());
 }
 
 float CameraMoveSpeed = 1.f;
@@ -452,7 +454,7 @@ void OnUpdateScene(float dt)
         // The order of rotation have to be x -> y or we have to deal with the gimbal lock
         mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
         mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
-        g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat);
+        g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat); // TODO: 需要理解????
     }
 }
 
@@ -461,6 +463,15 @@ void OnImGuiUpdate()
 //    ImGui::ShowDemoWindow();
 
     ImGui::Begin("Settings");
+
+    ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
+
+    auto dir = g_Camera->GetDir();
+    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z); ImGui::SameLine();
+    if(ImGui::Button("Set Sun"))
+    {
+        g_SunLight = g_Camera->GetDir();
+    }
 
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
@@ -499,12 +510,18 @@ void OnRenderScene()
 {
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
+    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
-    for(auto &mesh : RobotArmModel->GetMeshes())
-    {
-        Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {30.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-    }
+//    for(auto &mesh : RobotArmModel->GetMeshes())
+//    {
+//        if(mesh->m_Name == "b")
+//        {
+//            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+//        }
+//        else
+//            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+//    }
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this
@@ -542,14 +559,12 @@ void Cleanup() {
 
 void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    CameraPos.z += (float)-yoffset;
+    CameraPos.z += (float)-yoffset * g_MouseWheelFactor;
     if(CameraPos.z < 0)
         CameraPos.z = 0.f;
 }
 
-// Alternative way of triggering functions on keyboard events
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	// ATTN: MODIFY AS APPROPRIATE
 	if (action == GLFW_PRESS) {
 		switch (key)
 		{

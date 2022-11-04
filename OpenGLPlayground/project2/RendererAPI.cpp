@@ -34,7 +34,10 @@ void RendererAPI::Init()
     glEnableVertexAttribArray(1);
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
-    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+//    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+    m_MeshShader = m_LineShader;
+
+//    m_LightShader = m_MeshShader;
 }
 
 void RendererAPI::Shutdown()
@@ -66,6 +69,12 @@ void RendererAPI::SetFloat4(const std::string &name, const glm::vec4 &v)
 {
     auto id = GetUniformID(name);
     glUniform4f(id, v.x, v.y, v.z, v.w);
+}
+
+void RendererAPI::SetBool(const std::string &name, bool b)
+{
+    auto id = GetUniformID(name);
+    glUniform1i(id, b);
 }
 
 GLint RendererAPI::GetUniformID(const std::string &name)
@@ -150,10 +159,27 @@ void RendererAPI::DrawMeshs()
     };
 
     BindMeshShader();
+    SendLightData();
     for(MeshData &md : m_Meshes)
     {
         SendModelMatrix(md.pos, md.rotate, md.scale);
         DrawMesh(md.mesh);
     }
     UnbindShader();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Mesh
+//////////////////////////////////////////////////////////////////////
+
+void RendererAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
+{
+    m_DirectionalLight.dir = dir;
+    m_DirectionalLight.color = color;
+}
+
+void RendererAPI::SendLightData()
+{
+    SetFloat3("dirLight.dir", m_DirectionalLight.dir);
+    SetFloat3("dirLight.diffuse", m_DirectionalLight.color);
 }

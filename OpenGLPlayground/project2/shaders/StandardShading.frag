@@ -14,10 +14,38 @@ out vec3 color;
 uniform mat4 MV;
 uniform vec3 LightPosition_worldspace;
 
-// TL
-// ATTN: Refer to https://learnopengl.com/Lighting/Colors and https://learnopengl.com/Lighting/Basic-Lighting
-// to familiarize yourself with implementing basic lighting model in OpenGL shaders
+struct DirectionalLight
+{
+	vec3 dir;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+uniform DirectionalLight dirLight;
 
-void main() {
-	color = vs_vertexColor.rgb;
+uniform bool uEnableLight;
+
+vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal)
+{
+	vec3 lightDir = normalize(-light.dir);
+	//
+	float diffuse = max(dot(lightDir, normal), 0.0);
+	vec3 diffuseColor = light.diffuse * diffuse;
+	//
+//	float specular = pow(max(dot(reflect(-lightDir, normal), viewDir), 0.0), 32.0);
+//	vec3 specularColor = light.specular * specular;
+	//
+	return light.ambient + diffuseColor/* + specularColor*/;
+}
+
+void main()
+{
+	if(uEnableLight)
+	{
+		color = vs_vertexColor.rgb * CalcDirectionalLight(dirLight, Normal_cameraspace);
+	}
+	else
+	{
+		color = vs_vertexColor.rgb;
+	}
 }

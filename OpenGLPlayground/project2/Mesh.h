@@ -11,6 +11,7 @@ class Mesh
 public:
     std::vector<Vertex> m_Vertices;
     std::vector<uint32_t> m_Indices;
+    std::string m_Name;
 //    std::vector<Texture2D*> m_Textures; // TODO: add support for texture
 
 public:

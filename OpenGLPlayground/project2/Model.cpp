@@ -41,6 +41,8 @@ Ref<Model> Model::LoadModel(const std::string &path)
 
         size_t index_offset = 0;
         auto shape = shapes[s];
+        mesh->m_Name = shape.name;
+
         for (size_t f = 0; f < shape.mesh.num_face_vertices.size(); f++)
         {
             size_t fv = size_t(shape.mesh.num_face_vertices[f]);

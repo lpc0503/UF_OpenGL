@@ -25,6 +25,7 @@ public:
     void SetMatrix(const std::string &name, const glm::mat4 &mat);
     void SetFloat3(const std::string &name, const glm::vec3 &v);
     void SetFloat4(const std::string &name, const glm::vec4 &v);
+    void SetBool(const std::string &name, bool b);
 
 private:
     GLuint m_CurrentShader;
@@ -60,6 +61,28 @@ private:
         glm::vec3 scale;
     };
     std::vector<MeshData> m_Meshes;
+
+    // Light
+public:
+//    void BindLightShader() { assert(m_LightShader); m_CurrentShader = m_LightShader; BindShader(); }
+    void PushPointLight(const glm::vec3 &pos, const glm::vec4 &color, float intensity);
+    void PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color);
+    void SendLightData();
+
+//    struct PointLightData {
+//        glm::vec3 pos;
+//        glm::vec4 color;
+//        glm::vec
+//    };
+    struct DirectionalLightData {
+        glm::vec3 dir;
+        glm::vec4 color;
+    };
+    DirectionalLightData m_DirectionalLight;
+    static constexpr size_t MaxNumLight = 10;
+
+//private:
+//    GLuint m_LightShader;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H
