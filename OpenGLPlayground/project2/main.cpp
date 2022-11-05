@@ -403,7 +403,7 @@ void PickObject() {
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
 Ref<Model> TestModel;
-
+glm::vec3 Rotate[6];
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -415,7 +415,7 @@ void OnInitScene()
 
     for(int i = 0 ; i < 6 ; i++) {
 
-//        MeshColor.push_back()
+        Rotate[i] = glm::vec3 (0.f, 0.f, 0.f);
     }
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
@@ -441,10 +441,11 @@ enum MeshMove {
 };
 
 int moveType = MeshMove::None;
-glm::vec3 BaseRotate = {0.f, 0.f, 0.f};
+glm::vec3 ModelMove = {0.f, 0.f, 0.f};
 glm::vec3 TopRotate = {0.f, 0.f, 0.f};
 glm::vec3 Arm1Rotate = {0.f, 0.f, 0.f};
 glm::vec3 Arm2Rotate = {0.f, 0.f, 0.f};
+
 
 void OnUpdateScene(float dt)
 {
@@ -491,6 +492,26 @@ void OnUpdateScene(float dt)
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
                 CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
+            }
+        }
+
+        if(moveType == MeshMove::BaseMove) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                ModelMove.z += .1f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                ModelMove.z -= .1f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            {
+                ModelMove.x += .1f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            {
+                ModelMove.x -= .1f;
             }
         }
 
@@ -563,8 +584,6 @@ void OnImGuiUpdate()
     ImGui::End();
 }
 
-
-
 void OnRenderScene()
 {
 
@@ -592,16 +611,16 @@ void OnRenderScene()
     for(int i = 0 ; i < TestModel->GetMeshCount() ; i++) {
 
         if(i == BASE)
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {.5f, .5f, .5f}, MeshColor[i]);
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, {0.f, 0.f, 0.f}, {.5f, .5f, .5f}, MeshColor[i]);
         else if(moveType == MeshMove::TopMove) {
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, TopRotate, {.5f, .5f, .5f}, MeshColor[i]);
+            Rotate[i] += TopRotate;
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {.5f, .5f, .5f}, MeshColor[i]);
         }
-
-
-
         else
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[i]);
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {.5f, .5f, .5f}, MeshColor[i]);
+
     }
+    TopRotate = {0.f, 0.f, 0.f};
 
 //    for(auto &mesh : TestModel->GetMeshes())
 //    {
