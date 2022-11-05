@@ -108,13 +108,13 @@ GLint LightID;
 #define PURPLE {1.f, 0.f, 1.f, 1.f}
 #define CYAN {0.f, 1.f, 1.f, 1.f}
 #define YELLOW {1.f, 1.f, 0.f, 1.f}
-glm::vec4 MeshColor[6] = {PURPLE, GREEN, YELLOW, RED, BLUE, CYAN};
-#define Joint 0
+glm::vec4 MeshColor[6] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW};
+#define BASE 0
 #define TOP 1
-#define PEN 2
-#define BASE 3
-#define ARM1 4
-#define ARM2 5
+#define ARM1 2
+#define JOINT 3
+#define ARM2 4
+#define PEN 5
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
@@ -403,8 +403,12 @@ void PickObject() {
 
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
-Ref<Model> TestModel;
+//Ref<Model> TestModel;
 glm::vec3 Rotate[6];
+
+std::vector<Ref<Model>> TModel(6);
+glm::vec3 MeshPos[6];
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -412,16 +416,31 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
 //    BunnyModel = Model::LoadModel("../asset/bunny.obj");
-    TestModel = Model::LoadModel("../asset/Robot.obj");
+//    TestModel = Model::LoadModel("../asset/Robot.obj");
 
-    for(int i = 0 ; i < 6 ; i++) {
+    TModel[0] = (Model::LoadModel("../asset/Robot/base.obj"));
+    TModel[1] = (Model::LoadModel("../asset/Robot/top.obj"));
+    TModel[2] = (Model::LoadModel("../asset/Robot/arm1.obj"));
+    TModel[3] = (Model::LoadModel("../asset/Robot/joint.obj"));
+    TModel[4] = (Model::LoadModel("../asset/Robot/arm2.obj"));
+    TModel[5] = (Model::LoadModel("../asset/Robot/pen.obj"));
 
-        Rotate[i] = glm::vec3 (0.f, 0.f, 0.f);
-    }
+    MeshPos[0] = {0.0f, 0.0f, 0.0f};
+    MeshPos[1] = {0.0f, 1.3f, 0.0f};
+    MeshPos[2] = {0.0f, 1.5f, 0.0f};
+    MeshPos[3] = {0.0f, 1.5f, 0.0f};
+    MeshPos[4] = {2.0f, 1.5f, 0.0f};
+    MeshPos[5] = {2.0f, 0.0f, 0.0f};
+
+
+//    for(int i = 0 ; i < 6 ; i++) {
+//
+//        Rotate[i] = glm::vec3 (0.f, 0.f, 0.f);
+//    }
 
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
-    INFO("size = {}", TestModel->GetMeshes().size());
+//    INFO("size = {}", TestModel->GetMeshes().size());
 }
 
 float CameraMoveSpeed = 5.f;
@@ -519,6 +538,7 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::TopMove) {
 
+            glm::vec4 tmp = {MeshPos[2].x + 2, MeshPos[3].y, MeshPos[3].z, 1};
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 TopRotate.y += 5.f;
@@ -527,6 +547,10 @@ void OnUpdateScene(float dt)
             {
                 TopRotate.y -= 5.f;
             }
+            glm::mat4 trans;
+            trans = glm::rotate(trans, glm::radians(5.f), MeshPos[ARM1]);
+            tmp = trans * tmp;
+            MeshPos[4] = {tmp.x, tmp.y, tmp.z};
         }
         if(moveType == MeshMove::Arm1Move) {
 
@@ -570,7 +594,7 @@ void OnUpdateScene(float dt)
             }
         }
 
-        for(auto i : Index) {
+        for(int i = 0 ; i < TModel.size() ; i++) {
 
             if(i == BASE);
             else if(moveType == MeshMove::TopMove) {
@@ -593,6 +617,12 @@ void OnUpdateScene(float dt)
                     Rotate[i] += PenRotate;
             }
         }
+
+
+        MeshPos[4] = {MeshPos[2].x + 2, MeshPos[3].y, MeshPos[3].z};
+
+
+
         TopRotate = {0.f, 0.f, 0.f};
         Arm1Rotate = {0.f, 0.f, 0.f};
         Arm2Rotate = {0.f, 0.f, 0.f};
@@ -665,9 +695,10 @@ void OnRenderScene()
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
-    for(auto i : Index) {
 
-         Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
+    for(int i = 0 ; i < TModel.size() ; i++) {
+
+         Renderer::DrawMesh(TModel[i]->GetMeshes().front(), MeshPos[i]+ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
     }
 //
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {5.f, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
