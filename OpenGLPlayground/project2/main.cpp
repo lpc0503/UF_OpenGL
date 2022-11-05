@@ -101,6 +101,22 @@ GLint PickingMatrixID;
 GLint pickingColorID;
 GLint LightID;
 
+// hotfix
+#define RED {1.f, 0.f, 0.f, 1.f}
+#define GREEN {0.f, 1.f, 0.f, 1.f}
+#define BLUE {0.f, 0.f, 1.f, 1.f}
+#define PURPLE {1.f, 0.f, 1.f, 1.f}
+#define CYAN {0.f, 1.f, 1.f, 1.f}
+#define YELLOW {1.f, 1.f, 0.f, 1.f}
+glm::vec4 MeshColor[6] = {PURPLE, GREEN, YELLOW, RED, BLUE, CYAN};
+#define Joint 0
+#define TOP 1
+#define PEN 2
+#define BASE 3
+#define ARM1 4
+#define ARM2 5
+// 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
+
 // TODO: to ref
 std::shared_ptr<Camera> g_Camera;
 
@@ -396,6 +412,12 @@ void OnInitScene()
 
     BunnyModel = Model::LoadModel("../asset/bunny.obj");
     TestModel = Model::LoadModel("../asset/Robot.obj");
+
+    for(int i = 0 ; i < 6 ; i++) {
+
+//        MeshColor.push_back()
+    }
+
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
     INFO("size = {}", TestModel->GetMeshes().size());
 }
@@ -406,6 +428,23 @@ glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{0.f};
 glm::vec3 BunnyScale = glm::vec3{1.f};
+
+// MeshMove
+enum MeshMove {
+
+    None,
+    BaseMove,
+    TopMove,
+    Ara1Move,
+    Arm2Move,
+    PenMove
+};
+
+int moveType = MeshMove::None;
+glm::vec3 BaseRotate = {0.f, 0.f, 0.f};
+glm::vec3 TopRotate = {0.f, 0.f, 0.f};
+glm::vec3 Arm1Rotate = {0.f, 0.f, 0.f};
+glm::vec3 Arm2Rotate = {0.f, 0.f, 0.f};
 
 void OnUpdateScene(float dt)
 {
@@ -435,21 +474,36 @@ void OnUpdateScene(float dt)
             PrevMouseY = y;
         }
 
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-        {
-            CameraRotate.y += 5.f * CameraMoveSpeed * dt;
+        if(moveType == MeshMove::None) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                CameraRotate.y += 5.f * CameraMoveSpeed * dt;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                CameraRotate.y -= 5.f * CameraMoveSpeed * dt;
+            }
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            {
+                CameraRotate.x += 5.f * CameraMoveSpeed * dt;
+            }
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            {
+                CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
+            }
         }
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-        {
-            CameraRotate.y -= 5.f * CameraMoveSpeed * dt;
-        }
-        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-        {
-            CameraRotate.x += 5.f * CameraMoveSpeed * dt;
-        }
-        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-        {
-            CameraRotate.x -= 5.f * CameraMoveSpeed * dt;
+
+        if(moveType == MeshMove::TopMove) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                TopRotate.y += 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                TopRotate.y -= 5.f;
+            }
         }
 
         glm::mat4 mat{1.f};
@@ -469,10 +523,11 @@ void OnImGuiUpdate()
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
     auto dir = g_Camera->GetDir();
-    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z); ImGui::SameLine();
+    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z);
+    ImGui::Text("Sun Direction = %.2f %.2f %.2f", g_SunLight.x, g_SunLight.y, g_SunLight.z);
     if(ImGui::Button("Set Sun"))
     {
-        g_SunLight = g_Camera->GetDir();
+        g_SunLight = dir;
     }
 
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
@@ -508,27 +563,67 @@ void OnImGuiUpdate()
     ImGui::End();
 }
 
+
+
 void OnRenderScene()
 {
+
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
-    for(auto &mesh : TestModel->GetMeshes())
-    {
-        if(mesh->m_Name == "b")
-        {
-            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+    // hotcode
+
+    //Base
+//    Renderer::DrawMesh(TestModel->GetMeshes()[0], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[0]);
+//    // Top
+//    Renderer::DrawMesh(TestModel->GetMeshes()[1], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[1]);
+//    // Arm1
+//    Renderer::DrawMesh(TestModel->GetMeshes()[2], {0.f, 0.f, 0.f}, BaseRotate+TopRotate, {.5f, .5f, .5f}, MeshColor[2]);
+//    // Joint
+//    Renderer::DrawMesh(TestModel->GetMeshes()[3], {0.f, 0.f, 0.f}, BaseRotate+TopRotate, {.5f, .5f, .5f}, MeshColor[3]);
+//    // Arm2
+//    Renderer::DrawMesh(TestModel->GetMeshes()[4], {0.f, 0.f, 0.f}, BaseRotate+TopRotate+Arm1Rotate, {.5f, .5f, .5f}, MeshColor[4]);
+
+
+// 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
+
+    for(int i = 0 ; i < TestModel->GetMeshCount() ; i++) {
+
+        if(i == BASE)
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {.5f, .5f, .5f}, MeshColor[i]);
+        else if(moveType == MeshMove::TopMove) {
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, TopRotate, {.5f, .5f, .5f}, MeshColor[i]);
         }
+
+
+
         else
-            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+            Renderer::DrawMesh(TestModel->GetMeshes()[i], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[i]);
     }
 
+//    for(auto &mesh : TestModel->GetMeshes())
+//    {
+//        Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {.5f, .5f, .5f});
+//    }
+//
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {5.f, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 5.f, 0.f}, glm::vec4 {0.f, 1.f, 0.f, 1.f});
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 0.f, 5.f}, glm::vec4 {0.f, 0.f, 1.f, 1.f});
 
+    auto sunDir = glm::normalize(g_Camera->GetDir());
+    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+
+//    for(auto &mesh : RobotArmModel->GetMeshes())
+//    {
+//        if(mesh->m_Name == "b")
+//        {
+//            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+//        }
+//        else
+//            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+//    }
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this
@@ -572,24 +667,41 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
         CameraPos.z = 0.f;
 }
 
+bool hold = false;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-	if (action == GLFW_PRESS) {
-		switch (key)
-		{
-		case GLFW_KEY_A:
-			break;
-		case GLFW_KEY_D:
-			break;
-		case GLFW_KEY_W:
-			break;
-		case GLFW_KEY_S:
-			break;
-		case GLFW_KEY_SPACE:
-			break;
-		default:
-			break;
-		}
+	if(action == GLFW_PRESS) {
+
+        if(!hold) {
+
+            switch (key){
+
+                case GLFW_KEY_B:
+                    moveType = moveType == MeshMove::BaseMove? MeshMove::None : MeshMove::BaseMove;
+                    hold = true;
+                    break;
+                case GLFW_KEY_T:
+                    moveType = moveType == MeshMove::TopMove? MeshMove::None : MeshMove::TopMove;
+                    hold = true;
+                    break;
+                case GLFW_KEY_A:
+                    break;
+                case GLFW_KEY_D:
+                    break;
+                case GLFW_KEY_W:
+                    break;
+                case GLFW_KEY_S:
+                    break;
+                case GLFW_KEY_SPACE:
+                    break;
+                default:
+                    break;
+            }
+        }
 	}
+    if(action == GLFW_RELEASE) {
+
+        hold = false;
+    }
 }
 
 // Alternative way of triggering functions on mouse click events

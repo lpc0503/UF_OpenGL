@@ -124,9 +124,9 @@ void RendererAPI::DrawLines()
 // Mesh
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
 {
-    m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale});
+    m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale, tint});
 }
 
 void RendererAPI::SendMeshData()
@@ -138,7 +138,7 @@ void RendererAPI::SendMeshData()
 
 void RendererAPI::DrawMeshs()
 {
-    auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+    auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
     {
         glm::mat4 m{1.f};
         m = glm::translate(m, pos);
@@ -147,6 +147,7 @@ void RendererAPI::DrawMeshs()
         m = glm::rotate(m, glm::radians(rotate.z), {0.f, 0.f, 1.f});
         m = glm::scale(m, scale);
         SetMatrix("M", m);
+        SetFloat4("Color", tint);
     };
     auto DrawMesh = [&](Ref<Mesh> mesh)
     {
@@ -162,7 +163,7 @@ void RendererAPI::DrawMeshs()
     SendLightData();
     for(MeshData &md : m_Meshes)
     {
-        SendModelMatrix(md.pos, md.rotate, md.scale);
+        SendModelMatrix(md.pos, md.rotate, md.scale, md.tint);
         DrawMesh(md.mesh);
     }
     UnbindShader();
@@ -181,5 +182,6 @@ void RendererAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &co
 void RendererAPI::SendLightData()
 {
     SetFloat3("dirLight.dir", m_DirectionalLight.dir);
+    SetFloat3("dirLight.ambient", m_DirectionalLight.color);
     SetFloat3("dirLight.diffuse", m_DirectionalLight.color);
 }

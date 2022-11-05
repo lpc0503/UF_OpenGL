@@ -34,6 +34,7 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->BindMeshShader();
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
+    g_RenderAPI->SetMatrix("MV", camera->GetView());
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();
 }
@@ -98,9 +99,9 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
-void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
 {
-    g_RenderAPI->PushMesh(mesh, pos, rotate, scale);
+    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint);
 }
 
 void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
