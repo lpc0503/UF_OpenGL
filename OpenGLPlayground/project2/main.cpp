@@ -386,6 +386,7 @@ void PickObject() {
 
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
+Ref<Model> TestModel;
 
 void OnInitScene()
 {
@@ -394,8 +395,9 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
     BunnyModel = Model::LoadModel("../asset/bunny.obj");
+    TestModel = Model::LoadModel("../asset/Robot.obj");
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
-//    INFO("size = {}", RobotArmModel->GetMeshes().size());
+    INFO("size = {}", TestModel->GetMeshes().size());
 }
 
 float CameraMoveSpeed = 1.f;
@@ -513,33 +515,39 @@ void OnRenderScene()
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
-//    for(auto &mesh : RobotArmModel->GetMeshes())
-//    {
-//        if(mesh->m_Name == "b")
-//        {
-//            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-//        }
-//        else
-//            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-//    }
+    for(auto &mesh : TestModel->GetMeshes())
+    {
+        if(mesh->m_Name == "b")
+        {
+            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+        }
+        else
+            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+    }
+
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {5.f, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 5.f, 0.f}, glm::vec4 {0.f, 1.f, 0.f, 1.f});
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 0.f, 5.f}, glm::vec4 {0.f, 0.f, 1.f, 1.f});
+
     Renderer::EndScene();
 
     // TODO: Use Renderer to draw this
-    glUseProgram(programID);
-    {
-        glm::vec3 lightPos = glm::vec3(4, 4, 4);
-        glm::mat4x4 ModelMatrix = glm::mat4(1.0);
-        glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-        glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
-        glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
-        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
 
-        glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
-        glDrawArrays(GL_LINES, 0, NumVerts[0]);
-
-        glBindVertexArray(0);
-    }
-    glUseProgram(0);
+//    glUseProgram(programID);
+//    {
+//        glm::vec3 lightPos = glm::vec3(4, 4, 4);
+//        glm::mat4x4 ModelMatrix = glm::mat4(1.0);
+//        glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
+//        glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
+//        glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
+//        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
+//
+//        glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
+//        glDrawArrays(GL_LINES, 0, NumVerts[0]);
+//
+//        glBindVertexArray(0);
+//    }
+//    glUseProgram(0);
 }
 
 // TODO: remove
