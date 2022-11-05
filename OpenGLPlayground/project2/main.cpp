@@ -115,6 +115,7 @@ glm::vec4 MeshColor[6] = {PURPLE, GREEN, YELLOW, RED, BLUE, CYAN};
 #define BASE 3
 #define ARM1 4
 #define ARM2 5
+int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
 // TODO: to ref
@@ -122,7 +123,7 @@ std::shared_ptr<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
-glm::vec3 g_SunLight = {0.f, -1.f, 0.f};
+glm::vec3 g_SunLight = {0.f, 4.f, 4.f};
 
 // Declare global objects
 // TL
@@ -410,7 +411,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
-    BunnyModel = Model::LoadModel("../asset/bunny.obj");
+//    BunnyModel = Model::LoadModel("../asset/bunny.obj");
     TestModel = Model::LoadModel("../asset/Robot.obj");
 
     for(int i = 0 ; i < 6 ; i++) {
@@ -418,11 +419,12 @@ void OnInitScene()
         Rotate[i] = glm::vec3 (0.f, 0.f, 0.f);
     }
 
+
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
     INFO("size = {}", TestModel->GetMeshes().size());
 }
 
-float CameraMoveSpeed = 1.f;
+float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
@@ -435,7 +437,7 @@ enum MeshMove {
     None,
     BaseMove,
     TopMove,
-    Ara1Move,
+    Arm1Move,
     Arm2Move,
     PenMove
 };
@@ -445,7 +447,7 @@ glm::vec3 ModelMove = {0.f, 0.f, 0.f};
 glm::vec3 TopRotate = {0.f, 0.f, 0.f};
 glm::vec3 Arm1Rotate = {0.f, 0.f, 0.f};
 glm::vec3 Arm2Rotate = {0.f, 0.f, 0.f};
-
+glm::vec3 PenRotate = {0.f, 0.f, 0.f};
 
 void OnUpdateScene(float dt)
 {
@@ -526,6 +528,75 @@ void OnUpdateScene(float dt)
                 TopRotate.y -= 5.f;
             }
         }
+        if(moveType == MeshMove::Arm1Move) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                Arm1Rotate.z += 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                Arm1Rotate.z -= 5.f;
+            }
+        }
+        if(moveType == MeshMove::Arm2Move) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                Arm2Rotate.x += 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                Arm2Rotate.x -= 5.f;
+            }
+        }
+        if(moveType == MeshMove::PenMove) {
+
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+            {
+                PenRotate.z += 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+            {
+                PenRotate.z -= 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
+            {
+                PenRotate.x += 5.f;
+            }
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
+            {
+                PenRotate.x -= 5.f;
+            }
+        }
+
+        for(auto i : Index) {
+
+            if(i == BASE);
+            else if(moveType == MeshMove::TopMove) {
+
+                Rotate[i] += TopRotate;
+            }
+            else if(moveType == MeshMove::Arm1Move) {
+
+                if(i != TOP)
+                    Rotate[i] += Arm1Rotate;
+            }
+            else if(moveType == MeshMove::Arm2Move) {
+
+                if(i == ARM2 || i == PEN)
+                    Rotate[i] += Arm2Rotate;
+            }
+            else if(moveType == MeshMove::PenMove) {
+
+                if(i == PEN)
+                    Rotate[i] += PenRotate;
+            }
+        }
+        TopRotate = {0.f, 0.f, 0.f};
+        Arm1Rotate = {0.f, 0.f, 0.f};
+        Arm2Rotate = {0.f, 0.f, 0.f};
+        PenRotate = {0.f, 0.f, 0.f};
 
         glm::mat4 mat{1.f};
         // The order of rotation have to be x -> y or we have to deal with the gimbal lock
@@ -590,42 +661,14 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-
-    // hotcode
-
-    //Base
-//    Renderer::DrawMesh(TestModel->GetMeshes()[0], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[0]);
-//    // Top
-//    Renderer::DrawMesh(TestModel->GetMeshes()[1], {0.f, 0.f, 0.f}, BaseRotate, {.5f, .5f, .5f}, MeshColor[1]);
-//    // Arm1
-//    Renderer::DrawMesh(TestModel->GetMeshes()[2], {0.f, 0.f, 0.f}, BaseRotate+TopRotate, {.5f, .5f, .5f}, MeshColor[2]);
-//    // Joint
-//    Renderer::DrawMesh(TestModel->GetMeshes()[3], {0.f, 0.f, 0.f}, BaseRotate+TopRotate, {.5f, .5f, .5f}, MeshColor[3]);
-//    // Arm2
-//    Renderer::DrawMesh(TestModel->GetMeshes()[4], {0.f, 0.f, 0.f}, BaseRotate+TopRotate+Arm1Rotate, {.5f, .5f, .5f}, MeshColor[4]);
-
+//    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
-    for(int i = 0 ; i < TestModel->GetMeshCount() ; i++) {
+    for(auto i : Index) {
 
-        if(i == BASE)
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, {0.f, 0.f, 0.f}, {.5f, .5f, .5f}, MeshColor[i]);
-        else if(moveType == MeshMove::TopMove) {
-            Rotate[i] += TopRotate;
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {.5f, .5f, .5f}, MeshColor[i]);
-        }
-        else
-            Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {.5f, .5f, .5f}, MeshColor[i]);
-
+         Renderer::DrawMesh(TestModel->GetMeshes()[i], ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
     }
-    TopRotate = {0.f, 0.f, 0.f};
-
-//    for(auto &mesh : TestModel->GetMeshes())
-//    {
-//        Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {.5f, .5f, .5f});
-//    }
 //
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {5.f, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
     Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 5.f, 0.f}, glm::vec4 {0.f, 1.f, 0.f, 1.f});
@@ -633,35 +676,7 @@ void OnRenderScene()
 
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
-
-//    for(auto &mesh : RobotArmModel->GetMeshes())
-//    {
-//        if(mesh->m_Name == "b")
-//        {
-//            Renderer::DrawMesh(mesh, {1.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-//        }
-//        else
-//            Renderer::DrawMesh(mesh, {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
-//    }
     Renderer::EndScene();
-
-    // TODO: Use Renderer to draw this
-
-//    glUseProgram(programID);
-//    {
-//        glm::vec3 lightPos = glm::vec3(4, 4, 4);
-//        glm::mat4x4 ModelMatrix = glm::mat4(1.0);
-//        glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
-//        glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetView()));
-//        glUniformMatrix4fv(ProjMatrixID, 1, GL_FALSE, glm::value_ptr(g_Camera->GetProjection()));
-//        glUniformMatrix4fv(ModelMatrixID, 1, GL_FALSE, &ModelMatrix[0][0]);
-//
-//        glBindVertexArray(VertexArrayId[0]);	// Draw CoordAxes
-//        glDrawArrays(GL_LINES, 0, NumVerts[0]);
-//
-//        glBindVertexArray(0);
-//    }
-//    glUseProgram(0);
 }
 
 // TODO: remove
@@ -700,6 +715,18 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                     break;
                 case GLFW_KEY_T:
                     moveType = moveType == MeshMove::TopMove? MeshMove::None : MeshMove::TopMove;
+                    hold = true;
+                    break;
+                case GLFW_KEY_1:
+                    moveType = moveType == MeshMove::Arm1Move? MeshMove::None : MeshMove::Arm1Move;
+                    hold = true;
+                    break;
+                case GLFW_KEY_2:
+                    moveType = moveType == MeshMove::Arm2Move? MeshMove::None : MeshMove::Arm2Move;
+                    hold = true;
+                    break;
+                case GLFW_KEY_P:
+                    moveType = moveType == MeshMove::PenMove? MeshMove::None : MeshMove::PenMove;
                     hold = true;
                     break;
                 case GLFW_KEY_A:
