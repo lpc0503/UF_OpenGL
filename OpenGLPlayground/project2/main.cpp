@@ -470,6 +470,11 @@ struct Entity
     {
     }
 
+    static Ref<Entity> Create(const std::string &name_)
+    {
+        return MakeRef<Entity>(name_);
+    }
+
     void Move(const glm::vec3 &off)
     {
         transform.pos += off;
@@ -513,7 +518,8 @@ struct Entity
     }
 };
 
-Entity base("Base"), top("Top");
+//Entity base("Base"), top("Top");
+std::vector<Ref<Entity>> g_RobotArm;
 
 void OnInitScene()
 {
@@ -537,7 +543,7 @@ void OnInitScene()
     MeshPos[3] = {2.0f, 1.5f, 0.0f};
     MeshPos[4] = {2.0f, 1.5f, 0.0f};
     MeshPos[5] = {2.0f, 3.5f, 0.0f};
-
+    
     base.transform.pos = MeshPos[0];
     base.mesh = TModel[0]->GetMeshes().back();
     base.color = MeshColor[0];
