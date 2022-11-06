@@ -124,7 +124,7 @@ std::shared_ptr<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
-glm::vec3 g_SunLight = {0.f, 4.f, 4.f};
+glm::vec3 g_SunLight = {1.f, 1.f, -1.2f};
 
 // Declare global objects
 // TL
@@ -527,7 +527,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
-//    BunnyModel = Model::LoadModel("../asset/bunny.obj");
+    BunnyModel = Model::LoadModel("../asset/bunny.obj");
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
     TModel[0] = (Model::LoadModel("../asset/Robot/base.obj"));
@@ -657,109 +657,79 @@ void OnUpdateScene(float dt)
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                ModelMove.z += .1f;
+                base.transform.pos.z += .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                ModelMove.z -= .1f;
+                base.transform.pos.z -= .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
             {
-                ModelMove.x += .1f;
+                base.transform.pos.x += .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
-                ModelMove.x -= .1f;
+                base.transform.pos.x -= .1f;
             }
+            base.UpdateSelfAndChild();
         }
 
         if(moveType == MeshMove::TopMove) {
 
-            glm::vec4 tmp = {MeshPos[2].x + 2, MeshPos[3].y, MeshPos[3].z, 1};
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                TopRotate.y += 5.f;
+                top.transform.rotate.y += 5.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                TopRotate.y -= 5.f;
+                top.transform.rotate.y -= 5.f;
             }
-            glm::mat4 trans;
-            trans = glm::rotate(trans, glm::radians(5.f), MeshPos[ARM1]);
-            tmp = trans * tmp;
-            MeshPos[4] = {tmp.x, tmp.y, tmp.z};
+            top.UpdateSelfAndChild();
         }
         if(moveType == MeshMove::Arm1Move) {
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                Arm1Rotate.z += 5.f;
+                arm1.transform.rotate.z += 5.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                Arm1Rotate.z -= 5.f;
+                arm1.transform.rotate.z -= 5.f;
             }
+            arm1.UpdateSelfAndChild();
         }
         if(moveType == MeshMove::Arm2Move) {
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                Arm2Rotate.x += 5.f;
+                arm2.transform.rotate.x += 5.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                Arm2Rotate.x -= 5.f;
+                arm2.transform.rotate.x -= 5.f;
             }
+            arm2.UpdateSelfAndChild();
         }
         if(moveType == MeshMove::PenMove) {
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                PenRotate.z += 5.f;
+                pen.transform.rotate.y += 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                PenRotate.z -= 5.f;
+                pen.transform.rotate.y -= 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
             {
-                PenRotate.x += 5.f;
+                pen.transform.rotate.x += 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
-                PenRotate.x -= 5.f;
+                pen.transform.rotate.x -= 1.f;
             }
+            pen.UpdateSelfAndChild();
         }
-
-        for(int i = 0 ; i < TModel.size() ; i++) {
-
-            if(i == BASE);
-            else if(moveType == MeshMove::TopMove) {
-
-                Rotate[i] += TopRotate;
-            }
-            else if(moveType == MeshMove::Arm1Move) {
-
-                if(i != TOP)
-                    Rotate[i] += Arm1Rotate;
-            }
-            else if(moveType == MeshMove::Arm2Move) {
-
-                if(i == ARM2 || i == PEN)
-                    Rotate[i] += Arm2Rotate;
-            }
-            else if(moveType == MeshMove::PenMove) {
-
-                if(i == PEN)
-                    Rotate[i] += PenRotate;
-            }
-        }
-
-
-        TopRotate = {0.f, 0.f, 0.f};
-        Arm1Rotate = {0.f, 0.f, 0.f};
-        Arm2Rotate = {0.f, 0.f, 0.f};
-        PenRotate = {0.f, 0.f, 0.f};
 
         glm::mat4 mat{1.f};
         // The order of rotation have to be x -> y or we have to deal with the gimbal lock
@@ -793,6 +763,7 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Bunny Pos", &BunnyPos);
     ImGui::DragFloat3("Bunny Scale", &BunnyScale);
 
+    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
     // ==== 測試用 之後拿掉我 ====
     if(ImGui::CollapsingHeader("Test"))
     {
@@ -831,7 +802,7 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-//    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
