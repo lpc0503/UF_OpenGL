@@ -452,6 +452,8 @@ struct Entity
         void GetRTS(glm::vec3 &pos, glm::vec3 &rotate)
         {
             // TODO: 因為我們 renderer 目前只支援輸入個別的資料而不支援輸入 matrix 所以這邊先做轉換
+            // ref: https://stackoverflow.com/questions/17918033/glm-decompose-mat4-into-translation-and-rotation
+            //      https://stackoverflow.com/questions/12048046/quaternions-euler-angles-rotation-matrix-trouble-glm
             glm::vec3 scale;
             glm::quat rotation;
             glm::vec3 skew;
