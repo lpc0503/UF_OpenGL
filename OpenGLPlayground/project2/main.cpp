@@ -518,8 +518,8 @@ struct Entity
     }
 };
 
-//Entity base("Base"), top("Top");
-std::vector<Ref<Entity>> g_RobotArm;
+Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen");
+//std::vector<Ref<Entity>> g_RobotArm;
 
 void OnInitScene()
 {
@@ -537,21 +537,44 @@ void OnInitScene()
     TModel[4] = (Model::LoadModel("../asset/Robot/arm2.obj"));
     TModel[5] = (Model::LoadModel("../asset/Robot/pen.obj"));
 
-    MeshPos[0] = {0.0f, 0.0f, 0.0f};
-    MeshPos[1] = {0.0f, 1.3f, 0.0f};
-    MeshPos[2] = {0.0f, 1.5f, 0.0f};
-    MeshPos[3] = {2.0f, 1.5f, 0.0f};
-    MeshPos[4] = {2.0f, 1.5f, 0.0f};
-    MeshPos[5] = {2.0f, 3.5f, 0.0f};
+    MeshPos[BASE] = {0.0f, 0.0f, 0.0f};
+    MeshPos[TOP] = {0.0f, 1.3f, 0.0f};
+    MeshPos[ARM1] = {0.0f, 0.5f, 0.0f};
+    MeshPos[JOINT] = {2.0f, 0.f, 0.0f};
+    MeshPos[ARM2] = {0.f, 0.f, 0.0f};
+    MeshPos[PEN] = {0.f, 1.5f, 0.0f};
     
-    base.transform.pos = MeshPos[0];
+    base.transform.pos = MeshPos[BASE];
     base.mesh = TModel[0]->GetMeshes().back();
     base.color = MeshColor[0];
 
-    top.transform.pos = MeshPos[1];
+    top.transform.pos = MeshPos[TOP];
     top.mesh = TModel[1]->GetMeshes().back();
     top.color = MeshColor[1];
     base.AddChild(&top);
+
+    arm1.transform.pos = MeshPos[ARM1];
+    arm1.mesh = TModel[ARM1]->GetMeshes().back();
+    arm1.color = MeshColor[ARM1];
+    top.AddChild(&arm1);
+
+
+    joint.transform.pos = MeshPos[JOINT];
+    joint.mesh = TModel[JOINT]->GetMeshes().back();
+    joint.color = MeshColor[JOINT];
+    arm1.AddChild(&joint);
+
+    arm2.transform.pos = MeshPos[ARM2];
+    arm2.mesh = TModel[ARM2]->GetMeshes().back();
+    arm2.color = MeshColor[ARM2];
+    joint.AddChild(&arm2);
+
+    pen.transform.pos = MeshPos[PEN];
+    pen.mesh = TModel[PEN]->GetMeshes().back();
+    pen.color = MeshColor[PEN];
+    arm2.AddChild(&pen);
+
+
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
@@ -777,10 +800,6 @@ void OnImGuiUpdate()
         {
             base.UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("top pos", &top.transform.pos))
-        {
-            top.UpdateSelfAndChild();
-        }
         if(ImGui::DragFloat3("base rotate", &base.transform.rotate))
         {
             base.UpdateSelfAndChild();
@@ -788,6 +807,18 @@ void OnImGuiUpdate()
         if(ImGui::DragFloat3("top rotate", &top.transform.rotate))
         {
             top.UpdateSelfAndChild();
+        }
+        if(ImGui::DragFloat3("arm1 rotate", &arm1.transform.rotate))
+        {
+            arm1.UpdateSelfAndChild();
+        }
+        if(ImGui::DragFloat3("arm2 rotate", &arm2.transform.rotate))
+        {
+            arm2.UpdateSelfAndChild();
+        }
+        if(ImGui::DragFloat3("pen rotate", &pen.transform.rotate))
+        {
+            pen.UpdateSelfAndChild();
         }
     }
 
