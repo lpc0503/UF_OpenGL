@@ -109,13 +109,14 @@ GLint LightID;
 #define PURPLE {1.f, 0.f, 1.f, 1.f}
 #define CYAN {0.f, 1.f, 1.f, 1.f}
 #define YELLOW {1.f, 1.f, 0.f, 1.f}
-glm::vec4 MeshColor[6] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW};
+glm::vec4 MeshColor[7] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED};
 #define BASE 0
 #define TOP 1
 #define ARM1 2
 #define JOINT 3
 #define ARM2 4
 #define PEN 5
+#define BOTTOM 6
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
@@ -407,8 +408,8 @@ Ref<Model> RobotArmModel;
 //Ref<Model> TestModel;
 glm::vec3 Rotate[6];
 
-std::vector<Ref<Model>> TModel(6);
-glm::vec3 MeshPos[6];
+std::vector<Ref<Model>> TModel(7);
+glm::vec3 MeshPos[7];
 
 // Scene Graph 實現: 參考 https://learnopengl.com/Guest-Articles/2021/Scene/Scene-Graph
 struct Entity
@@ -460,6 +461,7 @@ struct Entity
             glm::vec4 perspective;
 
             glm::decompose(modelMatrix, scale, rotation, pos, skew, perspective);
+            rotation = glm::conjugate(rotation);
             rotate = glm::eulerAngles(rotation);
             rotate = glm::degrees(rotate);
         }
@@ -487,7 +489,9 @@ struct Entity
 
         glm::vec3 pos{0.f}, rotate{0.f};
         transform.GetRTS(pos, rotate);
-        Renderer::DrawMesh(mesh, pos, rotate, {1.f, 1.f, 1.f}, color);
+        Renderer::DrawMesh(mesh, pos, -rotate, {1.f, 1.f, 1.f}, color);
+
+//        INFO("{}, {}, {}", rotate.x, rotate.y, rotate.z);
 
         for(auto child : children)
         {
@@ -518,7 +522,7 @@ struct Entity
     }
 };
 
-Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen");
+Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen"), bottom("bottom");
 //std::vector<Ref<Entity>> g_RobotArm;
 
 void OnInitScene()
@@ -530,27 +534,29 @@ void OnInitScene()
     BunnyModel = Model::LoadModel("../asset/bunny.obj");
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
-    TModel[0] = (Model::LoadModel("../asset/Robot/base.obj"));
-    TModel[1] = (Model::LoadModel("../asset/Robot/top.obj"));
-    TModel[2] = (Model::LoadModel("../asset/Robot/arm1.obj"));
-    TModel[3] = (Model::LoadModel("../asset/Robot/joint.obj"));
-    TModel[4] = (Model::LoadModel("../asset/Robot/arm2.obj"));
-    TModel[5] = (Model::LoadModel("../asset/Robot/pen.obj"));
+    TModel[BASE] = (Model::LoadModel("../asset/Robot/base.obj"));
+    TModel[TOP] = (Model::LoadModel("../asset/Robot/top.obj"));
+    TModel[ARM1] = (Model::LoadModel("../asset/Robot/arm1.obj"));
+    TModel[JOINT] = (Model::LoadModel("../asset/Robot/joint.obj"));
+    TModel[ARM2] = (Model::LoadModel("../asset/Robot/arm2.obj"));
+    TModel[PEN] = (Model::LoadModel("../asset/Robot/pen.obj"));
+    TModel[BOTTOM] = (Model::LoadModel("../asset/Robot/bottom.obj"));
 
     MeshPos[BASE] = {0.0f, 0.0f, 0.0f};
     MeshPos[TOP] = {0.0f, 1.3f, 0.0f};
-    MeshPos[ARM1] = {0.0f, 0.5f, 0.0f};
+    MeshPos[ARM1] = {0.0f, 0.0f, 0.0f};
     MeshPos[JOINT] = {2.0f, 0.f, 0.0f};
     MeshPos[ARM2] = {0.f, 0.f, 0.0f};
     MeshPos[PEN] = {0.f, 1.5f, 0.0f};
+    MeshPos[BOTTOM] = {0.f, 0.f, -1.5f};
     
     base.transform.pos = MeshPos[BASE];
-    base.mesh = TModel[0]->GetMeshes().back();
-    base.color = MeshColor[0];
+    base.mesh = TModel[BASE]->GetMeshes().back();
+    base.color = MeshColor[BASE];
 
     top.transform.pos = MeshPos[TOP];
-    top.mesh = TModel[1]->GetMeshes().back();
-    top.color = MeshColor[1];
+    top.mesh = TModel[TOP]->GetMeshes().back();
+    top.color = MeshColor[TOP];
     base.AddChild(&top);
 
     arm1.transform.pos = MeshPos[ARM1];
@@ -573,6 +579,11 @@ void OnInitScene()
     pen.mesh = TModel[PEN]->GetMeshes().back();
     pen.color = MeshColor[PEN];
     arm2.AddChild(&pen);
+
+    bottom.transform.pos = MeshPos[BOTTOM];
+    bottom.mesh = TModel[BOTTOM]->GetMeshes().back();
+    bottom.color = MeshColor[BOTTOM];
+    pen.AddChild(&bottom);
 
 
 
@@ -655,20 +666,20 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::BaseMove) {
 
-            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-            {
+            if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+
                 base.transform.pos.z += .1f;
             }
-            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-            {
+            if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+
                 base.transform.pos.z -= .1f;
             }
-            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-            {
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+
                 base.transform.pos.x += .1f;
             }
-            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-            {
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+
                 base.transform.pos.x -= .1f;
             }
             base.UpdateSelfAndChild();
@@ -678,11 +689,11 @@ void OnUpdateScene(float dt)
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                top.transform.rotate.y += 5.f;
+                top.transform.rotate.y = (top.transform.rotate.y + 5.f) > 360.f ? (top.transform.rotate.y + 5.f) - 360.f : (top.transform.rotate.y + 5.f);
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                top.transform.rotate.y -= 5.f;
+                top.transform.rotate.y = top.transform.rotate.y - 5.f < 0.f ? (top.transform.rotate.y - 5.f) + 360.f : (top.transform.rotate.y - 5.f);
             }
             top.UpdateSelfAndChild();
         }
@@ -690,11 +701,11 @@ void OnUpdateScene(float dt)
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                arm1.transform.rotate.z += 5.f;
+                arm1.transform.rotate.z += 5;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                arm1.transform.rotate.z -= 5.f;
+                arm1.transform.rotate.z -= 5;
             }
             arm1.UpdateSelfAndChild();
         }
@@ -702,11 +713,11 @@ void OnUpdateScene(float dt)
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                arm2.transform.rotate.x += 5.f;
+                arm2.transform.rotate.x = (arm2.transform.rotate.x + 5.f) > 360.f ? (arm2.transform.rotate.x + 5.f) - 360.f : (arm2.transform.rotate.x + 5.f);
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                arm2.transform.rotate.x -= 5.f;
+                arm2.transform.rotate.x = (arm2.transform.rotate.x - 5.f) < 0.f ? (arm2.transform.rotate.x - 5.f) + 360.f : (arm2.transform.rotate.x - 5.f);
             }
             arm2.UpdateSelfAndChild();
         }
@@ -714,19 +725,19 @@ void OnUpdateScene(float dt)
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                pen.transform.rotate.y += 1.f;
+                pen.transform.rotate.y = (pen.transform.rotate.y + 1.f) > 360.f ? (pen.transform.rotate.y + 1.f) - 360.f : (pen.transform.rotate.y + 1.f);
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                pen.transform.rotate.y -= 1.f;
+                pen.transform.rotate.y = (pen.transform.rotate.y - 1.f) < 0.f ? (pen.transform.rotate.y - 1.f) + 360.f : (pen.transform.rotate.y - 1.f);
             }
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
             {
-                pen.transform.rotate.x += 1.f;
+                pen.transform.rotate.x = (pen.transform.rotate.x + 1.f) > 360.f ? (pen.transform.rotate.x + 1) - 360.f : (pen.transform.rotate.x + 1);
             }
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
-                pen.transform.rotate.x -= 1.f;
+                pen.transform.rotate.x = (pen.transform.rotate.x - 1.f) < 0.f ? (pen.transform.rotate.x - 1.f) + 360.f : (pen.transform.rotate.x - 1.f);
             }
             pen.UpdateSelfAndChild();
         }
@@ -791,6 +802,10 @@ void OnImGuiUpdate()
         {
             pen.UpdateSelfAndChild();
         }
+        if(ImGui::DragFloat3("bottom pos", &bottom.transform.pos, 0.1))
+        {
+            bottom.UpdateSelfAndChild();
+        }
     }
 
     ImGui::End();
@@ -805,11 +820,6 @@ void OnRenderScene()
     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
-
-
-//    for(int i = 0 ; i < TModel.size() ; i++) {
-//         Renderer::DrawMesh(TModel[i]->GetMeshes().front(), MeshPos[i]+ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
-//    }
 
     base.Render();
 
