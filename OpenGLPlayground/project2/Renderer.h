@@ -17,6 +17,8 @@ public:
     static void BeginScene(Ref<Camera> camera);
     static void EndScene();
 
+    static bool IsSceneRendering(); // not thread-safe
+
     static void DrawPoint();
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 

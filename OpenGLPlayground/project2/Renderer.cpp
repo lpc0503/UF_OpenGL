@@ -7,6 +7,7 @@
 #include <vector>
 
 RendererAPI *g_RenderAPI;
+bool g_IsRendering = false;
 
 void Renderer::Init()
 {
@@ -24,6 +25,7 @@ void Renderer::Shutdown()
 
 void Renderer::BeginScene(Ref<Camera> camera)
 {
+    g_IsRendering = true;
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
     g_RenderAPI->SetMatrix("V", camera->GetView());
@@ -55,6 +57,7 @@ void Renderer::EndScene()
     g_RenderAPI->DrawMeshs();
 
     g_RenderAPI->Clear();
+    g_IsRendering = false;
 }
 
 void Renderer::DrawPoint()
@@ -89,6 +92,11 @@ void Renderer::DrawGrid(int n, int m)
         else
             Renderer::DrawLine({n, 0.f, z}, {-n, 0.f, z}, {1.f, 1.f, 1.f, 1.f});
     }
+
+    float l = std::max(n, m);
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {l, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, l, 0.f}, glm::vec4 {0.f, 1.f, 0.f, 1.f});
+    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 0.f, l}, glm::vec4 {0.f, 0.f, 1.f, 1.f});
 }
 
 void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
@@ -107,4 +115,9 @@ void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &r
 void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
 {
     g_RenderAPI->PushDirectionalLight(dir, color);
+}
+
+bool Renderer::IsSceneRendering()
+{
+    return g_IsRendering;
 }
