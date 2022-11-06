@@ -15,6 +15,7 @@
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 using namespace glm;
 
 #include <imgui.h>
@@ -409,6 +410,108 @@ glm::vec3 Rotate[6];
 std::vector<Ref<Model>> TModel(6);
 glm::vec3 MeshPos[6];
 
+// Scene Graph 實現: 參考 https://learnopengl.com/Guest-Articles/2021/Scene/Scene-Graph
+struct Entity
+{
+    Entity *parent = nullptr;
+    std::vector<Entity*> children = {};
+    std::string name;
+    //
+    Ref<Mesh> mesh;
+    glm::vec4 color;
+
+    struct Transform
+    {
+        glm::vec3 pos;
+        glm::vec3 rotate;
+        glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
+
+        glm::mat4 modelMatrix;
+
+        glm::mat4 GetLocalModelMatrix()
+        {
+            const glm::mat4 transformX = glm::rotate(glm::mat4(1.0f),
+                                                     glm::radians(rotate.x),
+                                                     glm::vec3(1.0f, 0.0f, 0.0f));
+            const glm::mat4 transformY = glm::rotate(glm::mat4(1.0f),
+                                                     glm::radians(rotate.y),
+                                                     glm::vec3(0.0f, 1.0f, 0.0f));
+            const glm::mat4 transformZ = glm::rotate(glm::mat4(1.0f),
+                                                     glm::radians(rotate.z),
+                                                     glm::vec3(0.0f, 0.0f, 1.0f));
+
+            // Y * X * Z
+            const glm::mat4 roationMatrix = transformY * transformX * transformZ;
+
+            // translation * rotation * scale (also know as TRS matrix)
+            return glm::translate(glm::mat4(1.0f), pos) *
+                   roationMatrix *
+                   glm::scale(glm::mat4(1.0f), scale);
+        }
+
+        void GetRTS(glm::vec3 &pos, glm::vec3 &rotate)
+        {
+            // TODO: 因為我們 renderer 目前只支援輸入個別的資料而不支援輸入 matrix 所以這邊先做轉換
+            glm::vec3 scale;
+            glm::quat rotation;
+            glm::vec3 skew;
+            glm::vec4 perspective;
+
+            glm::decompose(modelMatrix, scale, rotation, pos, skew, perspective);
+            rotate = glm::eulerAngles(rotation);
+        }
+    } transform;
+
+    Entity(const std::string &name_)
+        : name(name_)
+    {
+    }
+
+    void Move(const glm::vec3 &off)
+    {
+        transform.pos += off;
+        UpdateSelfAndChild();
+    }
+
+    void Render()
+    {
+        ASSERT(Renderer::IsSceneRendering() == true, "MUST call Renderer::BeginScene() first!");
+
+        glm::vec3 pos{0.f}, rotate{0.f};
+        transform.GetRTS(pos, rotate);
+        Renderer::DrawMesh(mesh, pos, rotate, {1.f, 1.f, 1.f}, color);
+
+        for(auto child : children)
+        {
+            child->Render();
+        }
+    }
+
+    void UpdateSelfAndChild()
+    {
+        if (parent)
+            transform.modelMatrix = /*parent->transform.GetLocalModelMatrix()*/parent->transform.modelMatrix * transform.GetLocalModelMatrix();
+        else
+            transform.modelMatrix = transform.GetLocalModelMatrix();
+
+        for (auto child : children)
+        {
+            child->UpdateSelfAndChild();
+        }
+    }
+
+    void AddChild(Entity *ent)
+    {
+        ASSERT(ent, "Invalid entity (nullptr)");
+        children.push_back(ent);
+        ent->parent = this;
+        //
+        UpdateSelfAndChild();
+    }
+};
+
+Entity base("Base"), top("Top");
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -430,14 +533,16 @@ void OnInitScene()
     MeshPos[2] = {0.0f, 1.5f, 0.0f};
     MeshPos[3] = {0.0f, 1.5f, 0.0f};
     MeshPos[4] = {2.0f, 1.5f, 0.0f};
-    MeshPos[5] = {2.0f, 0.0f, 0.0f};
+    MeshPos[5] = {2.0f, 3.5f, 0.0f};
 
+    base.transform.pos = MeshPos[0];
+    base.mesh = TModel[0]->GetMeshes().back();
+    base.color = MeshColor[0];
 
-//    for(int i = 0 ; i < 6 ; i++) {
-//
-//        Rotate[i] = glm::vec3 (0.f, 0.f, 0.f);
-//    }
-
+    top.transform.pos = MeshPos[1];
+    top.mesh = TModel[1]->GetMeshes().back();
+    top.color = MeshColor[1];
+    base.AddChild(&top);
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
@@ -660,27 +765,26 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Bunny Pos", &BunnyPos);
     ImGui::DragFloat3("Bunny Scale", &BunnyScale);
 
-    /*for(int i = 0; i < BunnyModel->GetMeshCount(); i++)
+    // ==== 測試用 之後拿掉我 ====
+    if(ImGui::CollapsingHeader("Test"))
     {
-        auto &mesh = BunnyModel->GetMeshes()[i];
-
-        if(ImGui::CollapsingHeader("Vertices"))
+        if(ImGui::DragFloat3("base pos", &base.transform.pos))
         {
-            for (int j = 0; j < mesh->m_Vertices.size(); j++)
-            {
-                ImGui::Text("vertex %d %.2f, %.2f, %.2f", j, mesh->m_Vertices[j].pos.x, mesh->m_Vertices[j].pos.y,
-                            mesh->m_Vertices[j].pos.z);
-            }
+            base.UpdateSelfAndChild();
         }
-
-        if(ImGui::CollapsingHeader("Indices"))
+        if(ImGui::DragFloat3("top pos", &top.transform.pos))
         {
-            for (int j = 0; j < mesh->m_Indices.size(); j++)
-            {
-                ImGui::Text("indice %d", mesh->m_Indices[j]);
-            }
+            top.UpdateSelfAndChild();
         }
-    }*/
+        if(ImGui::DragFloat3("base rotate", &base.transform.rotate))
+        {
+            base.UpdateSelfAndChild();
+        }
+        if(ImGui::DragFloat3("top rotate", &top.transform.rotate))
+        {
+            top.UpdateSelfAndChild();
+        }
+    }
 
     ImGui::End();
 }
@@ -696,14 +800,11 @@ void OnRenderScene()
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
 
-    for(int i = 0 ; i < TModel.size() ; i++) {
+//    for(int i = 0 ; i < TModel.size() ; i++) {
+//         Renderer::DrawMesh(TModel[i]->GetMeshes().front(), MeshPos[i]+ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
+//    }
 
-         Renderer::DrawMesh(TModel[i]->GetMeshes().front(), MeshPos[i]+ModelMove, Rotate[i], {1.f, 1.f, 1.f}, MeshColor[i]);
-    }
-//
-    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {5.f, 0.f, 0.f}, glm::vec4 {1.f, 0.f, 0.f, 1.f});
-    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 5.f, 0.f}, glm::vec4 {0.f, 1.f, 0.f, 1.f});
-    Renderer::DrawLine(glm::vec3 {0, 0, 0}, glm::vec3 {0.f, 0.f, 5.f}, glm::vec4 {0.f, 0.f, 1.f, 1.f});
+    base.Render();
 
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
