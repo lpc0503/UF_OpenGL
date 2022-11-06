@@ -461,6 +461,7 @@ struct Entity
 
             glm::decompose(modelMatrix, scale, rotation, pos, skew, perspective);
             rotate = glm::eulerAngles(rotation);
+            rotate = glm::degrees(rotate);
         }
     } transform;
 
