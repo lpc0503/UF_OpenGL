@@ -441,11 +441,11 @@ struct Entity
                                                      glm::vec3(0.0f, 0.0f, 1.0f));
 
             // Y * X * Z
-            const glm::mat4 roationMatrix = transformY * transformX * transformZ;
+            const glm::mat4 rotationMatrix = transformY * transformX * transformZ;
 
-            // translation * rotation * scale (also know as TRS matrix)
+            // translation * rotation * scale (also known as TRS matrix)
             return glm::translate(glm::mat4(1.0f), pos) *
-                   roationMatrix *
+                    rotationMatrix *
                    glm::scale(glm::mat4(1.0f), scale);
         }
 
@@ -533,7 +533,7 @@ void OnInitScene()
     MeshPos[0] = {0.0f, 0.0f, 0.0f};
     MeshPos[1] = {0.0f, 1.3f, 0.0f};
     MeshPos[2] = {0.0f, 1.5f, 0.0f};
-    MeshPos[3] = {0.0f, 1.5f, 0.0f};
+    MeshPos[3] = {2.0f, 1.5f, 0.0f};
     MeshPos[4] = {2.0f, 1.5f, 0.0f};
     MeshPos[5] = {2.0f, 3.5f, 0.0f};
 
@@ -724,10 +724,6 @@ void OnUpdateScene(float dt)
                     Rotate[i] += PenRotate;
             }
         }
-
-
-        MeshPos[4] = {MeshPos[2].x + 2, MeshPos[3].y, MeshPos[3].z};
-
 
 
         TopRotate = {0.f, 0.f, 0.f};
