@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "Log.h"
-//#include "Vertex.h"
+#include "Vertex.h"
 #include "Mesh.h"
 #include "Core.h"
 

@@ -80,7 +80,7 @@ void RendererAPI::SetBool(const std::string &name, bool b)
 GLint RendererAPI::GetUniformID(const std::string &name)
 {
     auto id = glGetUniformLocation(m_CurrentShader, name.c_str());
-    ASSERT(id >= 0, "Invalid shader uniform name");
+//    ASSERT(id >= 0, "Invalid shader uniform name");
     return id;
 }
 

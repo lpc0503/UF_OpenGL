@@ -746,7 +746,9 @@ void OnUpdateScene(float dt)
         // The order of rotation have to be x -> y or we have to deal with the gimbal lock
         mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
         mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
-        g_Camera->SetPosition(glm::vec4{CameraPos, 1.f} * mat); // TODO: 需要理解????
+
+        auto tmp = glm::vec4{CameraPos, 1.f} * mat;
+        g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
     }
 }
 

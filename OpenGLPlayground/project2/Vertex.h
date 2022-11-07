@@ -3,11 +3,11 @@
 
 #include <glm/glm.hpp>
 #include <glm/vector_relational.hpp> // ref: https://stackoverflow.com/questions/46636721/how-do-i-use-glm-vector-relational-functions
-#include <fmt/format.h>
+//#include <fmt/format.h>
 
 #include <functional>
 
-#include "Utils.h"
+//#include "Utils.h"
 #include "Log.h"
 
 struct Vertex
@@ -72,10 +72,10 @@ struct std::hash<glm::vec4>
     std::size_t operator()(const glm::vec4& v) const
     {
         std::size_t h = 0;
-        Utils::hash_combine(h, v.x);
-        Utils::hash_combine(h, v.y);
-        Utils::hash_combine(h, v.z);
-        Utils::hash_combine(h, v.w);
+//        Utils::hash_combine(h, v.x);
+//        Utils::hash_combine(h, v.y);
+//        Utils::hash_combine(h, v.z);
+//        Utils::hash_combine(h, v.w);
         INFO_TAG("hash glm::vec4", "{} -> {}", (void*)&v, h);
         return h;
     }
@@ -87,9 +87,9 @@ struct std::hash<glm::vec3>
     std::size_t operator()(const glm::vec3& v) const
     {
         std::size_t h = 0;
-        Utils::hash_combine(h, v.x);
-        Utils::hash_combine(h, v.y);
-        Utils::hash_combine(h, v.z);
+//        Utils::hash_combine(h, v.x);
+//        Utils::hash_combine(h, v.y);
+//        Utils::hash_combine(h, v.z);
         INFO_TAG("hash glm::vec3", "{} -> {}", (void*)&v, h);
         return h;
     }
@@ -101,9 +101,9 @@ struct std::hash<Vertex>
     std::size_t operator()(const Vertex& v) const
     {
         std::size_t h = 0;
-        Utils::hash_combine(h, v.pos);
-        Utils::hash_combine(h, v.normal);
-        Utils::hash_combine(h, v.color);
+//        Utils::hash_combine(h, v.pos);
+//        Utils::hash_combine(h, v.normal);
+//        Utils::hash_combine(h, v.color);
         INFO_TAG("hash Vertex", "{} -> {}", (void*)&v, h);
         return h;
     }
