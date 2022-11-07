@@ -109,7 +109,8 @@ GLint LightID;
 #define PURPLE {1.f, 0.f, 1.f, 1.f}
 #define CYAN {0.f, 1.f, 1.f, 1.f}
 #define YELLOW {1.f, 1.f, 0.f, 1.f}
-glm::vec4 MeshColor[7] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED};
+#define WHITE {1.f, 1.f, 1.f, 1.f}
+glm::vec4 MeshColor[8] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, WHITE};
 #define BASE 0
 #define TOP 1
 #define ARM1 2
@@ -117,6 +118,7 @@ glm::vec4 MeshColor[7] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED};
 #define ARM2 4
 #define PEN 5
 #define BOTTOM 6
+#define SELECT 7
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
@@ -646,6 +648,14 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::None) {
 
+            base.color = MeshColor[BASE];
+            top.color = MeshColor[TOP];
+            arm1.color = MeshColor[ARM1];
+            joint.color = MeshColor[JOINT];
+            arm2.color = MeshColor[ARM2];
+            pen.color = MeshColor[PEN];
+            bottom.color = MeshColor[BOTTOM];
+
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 CameraRotate.y += 5.f * CameraMoveSpeed * dt;
@@ -666,6 +676,7 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::BaseMove) {
 
+            base.color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 
                 base.transform.pos.z += .1f;
@@ -687,6 +698,7 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::TopMove) {
 
+            top.color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 top.transform.rotate.y = (top.transform.rotate.y + 5.f) > 360.f ? (top.transform.rotate.y + 5.f) - 360.f : (top.transform.rotate.y + 5.f);
@@ -699,6 +711,7 @@ void OnUpdateScene(float dt)
         }
         if(moveType == MeshMove::Arm1Move) {
 
+            arm1.color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 arm1.transform.rotate.z += 5;
@@ -711,6 +724,7 @@ void OnUpdateScene(float dt)
         }
         if(moveType == MeshMove::Arm2Move) {
 
+            arm2.color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 arm2.transform.rotate.x = (arm2.transform.rotate.x + 5.f) > 360.f ? (arm2.transform.rotate.x + 5.f) - 360.f : (arm2.transform.rotate.x + 5.f);
@@ -723,6 +737,7 @@ void OnUpdateScene(float dt)
         }
         if(moveType == MeshMove::PenMove) {
 
+            pen.color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
                 pen.transform.rotate.y = (pen.transform.rotate.y + 1.f) > 360.f ? (pen.transform.rotate.y + 1.f) - 360.f : (pen.transform.rotate.y + 1.f);
