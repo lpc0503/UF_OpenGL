@@ -32,6 +32,7 @@ using namespace glm;
 #include "Log.h"
 #include "Model.h"
 #include "Utils.h"
+#include "Entity.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -121,6 +122,17 @@ glm::vec4 MeshColor[8] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, WHITE};
 #define SELECT 7
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
+
+Ref<Model> BunnyModel;
+Ref<Model> RobotArmModel;
+//Ref<Model> TestModel;
+glm::vec3 Rotate[6];
+
+std::vector<Ref<Model>> TModel(7);
+glm::vec3 MeshPos[7];
+
+Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen"), bottom("bottom");
+//std::vector<Ref<Entity>> g_RobotArm;
 
 // TODO: to ref
 std::shared_ptr<Camera> g_Camera;
@@ -358,18 +370,27 @@ void CreateObjects() {
 }
 
 void PickObject() {
-	glUseProgram(pickingProgramID);
-	{
-		glm::mat4 ModelMatrix = glm::mat4(1.0); // TranslationMatrix * RotationMatrix;
-		glm::mat4 MVP = gProjectionMatrix * gViewMatrix * ModelMatrix;
 
-		// Send our transformation to the currently bound shader, in the "MVP" uniform
-		glUniformMatrix4fv(PickingMatrixID, 1, GL_FALSE, &MVP[0][0]);
 
-		// ATTN: DRAW YOUR PICKING SCENE HERE. REMEMBER TO SEND IN A DIFFERENT PICKING COLOR FOR EACH OBJECT BEFOREHAND
-		glBindVertexArray(0);
-	}
-	glUseProgram(0);
+    Renderer::BeginPickingScene(g_Camera);
+    // TODO: Hacks need to refactor in future
+    auto basePtr = std::shared_ptr<Entity>(&base);
+    Renderer::TestPickingEntity(basePtr);
+    auto topPtr = std::shared_ptr<Entity>(&top);
+    Renderer::TestPickingEntity(topPtr);
+    auto arm1Ptr = std::shared_ptr<Entity>(&arm1);
+    Renderer::TestPickingEntity(arm1Ptr);
+    auto jointPtr = std::shared_ptr<Entity>(&joint);
+    Renderer::TestPickingEntity(jointPtr);
+    auto arm2Ptr = std::shared_ptr<Entity>(&arm2);
+    Renderer::TestPickingEntity(arm2Ptr);
+    auto penPtr = std::shared_ptr<Entity>(&pen);
+    Renderer::TestPickingEntity(penPtr);
+    auto bottomPtr = std::shared_ptr<Entity>(&bottom);
+    Renderer::TestPickingEntity(bottomPtr);
+    Renderer::EndPickingScene();
+
+
 	// Wait until all the pending drawing commands are really done.
 	// Ultra-mega-over slow ! 
 	// There are usually a long time between glDrawElements() and
@@ -390,142 +411,10 @@ void PickObject() {
 
 	// Convert the color back to an integer ID
 	gPickedIndex = int(data[0]);
+    INFO("pick {}", gPickedIndex);
 
-	if (gPickedIndex == 255) { // Full white, must be the background !
-		gMessage = "background";
-	}
-	else {
-		std::ostringstream oss;
-		oss << "point " << gPickedIndex;
-		gMessage = oss.str();
-	}
-
-	// Uncomment these lines to see the picking shader in effect
-	//glfwSwapBuffers(window);
-	//continue; // skips the normal rendering
+    Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 }
-
-Ref<Model> BunnyModel;
-Ref<Model> RobotArmModel;
-//Ref<Model> TestModel;
-glm::vec3 Rotate[6];
-
-std::vector<Ref<Model>> TModel(7);
-glm::vec3 MeshPos[7];
-
-// Scene Graph 實現: 參考 https://learnopengl.com/Guest-Articles/2021/Scene/Scene-Graph
-struct Entity
-{
-    Entity *parent = nullptr;
-    std::vector<Entity*> children = {};
-    std::string name;
-    //
-    Ref<Mesh> mesh;
-    glm::vec4 color;
-
-    struct Transform
-    {
-        glm::vec3 pos;
-        glm::vec3 rotate;
-        glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
-
-        glm::mat4 modelMatrix;
-
-        glm::mat4 GetLocalModelMatrix()
-        {
-            const glm::mat4 transformX = glm::rotate(glm::mat4(1.0f),
-                                                     glm::radians(rotate.x),
-                                                     glm::vec3(1.0f, 0.0f, 0.0f));
-            const glm::mat4 transformY = glm::rotate(glm::mat4(1.0f),
-                                                     glm::radians(rotate.y),
-                                                     glm::vec3(0.0f, 1.0f, 0.0f));
-            const glm::mat4 transformZ = glm::rotate(glm::mat4(1.0f),
-                                                     glm::radians(rotate.z),
-                                                     glm::vec3(0.0f, 0.0f, 1.0f));
-
-            // Y * X * Z
-            const glm::mat4 rotationMatrix = transformY * transformX * transformZ;
-
-            // translation * rotation * scale (also known as TRS matrix)
-            return glm::translate(glm::mat4(1.0f), pos) *
-                    rotationMatrix *
-                   glm::scale(glm::mat4(1.0f), scale);
-        }
-
-        void GetRTS(glm::vec3 &pos, glm::vec3 &rotate)
-        {
-            // TODO: 因為我們 renderer 目前只支援輸入個別的資料而不支援輸入 matrix 所以這邊先做轉換
-            // ref: https://stackoverflow.com/questions/17918033/glm-decompose-mat4-into-translation-and-rotation
-            //      https://stackoverflow.com/questions/12048046/quaternions-euler-angles-rotation-matrix-trouble-glm
-            glm::vec3 scale;
-            glm::quat rotation;
-            glm::vec3 skew;
-            glm::vec4 perspective;
-
-            glm::decompose(modelMatrix, scale, rotation, pos, skew, perspective);
-            rotation = glm::conjugate(rotation);
-            rotate = glm::eulerAngles(rotation);
-            rotate = glm::degrees(rotate);
-        }
-    } transform;
-
-    Entity(const std::string &name_)
-        : name(name_)
-    {
-    }
-
-    static Ref<Entity> Create(const std::string &name_)
-    {
-        return MakeRef<Entity>(name_);
-    }
-
-    void Move(const glm::vec3 &off)
-    {
-        transform.pos += off;
-        UpdateSelfAndChild();
-    }
-
-    void Render()
-    {
-        ASSERT(Renderer::IsSceneRendering() == true, "MUST call Renderer::BeginScene() first!");
-
-        glm::vec3 pos{0.f}, rotate{0.f};
-        transform.GetRTS(pos, rotate);
-        Renderer::DrawMesh(mesh, pos, -rotate, {1.f, 1.f, 1.f}, color);
-
-//        INFO("{}, {}, {}", rotate.x, rotate.y, rotate.z);
-
-        for(auto child : children)
-        {
-            child->Render();
-        }
-    }
-
-    void UpdateSelfAndChild()
-    {
-        if (parent)
-            transform.modelMatrix = /*parent->transform.GetLocalModelMatrix()*/parent->transform.modelMatrix * transform.GetLocalModelMatrix();
-        else
-            transform.modelMatrix = transform.GetLocalModelMatrix();
-
-        for (auto child : children)
-        {
-            child->UpdateSelfAndChild();
-        }
-    }
-
-    void AddChild(Entity *ent)
-    {
-        ASSERT(ent, "Invalid entity (nullptr)");
-        children.push_back(ent);
-        ent->parent = this;
-        //
-        UpdateSelfAndChild();
-    }
-};
-
-Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen"), bottom("bottom");
-//std::vector<Ref<Entity>> g_RobotArm;
 
 void OnInitScene()
 {
@@ -586,8 +475,6 @@ void OnInitScene()
     bottom.mesh = TModel[BOTTOM]->GetMeshes().back();
     bottom.color = MeshColor[BOTTOM];
     pen.AddChild(&bottom);
-
-
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
@@ -843,6 +730,9 @@ void OnRenderScene()
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
+
+    // Test
+//    PickObject();
 }
 
 // TODO: remove
@@ -951,7 +841,8 @@ int main() {
 		}
 
         glClearColor(g_ClearColor.x, g_ClearColor.y, g_ClearColor.z, g_ClearColor.w);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        Renderer::ClearViewport();
 
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();

@@ -1,4 +1,6 @@
 #include "RendererAPI.h"
+#include "Entity.h"
+#include "Camera.h"
 
 //#include "Utils.h"
 #include "shader.hpp"
@@ -35,9 +37,8 @@ void RendererAPI::Init()
     glEnableVertexAttribArray(2);
     glBindVertexArray(0);
     m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
-//    m_MeshShader = m_LineShader;
 
-//    m_LightShader = m_MeshShader;
+    m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
 }
 
 void RendererAPI::Shutdown()
@@ -57,6 +58,12 @@ void RendererAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
 {
     auto id = GetUniformID(name);
     glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat));
+}
+
+void RendererAPI::SetFloat(const std::string &name, const float f)
+{
+    auto id = GetUniformID(name);
+    glUniform1f(id, f);
 }
 
 void RendererAPI::SetFloat3(const std::string &name, const glm::vec3 &v)
@@ -84,7 +91,7 @@ GLint RendererAPI::GetUniformID(const std::string &name)
     return id;
 }
 
-void RendererAPI::Clear()
+void RendererAPI::ClearRendererState()
 {
     m_LineVertices.clear();
     m_Meshes.clear();
@@ -170,7 +177,7 @@ void RendererAPI::DrawMeshs()
 }
 
 //////////////////////////////////////////////////////////////////////
-// Mesh
+// Light
 //////////////////////////////////////////////////////////////////////
 
 void RendererAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
@@ -185,3 +192,46 @@ void RendererAPI::SendLightData()
     SetFloat3("dirLight.ambient", m_DirectionalLight.color);
     SetFloat3("dirLight.diffuse", m_DirectionalLight.color);
 }
+
+//////////////////////////////////////////////////////////////////////
+// Entity
+//////////////////////////////////////////////////////////////////////
+
+void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
+{
+    auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
+    {
+        glm::mat4 m{1.f};
+        m = glm::translate(m, pos);
+        m = glm::rotate(m, glm::radians(rotate.x), {1.f, 0.f, 0.f});
+        m = glm::rotate(m, glm::radians(rotate.y), {0.f, 1.f, 0.f});
+        m = glm::rotate(m, glm::radians(rotate.z), {0.f, 0.f, 1.f});
+        m = glm::scale(m, scale);
+        m = camera->GetProjection() * camera->GetView() * m; // P * V * M
+        SetMatrix("MVP", m);
+    };
+    auto DrawMesh = [&](Ref<Mesh> mesh)
+    {
+        glBindVertexArray(m_MeshVAO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
+        glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+    };
+
+    for(auto entity : m_Entities)
+    {
+        glm::vec3 pos, rotate, scale;
+        entity->transform.GetRTS(pos, rotate, scale);
+        SendModelMatrix(pos, rotate, scale);
+        SetFloat("PickingID", entity->id);
+        DrawMesh(entity->mesh);
+    }
+}
+
+void RendererAPI::ClearViewport()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+

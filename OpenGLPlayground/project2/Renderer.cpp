@@ -1,6 +1,7 @@
 #include "Renderer.h"
 #include "RendererAPI.h"
 #include "Log.h"
+#include "Entity.h"
 
 #include <glad/glad.h>
 #include <memory>
@@ -8,6 +9,9 @@
 
 RendererAPI *g_RenderAPI;
 bool g_IsRendering = false;
+
+// TODO: pimpl
+Ref<Camera> g_CurrentCamera;
 
 void Renderer::Init()
 {
@@ -25,7 +29,9 @@ void Renderer::Shutdown()
 
 void Renderer::BeginScene(Ref<Camera> camera)
 {
+    g_CurrentCamera = camera;
     g_IsRendering = true;
+
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
     g_RenderAPI->SetMatrix("V", camera->GetView());
@@ -56,7 +62,22 @@ void Renderer::EndScene()
 
     g_RenderAPI->DrawMeshs();
 
-    g_RenderAPI->Clear();
+    g_RenderAPI->ClearRendererState();
+    g_IsRendering = false;
+}
+
+void Renderer::BeginPickingScene(Ref<Camera> camera)
+{
+    g_IsRendering = true;
+    g_CurrentCamera = camera;
+}
+
+void Renderer::EndPickingScene()
+{
+    g_RenderAPI->BindPickingShader();
+    g_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);
+    g_RenderAPI->UnbindShader();
+
     g_IsRendering = false;
 }
 
@@ -120,4 +141,14 @@ void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color
 bool Renderer::IsSceneRendering()
 {
     return g_IsRendering;
+}
+
+void Renderer::TestPickingEntity(Ref<Entity> entity)
+{
+    g_RenderAPI->PushPickingEntity(entity);
+}
+
+void Renderer::ClearViewport()
+{
+    g_RenderAPI->ClearViewport();
 }
