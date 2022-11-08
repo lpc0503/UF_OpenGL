@@ -6,9 +6,9 @@ in vec4 vs_vertexColor;
 out vec4 color;
 
 // Values that stay constant for the whole mesh.
-uniform float PickingColor;
+uniform float PickingID;
 
 void main(){
 	// color = vs_vertexColor;
-	color = vec4(PickingColor, 0.0, 0.0, 1.0);
+	color = vec4(PickingID/255.0, 0.0, 0.0, 1.0);
 }

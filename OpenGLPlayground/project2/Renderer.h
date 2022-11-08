@@ -8,6 +8,8 @@
 
 #include <glm/glm.hpp>
 
+class Entity;
+
 class Renderer
 {
 public:
@@ -18,6 +20,8 @@ public:
     static void EndScene();
 
     static bool IsSceneRendering(); // not thread-safe
+
+    static void ClearViewport();
 
     static void DrawPoint();
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
@@ -31,6 +35,11 @@ public:
     // Light
     static void DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const glm::vec4& color, float intensity);
     static void DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4& color);
+
+    static void TestPickingEntity(Ref<Entity> entity);
+
+    static void BeginPickingScene(Ref<Camera> camera);
+    static void EndPickingScene();
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

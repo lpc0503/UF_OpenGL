@@ -12,6 +12,9 @@
 #include "Mesh.h"
 #include "Core.h"
 
+class Camera;
+class Entity;
+
 class RendererAPI
 {
 public:
@@ -20,12 +23,15 @@ public:
 
     void BindShader() const { glUseProgram(m_CurrentShader); }
     void UnbindShader() { glUseProgram(0); m_CurrentShader = 0; } // TODO: remove
-    void Clear();
+    void ClearRendererState();
 
     void SetMatrix(const std::string &name, const glm::mat4 &mat);
+    void SetFloat(const std::string &name, const float f);
     void SetFloat3(const std::string &name, const glm::vec3 &v);
     void SetFloat4(const std::string &name, const glm::vec4 &v);
     void SetBool(const std::string &name, bool b);
+
+    void ClearViewport();
 
 private:
     GLuint m_CurrentShader;
@@ -70,11 +76,6 @@ public:
     void PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color);
     void SendLightData();
 
-//    struct PointLightData {
-//        glm::vec3 pos;
-//        glm::vec4 color;
-//        glm::vec
-//    };
     struct DirectionalLightData {
         glm::vec3 dir;
         glm::vec4 color;
@@ -82,8 +83,18 @@ public:
     DirectionalLightData m_DirectionalLight;
     static constexpr size_t MaxNumLight = 10;
 
-//private:
-//    GLuint m_LightShader;
+    // Picking
+public:
+    void BindPickingShader() { assert(m_PickingShader); m_CurrentShader = m_PickingShader; BindShader(); }
+private:
+    GLuint m_PickingShader;
+
+    // Entity
+public:
+    void PushPickingEntity(Ref<Entity> entity) { m_Entities.push_back(entity); }
+    void DrawEntitiesForPicking(Ref<Camera> camera);
+private:
+    std::vector<Ref<Entity>> m_Entities;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H
