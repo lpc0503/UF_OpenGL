@@ -40,7 +40,7 @@ vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal)
 //	float specular = pow(max(dot(reflect(-lightDir, normal), viewDir), 0.0), 32.0);
 //	vec3 specularColor = light.specular * specular;
 	//
-	return light.ambient * 0.3 + diffuseColor/* + specularColor*/;
+	return light.ambient * 0.1 + diffuseColor * 0.1 * diffuseColor;
 }
 
 void main()
