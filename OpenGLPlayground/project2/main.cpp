@@ -407,7 +407,14 @@ void PickObject() {
 	double xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);
 	unsigned char data[4];
-	glReadPixels(xpos, window_height - ypos, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data); // OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
+
+    int winX, winY;
+    int fx, fy;
+    glfwGetWindowSize(window, &winX, &winY);
+    glfwGetFramebufferSize(window, &fx, &fy);
+
+    glReadPixels(xpos * (fx/winX), (window_height - ypos) * (fy/winY), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    // OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
 
 	// Convert the color back to an integer ID
 	gPickedIndex = int(data[0]);
@@ -531,6 +538,40 @@ void OnUpdateScene(float dt)
 
             PrevMouseX = x;
             PrevMouseY = y;
+        }
+
+        base.color = MeshColor[BASE];
+        top.color = MeshColor[TOP];
+        arm1.color = MeshColor[ARM1];
+        joint.color = MeshColor[JOINT];
+        arm2.color = MeshColor[ARM2];
+        pen.color = MeshColor[PEN];
+        bottom.color = MeshColor[BOTTOM];
+
+        if(gPickedIndex == BASE) {
+
+            base.color = MeshColor[SELECT];
+            moveType = MeshMove::BaseMove;
+        }
+        else if(gPickedIndex == TOP) {
+
+            top.color = MeshColor[SELECT];
+            moveType = MeshMove::TopMove;
+        }
+        else if(gPickedIndex == ARM1) {
+
+            arm1.color = MeshColor[SELECT];
+            moveType = MeshMove::Arm1Move;
+        }
+        else if(gPickedIndex == ARM2) {
+
+            arm2.color = MeshColor[SELECT];
+            moveType = MeshMove::Arm2Move;
+        }
+        else if(gPickedIndex == PEN) {
+
+            pen.color = MeshColor[SELECT];
+            moveType = MeshMove::PenMove;
         }
 
         if(moveType == MeshMove::None) {
@@ -759,6 +800,9 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
 
 bool hold = false;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+
+    gPickedIndex = -1;
+
 	if(action == GLFW_PRESS) {
 
         if(!hold) {
@@ -874,7 +918,7 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-    Renderer::Shutdown();
+//    Renderer::Shutdown();
 
     Cleanup();
 }
