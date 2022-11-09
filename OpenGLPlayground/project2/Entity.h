@@ -21,6 +21,7 @@ struct Entity
     //
     Ref<Mesh> mesh;
     glm::vec4 color;
+    bool isPicked = false;
 
     struct Transform
     {
@@ -34,14 +35,13 @@ struct Entity
         void GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale);
     } transform;
 
-    Entity(const std::string &name_)
-        : name(name_)
-    {
-        id = s_NextID++;
-    }
+    Entity(const std::string &name_);
 
     static uint32_t s_NextID;
     static Ref<Entity> Create(const std::string &name_);
+//    static Ref<Entity> GetEntityByID(uint32_t id);
+    static Entity* GetEntityByID(uint32_t id); // TODO: remove this when change all entity to Ref
+//    static void ForEach();  TODO: impl
 
 public:
     void Move(const glm::vec3 &off);
@@ -50,6 +50,9 @@ public:
     void UpdateSelfAndChild();
 
     void AddChild(Entity *ent);
+
+    void SetPick(bool pick) { isPicked = pick; }
+    bool IsPicked() { return isPicked; }
 };
 
 #endif //OPENGLPLAYGROUND_ENTITY_H

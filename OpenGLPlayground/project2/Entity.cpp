@@ -1,10 +1,14 @@
 #include "Entity.h"
 
+#include <map>
+
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+
+std::map<uint32_t, Entity*> g_IDtoEntity; // TODO: to Ref
 
 void Entity::Transform::GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale)
 {
@@ -44,7 +48,14 @@ glm::mat4 Entity::Transform::GetLocalModelMatrix()
 
 // Entity
 
-uint32_t Entity::s_NextID = 0; // TODO: move
+uint32_t Entity::s_NextID = 1; // TODO: move
+
+Entity::Entity(const std::string &name_)
+        : name(name_)
+{
+    id = s_NextID++;
+    g_IDtoEntity[id] = this;
+}
 
 Ref<Entity> Entity::Create(const std::string &name_)
 {
@@ -57,13 +68,14 @@ void Entity::Move(const glm::vec3 &off)
     UpdateSelfAndChild();
 }
 
+// TODO: delete this function in future
 void Entity::Render()
 {
 //    ASSERT(Renderer::IsSceneRendering() == true, "MUST call Renderer::BeginScene() first!");
 
     glm::vec3 pos{0.f}, rotate{0.f}, scale{0.f};
     transform.GetRTS(pos, rotate, scale);
-    Renderer::DrawMesh(mesh, pos, -rotate, scale, color);
+    Renderer::DrawMesh(mesh, pos, -rotate, scale, color, IsPicked());
 
 //        INFO("{}, {}, {}", rotate.x, rotate.y, rotate.z);
 
@@ -94,3 +106,13 @@ void Entity::AddChild(Entity *ent)
     //
     UpdateSelfAndChild();
 }
+
+Entity* Entity::GetEntityByID(uint32_t id)
+{
+    return g_IDtoEntity.count(id) ? g_IDtoEntity[id] : nullptr;
+}
+
+//Ref<Entity> Entity::GetEntityByID(uint32_t id)
+//{
+//    return std::shared_ptr<Entity>(g_IDtoEntity[id]);
+//}
