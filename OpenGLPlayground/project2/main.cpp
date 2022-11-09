@@ -132,8 +132,10 @@ glm::vec3 Rotate[6];
 std::vector<Ref<Model>> TModel(8);
 glm::vec3 MeshPos[7];
 
-Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen"), bottom("bottom");
-std::vector<Entity> bullets;
+Entity *base, *top, *arm1, *joint, *arm2, *pen, *bottom;
+
+
+std::vector<Entity*> bullets;
 //std::vector<Ref<Entity>> g_RobotArm;
 
 // TODO: to ref
@@ -376,19 +378,19 @@ void PickObject() {
 
     Renderer::BeginPickingScene(g_Camera);
     // TODO: Hacks need to refactor in future
-    auto basePtr = std::shared_ptr<Entity>(&base);
+    auto basePtr = std::shared_ptr<Entity>(base);
     Renderer::TestPickingEntity(basePtr);
-    auto topPtr = std::shared_ptr<Entity>(&top);
+    auto topPtr = std::shared_ptr<Entity>(top);
     Renderer::TestPickingEntity(topPtr);
-    auto arm1Ptr = std::shared_ptr<Entity>(&arm1);
+    auto arm1Ptr = std::shared_ptr<Entity>(arm1);
     Renderer::TestPickingEntity(arm1Ptr);
-    auto jointPtr = std::shared_ptr<Entity>(&joint);
+    auto jointPtr = std::shared_ptr<Entity>(joint);
     Renderer::TestPickingEntity(jointPtr);
-    auto arm2Ptr = std::shared_ptr<Entity>(&arm2);
+    auto arm2Ptr = std::shared_ptr<Entity>(arm2);
     Renderer::TestPickingEntity(arm2Ptr);
-    auto penPtr = std::shared_ptr<Entity>(&pen);
+    auto penPtr = std::shared_ptr<Entity>(pen);
     Renderer::TestPickingEntity(penPtr);
-    auto bottomPtr = std::shared_ptr<Entity>(&bottom);
+    auto bottomPtr = std::shared_ptr<Entity>(bottom);
     Renderer::TestPickingEntity(bottomPtr);
     Renderer::EndPickingScene();
 
@@ -443,47 +445,55 @@ void OnInitScene()
     TModel[BOTTOM] = (Model::LoadModel("../asset/Robot/bottom.obj"));
     TModel[BULLET] = (Model::LoadModel("../asset/Robot/bullet.obj"));
 
-    MeshPos[BASE] = {0.0f, 0.0f, 0.0f};
+    MeshPos[BASE] = {0.0f, 0.5f, 0.0f};
     MeshPos[TOP] = {0.0f, 1.3f, 0.0f};
     MeshPos[ARM1] = {0.0f, 0.0f, 0.0f};
     MeshPos[JOINT] = {2.0f, 0.f, 0.0f};
     MeshPos[ARM2] = {0.f, 0.f, 0.0f};
     MeshPos[PEN] = {0.f, 1.5f, 0.0f};
     MeshPos[BOTTOM] = {0.f, 0.f, -1.5f};
-    
-    base.transform.pos = MeshPos[BASE];
-    base.mesh = TModel[BASE]->GetMeshes().back();
-    base.color = MeshColor[BASE];
 
-    top.transform.pos = MeshPos[TOP];
-    top.mesh = TModel[TOP]->GetMeshes().back();
-    top.color = MeshColor[TOP];
-    base.AddChild(&top);
+    base = new Entity("base");
+    top = new Entity("top");
+    arm1 = new Entity("arm1");
+    joint = new Entity("joint");
+    arm2 = new Entity("arm2");
+    pen = new Entity("pen");
+    bottom = new Entity("bottom");
 
-    arm1.transform.pos = MeshPos[ARM1];
-    arm1.mesh = TModel[ARM1]->GetMeshes().back();
-    arm1.color = MeshColor[ARM1];
-    top.AddChild(&arm1);
+    base->transform.pos = MeshPos[BASE];
+    base->mesh = TModel[BASE]->GetMeshes().back();
+    base->color = MeshColor[BASE];
 
-    joint.transform.pos = MeshPos[JOINT];
-    joint.mesh = TModel[JOINT]->GetMeshes().back();
-    joint.color = MeshColor[JOINT];
-    arm1.AddChild(&joint);
+    top->transform.pos = MeshPos[TOP];
+    top->mesh = TModel[TOP]->GetMeshes().back();
+    top->color = MeshColor[TOP];
+    base->AddChild(top);
 
-    arm2.transform.pos = MeshPos[ARM2];
-    arm2.mesh = TModel[ARM2]->GetMeshes().back();
-    arm2.color = MeshColor[ARM2];
-    joint.AddChild(&arm2);
+    arm1->transform.pos = MeshPos[ARM1];
+    arm1->mesh = TModel[ARM1]->GetMeshes().back();
+    arm1->color = MeshColor[ARM1];
+    top->AddChild(arm1);
 
-    pen.transform.pos = MeshPos[PEN];
-    pen.mesh = TModel[PEN]->GetMeshes().back();
-    pen.color = MeshColor[PEN];
-    arm2.AddChild(&pen);
+    joint->transform.pos = MeshPos[JOINT];
+    joint->mesh = TModel[JOINT]->GetMeshes().back();
+    joint->color = MeshColor[JOINT];
+    arm1->AddChild(joint);
 
-    bottom.transform.pos = MeshPos[BOTTOM];
-    bottom.mesh = TModel[BOTTOM]->GetMeshes().back();
-    bottom.color = MeshColor[BOTTOM];
-    pen.AddChild(&bottom);
+    arm2->transform.pos = MeshPos[ARM2];
+    arm2->mesh = TModel[ARM2]->GetMeshes().back();
+    arm2->color = MeshColor[ARM2];
+    joint->AddChild(arm2);
+
+    pen->transform.pos = MeshPos[PEN];
+    pen->mesh = TModel[PEN]->GetMeshes().back();
+    pen->color = MeshColor[PEN];
+    arm2->AddChild(pen);
+
+    bottom->transform.pos = MeshPos[BOTTOM];
+    bottom->mesh = TModel[BOTTOM]->GetMeshes().back();
+    bottom->color = MeshColor[BOTTOM];
+    pen->AddChild(bottom);
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
@@ -542,49 +552,58 @@ void OnUpdateScene(float dt)
             PrevMouseY = y;
         }
 
-        base.color = MeshColor[BASE];
-        top.color = MeshColor[TOP];
-        arm1.color = MeshColor[ARM1];
-        joint.color = MeshColor[JOINT];
-        arm2.color = MeshColor[ARM2];
-        pen.color = MeshColor[PEN];
-        bottom.color = MeshColor[BOTTOM];
+        base->color = MeshColor[BASE];
+        top->color = MeshColor[TOP];
+        arm1->color = MeshColor[ARM1];
+        joint->color = MeshColor[JOINT];
+        arm2->color = MeshColor[ARM2];
+        pen->color = MeshColor[PEN];
+        bottom->color = MeshColor[BOTTOM];
 
-        if(gPickedIndex == BASE) {
+        auto EIndex = Entity::GetEntityByID(gPickedIndex);
 
-            base.color = MeshColor[SELECT];
-            moveType = MeshMove::BaseMove;
+
+        if(EIndex) {
+
+            INFO("{}", EIndex->name);
+            if(EIndex->name == "base") {
+
+                base->color = MeshColor[SELECT];
+                moveType = MeshMove::BaseMove;
+            }
+            else if(EIndex->name == "top") {
+
+                top->color = MeshColor[SELECT];
+                moveType = MeshMove::TopMove;
+            }
+            else if(EIndex->name == "arm1") {
+
+                arm1->color = MeshColor[SELECT];
+                moveType = MeshMove::Arm1Move;
+            }
+            else if(EIndex->name == "arm2") {
+
+                arm2->color = MeshColor[SELECT];
+                moveType = MeshMove::Arm2Move;
+            }
+            else if(EIndex->name == "pen") {
+
+                pen->color = MeshColor[SELECT];
+                moveType = MeshMove::PenMove;
+            }
         }
-        else if(gPickedIndex == TOP) {
 
-            top.color = MeshColor[SELECT];
-            moveType = MeshMove::TopMove;
-        }
-        else if(gPickedIndex == ARM1) {
 
-            arm1.color = MeshColor[SELECT];
-            moveType = MeshMove::Arm1Move;
-        }
-        else if(gPickedIndex == ARM2) {
-
-            arm2.color = MeshColor[SELECT];
-            moveType = MeshMove::Arm2Move;
-        }
-        else if(gPickedIndex == PEN) {
-
-            pen.color = MeshColor[SELECT];
-            moveType = MeshMove::PenMove;
-        }
 
         if(moveType == MeshMove::None) {
 
-            base.color = MeshColor[BASE];
-            top.color = MeshColor[TOP];
-            arm1.color = MeshColor[ARM1];
-            joint.color = MeshColor[JOINT];
-            arm2.color = MeshColor[ARM2];
-            pen.color = MeshColor[PEN];
-            bottom.color = MeshColor[BOTTOM];
+            base->color = MeshColor[BASE];
+            top->color = MeshColor[TOP];
+            arm1->color = MeshColor[ARM1];
+            joint->color = MeshColor[JOINT];
+            arm2->color = MeshColor[ARM2];
+            pen->color = MeshColor[PEN];
+            bottom->color = MeshColor[BOTTOM];
 
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
@@ -606,94 +625,97 @@ void OnUpdateScene(float dt)
 
         if(moveType == MeshMove::BaseMove) {
 
-            base.color = MeshColor[SELECT];
+            base->color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
 
-                base.transform.pos.z += .1f;
+                base->transform.pos.z += .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
 
-                base.transform.pos.z -= .1f;
+                base->transform.pos.z -= .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
 
-                base.transform.pos.x += .1f;
+                base->transform.pos.x += .1f;
             }
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
 
-                base.transform.pos.x -= .1f;
+                base->transform.pos.x -= .1f;
             }
-            base.UpdateSelfAndChild();
+            base->UpdateSelfAndChild();
         }
 
         if(moveType == MeshMove::TopMove) {
 
-            top.color = MeshColor[SELECT];
+            top->color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                top.transform.rotate.y = (top.transform.rotate.y + 5.f) > 360.f ? (top.transform.rotate.y + 5.f) - 360.f : (top.transform.rotate.y + 5.f);
+                top->transform.rotate.y += 5;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                top.transform.rotate.y = top.transform.rotate.y - 5.f < 0.f ? (top.transform.rotate.y - 5.f) + 360.f : (top.transform.rotate.y - 5.f);
+                top->transform.rotate.y -=5;
             }
-            top.UpdateSelfAndChild();
+            top->UpdateSelfAndChild();
         }
         if(moveType == MeshMove::Arm1Move) {
 
-            arm1.color = MeshColor[SELECT];
+            arm1->color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                arm1.transform.rotate.z += 5;
+                arm1->transform.rotate.z += 5.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                arm1.transform.rotate.z -= 5;
+                arm1->transform.rotate.z -= 5.f;
             }
-            arm1.UpdateSelfAndChild();
+            arm1->UpdateSelfAndChild();
         }
         if(moveType == MeshMove::Arm2Move) {
 
-            arm2.color = MeshColor[SELECT];
+            arm2->color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                arm2.transform.rotate.x = (arm2.transform.rotate.x + 5.f) > 360.f ? (arm2.transform.rotate.x + 5.f) - 360.f : (arm2.transform.rotate.x + 5.f);
+                arm2->transform.rotate.x += 5.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                arm2.transform.rotate.x = (arm2.transform.rotate.x - 5.f) < 0.f ? (arm2.transform.rotate.x - 5.f) + 360.f : (arm2.transform.rotate.x - 5.f);
+                arm2->transform.rotate.x -= 5.f;
             }
-            arm2.UpdateSelfAndChild();
+            arm2->UpdateSelfAndChild();
         }
         if(moveType == MeshMove::PenMove) {
 
-            pen.color = MeshColor[SELECT];
+            pen->color = MeshColor[SELECT];
             if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
             {
-                pen.transform.rotate.y = (pen.transform.rotate.y + 1.f) > 360.f ? (pen.transform.rotate.y + 1.f) - 360.f : (pen.transform.rotate.y + 1.f);
+                pen->transform.rotate.y += 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
             {
-                pen.transform.rotate.y = (pen.transform.rotate.y - 1.f) < 0.f ? (pen.transform.rotate.y - 1.f) + 360.f : (pen.transform.rotate.y - 1.f);
+                pen->transform.rotate.y -= 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
             {
-                pen.transform.rotate.x = (pen.transform.rotate.x + 1.f) > 360.f ? (pen.transform.rotate.x + 1) - 360.f : (pen.transform.rotate.x + 1);
+                pen->transform.rotate.x += 1.f;
             }
             if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
             {
-                pen.transform.rotate.x = (pen.transform.rotate.x - 1.f) < 0.f ? (pen.transform.rotate.x - 1.f) + 360.f : (pen.transform.rotate.x - 1.f);
+                pen->transform.rotate.x -= 1.f;
             }
-            pen.UpdateSelfAndChild();
+            pen->UpdateSelfAndChild();
         }
-
-
+//
+//
         if(!bullets.empty())
         {
+            auto dir = glm::normalize(pen->transform.rotate);
             for(auto &i : bullets)
             {
-                i.transform.pos.y -= 1;
-                INFO("sdsf");
+                i->velocity += i->acc * dt;
+                i->transform.pos.y += i->velocity * dt;
+//                i->transform.pos += dir;
+                i->UpdateSelfAndChild();
             }
         }
 
@@ -735,33 +757,33 @@ void OnImGuiUpdate()
     // ==== 測試用 之後拿掉我 ====
     if(ImGui::CollapsingHeader("Test"))
     {
-        if(ImGui::DragFloat3("base pos", &base.transform.pos))
+        if(ImGui::DragFloat3("base pos", &base->transform.pos))
         {
-            base.UpdateSelfAndChild();
+            base->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("base rotate", &base.transform.rotate))
+        if(ImGui::DragFloat3("base rotate", &base->transform.rotate))
         {
-            base.UpdateSelfAndChild();
+            base->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("top rotate", &top.transform.rotate))
+        if(ImGui::DragFloat3("top rotate", &top->transform.rotate))
         {
-            top.UpdateSelfAndChild();
+            top->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("arm1 rotate", &arm1.transform.rotate))
+        if(ImGui::DragFloat3("arm1 rotate", &arm1->transform.rotate))
         {
-            arm1.UpdateSelfAndChild();
+            arm1->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("arm2 rotate", &arm2.transform.rotate))
+        if(ImGui::DragFloat3("arm2 rotate", &arm2->transform.rotate))
         {
-            arm2.UpdateSelfAndChild();
+            arm2->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("pen rotate", &pen.transform.rotate))
+        if(ImGui::DragFloat3("pen rotate", &pen->transform.rotate))
         {
-            pen.UpdateSelfAndChild();
+            pen->UpdateSelfAndChild();
         }
-        if(ImGui::DragFloat3("bottom pos", &bottom.transform.pos, 0.1))
+        if(ImGui::DragFloat3("bottom pos", &bottom->transform.pos, 0.1))
         {
-            bottom.UpdateSelfAndChild();
+            bottom->UpdateSelfAndChild();
         }
     }
 
@@ -778,11 +800,11 @@ void OnRenderScene()
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
-    base.Render();
+    base->Render();
 
-    for(auto &i : bullets)
+    for(auto i : bullets)
     {
-        i.Render();
+        i->Render();
     }
 
     auto sunDir = glm::normalize(g_Camera->GetDir());
@@ -819,16 +841,14 @@ int b = 0;
 
 void CreateBullet()
 {
-    Entity bullet("bullet" + std::to_string(b++));
-    bullet.transform.pos = {1.f, 1.f, 0.f};
-    bullet.color = MeshColor[BULLET];
-    bullet.mesh = TModel[BULLET] -> GetMeshes().back();
-    bullet.transform.modelMatrix = pen.transform.modelMatrix * bullet.transform.modelMatrix;
+    Entity *bullet = new Entity("bullet" + std::to_string(b++));
+    bullet->transform.pos = {0.f, 0.f, -1.5f};
+    bullet->color = MeshColor[BULLET];
+    bullet->mesh = TModel[BULLET] -> GetMeshes().back();
+    bullet->UpdateSelfAndChild();
+    bullet->transform.modelMatrix = pen->transform.modelMatrix * bullet->transform.modelMatrix;
+    bullet->transform.GetRTS(bullet->transform.pos, bullet->transform.rotate, bullet->transform.scale);
     bullets.push_back(bullet);
-//    arm1.transform.pos = MeshPos[ARM1];
-//    arm1.mesh = TModel[ARM1]->GetMeshes().back();
-//    arm1.color = MeshColor[ARM1];
-//    top.AddChild(&arm1);
 }
 
 bool hold = false;

@@ -23,13 +23,16 @@ struct Entity
     glm::vec4 color;
     bool isPicked = false;
 
+    float velocity = 0.f;
+    float acc = -9.8f;
+
     struct Transform
     {
-        glm::vec3 pos;
-        glm::vec3 rotate;
+        glm::vec3 pos = {0.f, 0.f, 0.f};
+        glm::vec3 rotate = {0.f, 0.f, 0.f};
         glm::vec3 scale = { 1.0f, 1.0f, 1.0f };
 
-        glm::mat4 modelMatrix;
+        glm::mat4 modelMatrix{1.f};
 
         glm::mat4 GetLocalModelMatrix();
         void GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale);

@@ -8,7 +8,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-std::map<uint32_t, Entity*> g_IDtoEntity; // TODO: to Ref
+static std::map<uint32_t, Entity*> g_IDtoEntity; // TODO: to Ref
 
 void Entity::Transform::GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale)
 {
@@ -75,7 +75,7 @@ void Entity::Render()
 
     glm::vec3 pos{0.f}, rotate{0.f}, scale{0.f};
     transform.GetRTS(pos, rotate, scale);
-    Renderer::DrawMesh(mesh, pos, -rotate, scale, color, IsPicked());
+    Renderer::DrawMesh(mesh, pos, -rotate, scale, color);
 
 //        INFO("{}, {}, {}", rotate.x, rotate.y, rotate.z);
 
