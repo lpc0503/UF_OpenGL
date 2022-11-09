@@ -111,7 +111,7 @@ GLint LightID;
 #define CYAN {0.f, 1.f, 1.f, 1.f}
 #define YELLOW {1.f, 1.f, 0.f, 1.f}
 #define WHITE {1.f, 1.f, 1.f, 1.f}
-glm::vec4 MeshColor[8] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, WHITE};
+glm::vec4 MeshColor[9] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, YELLOW, WHITE};
 #define BASE 0
 #define TOP 1
 #define ARM1 2
@@ -119,7 +119,8 @@ glm::vec4 MeshColor[8] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, WHITE};
 #define ARM2 4
 #define PEN 5
 #define BOTTOM 6
-#define SELECT 7
+#define SELECT 8
+#define BULLET 7
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
@@ -128,10 +129,11 @@ Ref<Model> RobotArmModel;
 //Ref<Model> TestModel;
 glm::vec3 Rotate[6];
 
-std::vector<Ref<Model>> TModel(7);
+std::vector<Ref<Model>> TModel(8);
 glm::vec3 MeshPos[7];
 
 Entity base("Base"), top("Top"), arm1("arm1"), joint("joint"), arm2("arm2"), pen("pen"), bottom("bottom");
+std::vector<Entity> bullets;
 //std::vector<Ref<Entity>> g_RobotArm;
 
 // TODO: to ref
@@ -429,7 +431,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
-    BunnyModel = Model::LoadModel("../asset/bunny.obj");
+//    BunnyModel = Model::LoadModel("../asset/bunny.obj");
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
     TModel[BASE] = (Model::LoadModel("../asset/Robot/base.obj"));
@@ -439,6 +441,7 @@ void OnInitScene()
     TModel[ARM2] = (Model::LoadModel("../asset/Robot/arm2.obj"));
     TModel[PEN] = (Model::LoadModel("../asset/Robot/pen.obj"));
     TModel[BOTTOM] = (Model::LoadModel("../asset/Robot/bottom.obj"));
+    TModel[BULLET] = (Model::LoadModel("../asset/Robot/bullet.obj"));
 
     MeshPos[BASE] = {0.0f, 0.0f, 0.0f};
     MeshPos[TOP] = {0.0f, 1.3f, 0.0f};
@@ -461,7 +464,6 @@ void OnInitScene()
     arm1.mesh = TModel[ARM1]->GetMeshes().back();
     arm1.color = MeshColor[ARM1];
     top.AddChild(&arm1);
-
 
     joint.transform.pos = MeshPos[JOINT];
     joint.mesh = TModel[JOINT]->GetMeshes().back();
@@ -685,6 +687,16 @@ void OnUpdateScene(float dt)
             pen.UpdateSelfAndChild();
         }
 
+
+        if(!bullets.empty())
+        {
+            for(auto &i : bullets)
+            {
+                i.transform.pos.y -= 1;
+                INFO("sdsf");
+            }
+        }
+
         glm::mat4 mat{1.f};
         // The order of rotation have to be x -> y or we have to deal with the gimbal lock
         mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
@@ -762,11 +774,16 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+//    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 
     base.Render();
+
+    for(auto &i : bullets)
+    {
+        i.Render();
+    }
 
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
@@ -796,6 +813,22 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
     CameraPos.z += (float)-yoffset * g_MouseWheelFactor;
     if(CameraPos.z < 0)
         CameraPos.z = 0.f;
+}
+
+int b = 0;
+
+void CreateBullet()
+{
+    Entity bullet("bullet" + std::to_string(b++));
+    bullet.transform.pos = {1.f, 1.f, 0.f};
+    bullet.color = MeshColor[BULLET];
+    bullet.mesh = TModel[BULLET] -> GetMeshes().back();
+    bullet.transform.modelMatrix = pen.transform.modelMatrix * bullet.transform.modelMatrix;
+    bullets.push_back(bullet);
+//    arm1.transform.pos = MeshPos[ARM1];
+//    arm1.mesh = TModel[ARM1]->GetMeshes().back();
+//    arm1.color = MeshColor[ARM1];
+//    top.AddChild(&arm1);
 }
 
 bool hold = false;
@@ -829,13 +862,16 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                     moveType = moveType == MeshMove::PenMove? MeshMove::None : MeshMove::PenMove;
                     hold = true;
                     break;
+                case GLFW_KEY_S:
+                    // TODO Move out here
+                    CreateBullet();
+                    hold = true;
+                    break;
                 case GLFW_KEY_A:
                     break;
                 case GLFW_KEY_D:
                     break;
                 case GLFW_KEY_W:
-                    break;
-                case GLFW_KEY_S:
                     break;
                 case GLFW_KEY_SPACE:
                     break;
