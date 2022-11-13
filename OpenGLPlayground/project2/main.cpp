@@ -144,11 +144,6 @@ glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {1.f, 1.f, -1.2f};
 
-// Declare global objects
-// TL
-const size_t CoordVertsCount = 6;
-Vertex2 CoordVerts[CoordVertsCount];
-
 int InitWindow() {
     // Initialise GLFW
     if (!glfwInit()) {
@@ -235,141 +230,9 @@ void InitOpenGL() {
 	glDepthFunc(GL_LESS);
 	// Cull triangles which normal is not towards the camera
 	glEnable(GL_CULL_FACE);
-
-	// Projection matrix : 45?Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
-	gProjectionMatrix = glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f);
-
-	// Camera matrix
-	gViewMatrix = glm::lookAt(glm::vec3(10.0, 10.0, 10.0f),	// eye
-                              glm::vec3(0.0, 0.0, 0.0),	    // center
-                              glm::vec3(0.0, 1.0, 0.0));	// up
-
-	// Create and compile our GLSL program from the shaders
-	programID = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
-	pickingProgramID = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
-
-	// Get a handle for our "MVP" uniform
-	MatrixID = glGetUniformLocation(programID, "MVP");
-	ModelMatrixID = glGetUniformLocation(programID, "M");
-	ViewMatrixID = glGetUniformLocation(programID, "V");
-	ProjMatrixID = glGetUniformLocation(programID, "P");
-
-	PickingMatrixID = glGetUniformLocation(pickingProgramID, "MVP");
-	// Get a handle for our "pickingColorID" uniform
-	pickingColorID = glGetUniformLocation(pickingProgramID, "PickingColor");
-	// Get a handle for our "LightPosition" uniform
-	LightID = glGetUniformLocation(programID, "LightPosition_worldspace");
-
-	// TL
-	// Define objects
-    CreateObjects();
-
-	// ATTN: create VAOs for each of the newly created objects here:
-	VertexBufferSize[0] = sizeof(CoordVerts);
-	NumVerts[0] = CoordVertsCount;
-
-	CreateVAOs(CoordVerts, NULL, 0);
-}
-
-void CreateVAOs(Vertex2 vertices[], unsigned short indices[], int objectID) {
-	GLenum ErrorCheckValue = glGetError();
-	const size_t VertexSize = sizeof(vertices[0]);
-	const size_t RgbOffset = sizeof(vertices[0].Position);
-	const size_t Normaloffset = sizeof(vertices[0].Color) + RgbOffset;
-
-	// Create Vertex2 Array Object
-	glGenVertexArrays(1, &VertexArrayId[objectID]);
-	glBindVertexArray(VertexArrayId[objectID]);
-
-	// Create Buffer for vertex data
-	glGenBuffers(1, &VertexBufferId[objectID]);
-	glBindBuffer(GL_ARRAY_BUFFER, VertexBufferId[objectID]);
-	glBufferData(GL_ARRAY_BUFFER, VertexBufferSize[objectID], vertices, GL_STATIC_DRAW);
-
-	// Create Buffer for indices
-	if (indices != NULL) {
-		glGenBuffers(1, &IndexBufferId[objectID]);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBufferId[objectID]);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, IndexBufferSize[objectID], indices, GL_STATIC_DRAW);
-	}
-
-	// Assign vertex attributes
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, VertexSize, 0);
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, VertexSize, (GLvoid*)RgbOffset);
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, VertexSize, (GLvoid*)Normaloffset);	// TL
-
-	glEnableVertexAttribArray(0);	// position
-	glEnableVertexAttribArray(1);	// color
-	glEnableVertexAttribArray(2);	// normal
-
-	glBindVertexArray(0);
-
-	ErrorCheckValue = glGetError();
-	if (ErrorCheckValue != GL_NO_ERROR)
-	{
-        ERROR("Could not create a VBO");
-	}
-}
-
-// Ensure your .obj files are in the correct format and properly loaded by looking at the following function
-void LoadObject(char* file, glm::vec4 color, Vertex2* &out_Vertices, GLushort* &out_Indices, int objectID) {
-	// Read our .obj file
-	std::vector<glm::vec3> vertices;
-	std::vector<glm::vec2> uvs;
-	std::vector<glm::vec3> normals;
-	bool res = loadOBJ(file, vertices, normals);
-
-	std::vector<GLushort> indices;
-	std::vector<glm::vec3> indexed_vertices;
-	std::vector<glm::vec2> indexed_uvs;
-	std::vector<glm::vec3> indexed_normals;
-	indexVBO(vertices, normals, indices, indexed_vertices, indexed_normals);
-
-	const size_t vertCount = indexed_vertices.size();
-	const size_t idxCount = indices.size();
-
-	// populate output arrays
-	out_Vertices = new Vertex2[vertCount];
-	for (int i = 0; i < vertCount; i++) {
-		out_Vertices[i].SetPosition(&indexed_vertices[i].x);
-		out_Vertices[i].SetNormal(&indexed_normals[i].x);
-		out_Vertices[i].SetColor(&color[0]);
-	}
-	out_Indices = new GLushort[idxCount];
-	for (int i = 0; i < idxCount; i++) {
-		out_Indices[i] = indices[i];
-	}
-
-	// set global variables!!
-	NumIdcs[objectID] = idxCount;
-	VertexBufferSize[objectID] = sizeof(out_Vertices[0]) * vertCount;
-	IndexBufferSize[objectID] = sizeof(GLushort) * idxCount;
-}
-
-void CreateObjects() {
-	//-- COORDINATE AXES --//
-	CoordVerts[0] = { { 0.0, 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // x
-	CoordVerts[1] = { { 5.0, 0.0, 0.0, 1.0 }, { 1.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
-	CoordVerts[2] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 1.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // y
-	CoordVerts[3] = { { 0.0, 5.0, 0.0, 1.0 }, { 0.0, 1.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0 } };
-	CoordVerts[4] = { { 0.0, 0.0, 0.0, 1.0 }, { 0.0, 0.0, 1.0, 1.0 }, { 0.0, 0.0, 1.0 } }; // z
-	CoordVerts[5] = { { 0.0, 0.0, 5.0, 1.0 }, { 0.0, 0.0, 1.0, 1.0 }, { 0.0, 0.0, 1.0 } };
-	
-	//-- GRID --//
-	
-	// ATTN: Create your grid vertices here!
-	
-	//-- .OBJs --//
-
-	// ATTN: Load your models here through .obj files -- example of how to do so is as shown
-	// Vertex2* Verts;
-	// GLushort* Idcs;
-	// LoadObject("models/base.obj", glm::vec4(1.0, 0.0, 0.0, 1.0), Verts, Idcs, ObjectID);
-	// CreateVAOs(Verts, Idcs, ObjectID);
 }
 
 void PickObject() {
-
 
     Renderer::BeginPickingScene(g_Camera);
     Renderer::TestPickingEntity(base);
@@ -380,7 +243,6 @@ void PickObject() {
     Renderer::TestPickingEntity(pen);
     Renderer::TestPickingEntity(bottom);
     Renderer::EndPickingScene();
-
 
 	// Wait until all the pending drawing commands are really done.
 	// Ultra-mega-over slow ! 
@@ -802,18 +664,8 @@ void OnRenderScene()
 //    PickObject();
 }
 
-// TODO: remove
 void Cleanup() {
-	// Cleanup VBO and shader
-	for (int i = 0; i < NumObjects; i++) {
-		glDeleteBuffers(1, &VertexBufferId[i]);
-		glDeleteBuffers(1, &IndexBufferId[i]);
-		glDeleteVertexArrays(1, &VertexArrayId[i]);
-	}
-	glDeleteProgram(programID);
-	glDeleteProgram(pickingProgramID);
 
-	// Close OpenGL window and terminate GLFW
 	glfwTerminate();
 }
 
@@ -825,7 +677,6 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 int b = 0;
-
 void CreateBullet()
 {
     Ref<Entity> bullet = Entity::Create("bullet" + std::to_string(b++));
