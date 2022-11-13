@@ -132,14 +132,13 @@ glm::vec3 Rotate[6];
 std::vector<Ref<Model>> TModel(8);
 glm::vec3 MeshPos[7];
 
-Entity *base, *top, *arm1, *joint, *arm2, *pen, *bottom;
+Ref<Entity> base, top, arm1, joint, arm2, pen, bottom;
 
 
-std::vector<Entity*> bullets;
+std::vector<Ref<Entity>> bullets;
 //std::vector<Ref<Entity>> g_RobotArm;
 
-// TODO: to ref
-std::shared_ptr<Camera> g_Camera;
+Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
@@ -308,11 +307,7 @@ void CreateVAOs(Vertex2 vertices[], unsigned short indices[], int objectID) {
 	ErrorCheckValue = glGetError();
 	if (ErrorCheckValue != GL_NO_ERROR)
 	{
-		fprintf(
-			stderr,
-			"ERROR: Could not create a VBO: %s \n"//,
-//			gluErrorString(ErrorCheckValue)
-		);
+        ERROR("Could not create a VBO");
 	}
 }
 
@@ -377,21 +372,13 @@ void PickObject() {
 
 
     Renderer::BeginPickingScene(g_Camera);
-    // TODO: Hacks need to refactor in future
-    auto basePtr = std::shared_ptr<Entity>(base);
-    Renderer::TestPickingEntity(basePtr);
-    auto topPtr = std::shared_ptr<Entity>(top);
-    Renderer::TestPickingEntity(topPtr);
-    auto arm1Ptr = std::shared_ptr<Entity>(arm1);
-    Renderer::TestPickingEntity(arm1Ptr);
-    auto jointPtr = std::shared_ptr<Entity>(joint);
-    Renderer::TestPickingEntity(jointPtr);
-    auto arm2Ptr = std::shared_ptr<Entity>(arm2);
-    Renderer::TestPickingEntity(arm2Ptr);
-    auto penPtr = std::shared_ptr<Entity>(pen);
-    Renderer::TestPickingEntity(penPtr);
-    auto bottomPtr = std::shared_ptr<Entity>(bottom);
-    Renderer::TestPickingEntity(bottomPtr);
+    Renderer::TestPickingEntity(base);
+    Renderer::TestPickingEntity(top);
+    Renderer::TestPickingEntity(arm1);
+    Renderer::TestPickingEntity(joint);
+    Renderer::TestPickingEntity(arm2);
+    Renderer::TestPickingEntity(pen);
+    Renderer::TestPickingEntity(bottom);
     Renderer::EndPickingScene();
 
 
@@ -453,13 +440,13 @@ void OnInitScene()
     MeshPos[PEN] = {0.f, 1.5f, 0.0f};
     MeshPos[BOTTOM] = {0.f, 0.f, -1.5f};
 
-    base = new Entity("base");
-    top = new Entity("top");
-    arm1 = new Entity("arm1");
-    joint = new Entity("joint");
-    arm2 = new Entity("arm2");
-    pen = new Entity("pen");
-    bottom = new Entity("bottom");
+    base = Entity::Create("base");
+    top = Entity::Create("top");
+    arm1 = Entity::Create("arm1");
+    joint = Entity::Create("joint");
+    arm2 = Entity::Create("arm2");
+    pen = Entity::Create("pen");
+    bottom = Entity::Create("bottom");
 
     base->transform.pos = MeshPos[BASE];
     base->mesh = TModel[BASE]->GetMeshes().back();
@@ -468,32 +455,32 @@ void OnInitScene()
     top->transform.pos = MeshPos[TOP];
     top->mesh = TModel[TOP]->GetMeshes().back();
     top->color = MeshColor[TOP];
-    base->AddChild(top);
+    base->AddChild(top.get());
 
     arm1->transform.pos = MeshPos[ARM1];
     arm1->mesh = TModel[ARM1]->GetMeshes().back();
     arm1->color = MeshColor[ARM1];
-    top->AddChild(arm1);
+    top->AddChild(arm1.get());
 
     joint->transform.pos = MeshPos[JOINT];
     joint->mesh = TModel[JOINT]->GetMeshes().back();
     joint->color = MeshColor[JOINT];
-    arm1->AddChild(joint);
+    arm1->AddChild(joint.get());
 
     arm2->transform.pos = MeshPos[ARM2];
     arm2->mesh = TModel[ARM2]->GetMeshes().back();
     arm2->color = MeshColor[ARM2];
-    joint->AddChild(arm2);
+    joint->AddChild(arm2.get());
 
     pen->transform.pos = MeshPos[PEN];
     pen->mesh = TModel[PEN]->GetMeshes().back();
     pen->color = MeshColor[PEN];
-    arm2->AddChild(pen);
+    arm2->AddChild(pen.get());
 
     bottom->transform.pos = MeshPos[BOTTOM];
     bottom->mesh = TModel[BOTTOM]->GetMeshes().back();
     bottom->color = MeshColor[BOTTOM];
-    pen->AddChild(bottom);
+    pen->AddChild(bottom.get());
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
@@ -841,7 +828,7 @@ int b = 0;
 
 void CreateBullet()
 {
-    Entity *bullet = new Entity("bullet" + std::to_string(b++));
+    Ref<Entity> bullet = Entity::Create("bullet" + std::to_string(b++));
     bullet->transform.pos = {0.f, 0.f, -1.5f};
     bullet->color = MeshColor[BULLET];
     bullet->mesh = TModel[BULLET] -> GetMeshes().back();
@@ -935,7 +922,7 @@ int main() {
 		double currentTime = glfwGetTime();
 		nbFrames++;
 		if (currentTime - lastTime >= 1.0){ // If last prinf() was more than 1sec ago
-			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
+//			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
 			nbFrames = 0;
 			lastTime += 1.0;
 		}

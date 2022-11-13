@@ -38,13 +38,15 @@ struct Entity
         void GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale);
     } transform;
 
-    Entity(const std::string &name_);
-
     static uint32_t s_NextID;
     static Ref<Entity> Create(const std::string &name_);
 //    static Ref<Entity> GetEntityByID(uint32_t id);
-    static Entity* GetEntityByID(uint32_t id); // TODO: remove this when change all entity to Ref
+//    static Entity* GetEntityByID(uint32_t id);
+    static Ref<Entity> GetEntityByID(uint32_t id);
 //    static void ForEach();  TODO: impl
+
+//protected: // TODO: Make entity unable to create without Entity::Create
+    Entity(const std::string &name_);
 
 public:
     void Move(const glm::vec3 &off);

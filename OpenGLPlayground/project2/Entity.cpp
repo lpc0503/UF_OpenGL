@@ -9,7 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-static std::map<uint32_t, Entity*> g_IDtoEntity; // TODO: to Ref
+static std::map<uint32_t, Ref<Entity>> g_IDtoEntity; // TODO: to Ref
 
 void Entity::Transform::GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale)
 {
@@ -54,13 +54,14 @@ uint32_t Entity::s_NextID = 1; // TODO: move
 Entity::Entity(const std::string &name_)
         : name(name_)
 {
-    id = s_NextID++;
-    g_IDtoEntity[id] = this;
 }
 
 Ref<Entity> Entity::Create(const std::string &name_)
 {
-    return MakeRef<Entity>(name_);
+    auto entity = MakeRef<Entity>(name_);
+    entity->id = s_NextID++;
+    g_IDtoEntity[entity->id] = entity;
+    return entity;
 }
 
 void Entity::Move(const glm::vec3 &off)
@@ -108,7 +109,7 @@ void Entity::AddChild(Entity *ent)
     UpdateSelfAndChild();
 }
 
-Entity* Entity::GetEntityByID(uint32_t id)
+Ref<Entity> Entity::GetEntityByID(uint32_t id)
 {
     return g_IDtoEntity.count(id) ? g_IDtoEntity[id] : nullptr;
 }
