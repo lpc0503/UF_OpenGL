@@ -21,5 +21,6 @@ add_library(imgui STATIC
     imgui_impl_opengl3_loader.h
 )
 target_include_directories(imgui PUBLIC .)
+target_link_libraries(imgui glfw)
 add_library(imgui::imgui ALIAS imgui)
 

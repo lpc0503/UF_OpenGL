@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef OPENGLPLAYGROUND_ENTITY_H
 #define OPENGLPLAYGROUND_ENTITY_H
 

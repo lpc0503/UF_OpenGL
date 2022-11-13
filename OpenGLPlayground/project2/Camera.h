@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #ifndef OPENGLPLAYGROUND_CAMERA_H
 #define OPENGLPLAYGROUND_CAMERA_H
 

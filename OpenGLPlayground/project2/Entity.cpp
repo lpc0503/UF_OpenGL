@@ -1,4 +1,5 @@
-#include "Entity.h"
+﻿#include "Entity.h"
+#include "Utils.h"
 
 #include <map>
 
