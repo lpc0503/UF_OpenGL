@@ -100,11 +100,11 @@ void Entity::UpdateSelfAndChild()
     }
 }
 
-void Entity::AddChild(Entity *ent)
+void Entity::AddChild(Ref<Entity> ent)
 {
     ASSERT(ent, "Invalid entity (nullptr)");
     children.push_back(ent);
-    ent->parent = this;
+    ent->parent = Ref<Entity>(this);
     //
     UpdateSelfAndChild();
 }

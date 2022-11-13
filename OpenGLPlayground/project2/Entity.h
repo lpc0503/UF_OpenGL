@@ -15,8 +15,8 @@
 struct Entity
 {
     uint32_t id;
-    Entity *parent = nullptr;
-    std::vector<Entity*> children = {};
+    Ref<Entity> parent = nullptr;
+    std::vector<Ref<Entity>> children = {};
     std::string name;
     //
     Ref<Mesh> mesh;
@@ -40,8 +40,6 @@ struct Entity
 
     static uint32_t s_NextID;
     static Ref<Entity> Create(const std::string &name_);
-//    static Ref<Entity> GetEntityByID(uint32_t id);
-//    static Entity* GetEntityByID(uint32_t id);
     static Ref<Entity> GetEntityByID(uint32_t id);
 //    static void ForEach();  TODO: impl
 
@@ -54,7 +52,7 @@ public:
     void Render();
     void UpdateSelfAndChild();
 
-    void AddChild(Entity *ent);
+    void AddChild(Ref<Entity> ent);
 
     void SetPick(bool pick) { isPicked = pick; }
     bool IsPicked() { return isPicked; }

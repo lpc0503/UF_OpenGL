@@ -455,32 +455,32 @@ void OnInitScene()
     top->transform.pos = MeshPos[TOP];
     top->mesh = TModel[TOP]->GetMeshes().back();
     top->color = MeshColor[TOP];
-    base->AddChild(top.get());
+    base->AddChild(top);
 
     arm1->transform.pos = MeshPos[ARM1];
     arm1->mesh = TModel[ARM1]->GetMeshes().back();
     arm1->color = MeshColor[ARM1];
-    top->AddChild(arm1.get());
+    top->AddChild(arm1);
 
     joint->transform.pos = MeshPos[JOINT];
     joint->mesh = TModel[JOINT]->GetMeshes().back();
     joint->color = MeshColor[JOINT];
-    arm1->AddChild(joint.get());
+    arm1->AddChild(joint);
 
     arm2->transform.pos = MeshPos[ARM2];
     arm2->mesh = TModel[ARM2]->GetMeshes().back();
     arm2->color = MeshColor[ARM2];
-    joint->AddChild(arm2.get());
+    joint->AddChild(arm2);
 
     pen->transform.pos = MeshPos[PEN];
     pen->mesh = TModel[PEN]->GetMeshes().back();
     pen->color = MeshColor[PEN];
-    arm2->AddChild(pen.get());
+    arm2->AddChild(pen);
 
     bottom->transform.pos = MeshPos[BOTTOM];
     bottom->mesh = TModel[BOTTOM]->GetMeshes().back();
     bottom->color = MeshColor[BOTTOM];
-    pen->AddChild(bottom.get());
+    pen->AddChild(bottom);
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
