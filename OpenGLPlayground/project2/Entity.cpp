@@ -9,7 +9,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 
-static std::map<uint32_t, Ref<Entity>> g_IDtoEntity; // TODO: to Ref
+// TODO: Make Init() and Shutdown()
+static std::map<uint32_t, Ref<Entity>> g_IDtoEntity;
 
 void Entity::Transform::GetRTS(glm::vec3 &pos, glm::vec3 &rotate, glm::vec3 &scale)
 {
