@@ -1,0 +1,328 @@
+diff --git a/OpenGLPlayground/project2/Renderer.cpp b/OpenGLPlayground/project2/Renderer.cpp
+index 2adea03..05161da 100644
+--- a/OpenGLPlayground/project2/Renderer.cpp
++++ b/OpenGLPlayground/project2/Renderer.cpp
+@@ -29,9 +29,12 @@ void Renderer::Shutdown()
+ 
+ void Renderer::BeginScene(Ref<Camera> camera)
+ {
+-    g_CurrentCamera = camera;
++    g_CurrentCamera = camera; // TODO: remove
+     g_IsRendering = true;
+ 
++    // TODO: Is this still needed?
++//    g_RenderAPI->SetViewProjectionMatrix(camera->GetProjection() * camera->GetView());
++
+     g_RenderAPI->BindLineShader();
+     g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+     g_RenderAPI->SetMatrix("V", camera->GetView());
+@@ -43,12 +46,13 @@ void Renderer::BeginScene(Ref<Camera> camera)
+     g_RenderAPI->SetMatrix("V", camera->GetView());
+     g_RenderAPI->SetMatrix("P", camera->GetProjection());
+     g_RenderAPI->SetMatrix("MV", camera->GetView());
+-    g_RenderAPI->SetBool("uEnableLight", true);
+     g_RenderAPI->UnbindShader();
+ }
+ 
+ void Renderer::EndScene()
+ {
++    glStencilMask(0x00);
++
+     g_RenderAPI->BindLineShader();
+     g_RenderAPI->SendLineData();
+     g_RenderAPI->DrawLines();
+@@ -60,7 +64,30 @@ void Renderer::EndScene()
+ //    g_RenderAPI->DrawMeshs();
+ //    g_RenderAPI->UnbindShader();
+ 
+-    g_RenderAPI->DrawMeshs();
++    g_RenderAPI->BindMeshShader();
++    {
++        g_RenderAPI->SetBool("uEnableLight", true);
++        g_RenderAPI->SetBool("uUseSingleColor", false);
++
++        // TODO: move gl function to RendererAPI
++        glStencilFunc(GL_ALWAYS, 1, 0xFF);
++        glStencilMask(0xFF);
++
++        g_RenderAPI->DrawMeshs();
++
++        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
++        glStencilMask(0x00);
++        glDisable(GL_DEPTH_TEST);
++
++        g_RenderAPI->SetBool("uEnableLight", false);
++        g_RenderAPI->SetBool("uUseSingleColor", true);
++        g_RenderAPI->SetFloat4("Color", {1.f, 0.5f, 0.f, 1.f}); // TODO: expose to imgui
++        g_RenderAPI->DrawOutlineMesh();
++
++        glStencilFunc(GL_ALWAYS, 0, 0xFF);
++        glStencilMask(0xFF);
++        glEnable(GL_DEPTH_TEST);
++    }
+ 
+     g_RenderAPI->ClearRendererState();
+     g_IsRendering = false;
+@@ -75,7 +102,7 @@ void Renderer::BeginPickingScene(Ref<Camera> camera)
+ void Renderer::EndPickingScene()
+ {
+     g_RenderAPI->BindPickingShader();
+-    g_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);
++    g_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera); // TODO: remove camera from arg
+     g_RenderAPI->UnbindShader();
+ 
+     g_IsRendering = false;
+@@ -128,9 +155,9 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
+     }
+ }
+ 
+-void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
++void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, bool outline)
+ {
+-    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint);
++    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint, outline);
+ }
+ 
+ void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
+diff --git a/OpenGLPlayground/project2/Renderer.h b/OpenGLPlayground/project2/Renderer.h
+index 9388a34..477f5e1 100644
+--- a/OpenGLPlayground/project2/Renderer.h
++++ b/OpenGLPlayground/project2/Renderer.h
+@@ -26,7 +26,7 @@ public:
+     static void DrawPoint();
+     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
+ 
+-    static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
++    static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f}, bool outline=false);
+     static void DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
+ 
+     // Gizmo
+diff --git a/OpenGLPlayground/project2/RendererAPI.cpp b/OpenGLPlayground/project2/RendererAPI.cpp
+index 8bde7e0..2c55092 100644
+--- a/OpenGLPlayground/project2/RendererAPI.cpp
++++ b/OpenGLPlayground/project2/RendererAPI.cpp
+@@ -131,9 +131,16 @@ void RendererAPI::DrawLines()
+ // Mesh
+ //////////////////////////////////////////////////////////////////////
+ 
+-void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
++void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, bool outline)
+ {
+-    m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale, tint});
++    if(outline)
++    {
++        m_OutlineMeshes.emplace_back(MeshData{mesh, pos, rotate, scale, tint});
++    }
++    else
++    {
++        m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale, tint});
++    }
+ }
+ 
+ void RendererAPI::SendMeshData()
+@@ -145,6 +152,7 @@ void RendererAPI::SendMeshData()
+ 
+ void RendererAPI::DrawMeshs()
+ {
++    // TODO: move these function to RendererAPI
+     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
+     {
+         glm::mat4 m{1.f};
+@@ -166,14 +174,41 @@ void RendererAPI::DrawMeshs()
+         glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+     };
+ 
+-    BindMeshShader();
+     SendLightData();
+     for(MeshData &md : m_Meshes)
+     {
+         SendModelMatrix(md.pos, md.rotate, md.scale, md.tint);
+         DrawMesh(md.mesh);
+     }
+-    UnbindShader();
++}
++
++void RendererAPI::DrawOutlineMesh()
++{
++    auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
++    {
++        glm::mat4 m{1.f};
++        m = glm::translate(m, pos);
++        m = glm::rotate(m, glm::radians(rotate.x), {1.f, 0.f, 0.f});
++        m = glm::rotate(m, glm::radians(rotate.y), {0.f, 1.f, 0.f});
++        m = glm::rotate(m, glm::radians(rotate.z), {0.f, 0.f, 1.f});
++        m = glm::scale(m, scale);
++        SetMatrix("M", m);
++    };
++    auto DrawMesh = [&](Ref<Mesh> mesh)
++    {
++        glBindVertexArray(m_MeshVAO);
++        glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
++        glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
++        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
++        glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
++        glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
++    };
++
++    for(MeshData &md : m_OutlineMeshes)
++    {
++        SendModelMatrix(md.pos, md.rotate, {1.1f, 1.1f, 1.1f});
++        DrawMesh(md.mesh);
++    }
+ }
+ 
+ //////////////////////////////////////////////////////////////////////
+@@ -232,6 +267,5 @@ void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
+ 
+ void RendererAPI::ClearViewport()
+ {
+-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
++    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+ }
+-
+diff --git a/OpenGLPlayground/project2/RendererAPI.h b/OpenGLPlayground/project2/RendererAPI.h
+index 5fb025c..b9569f5 100644
+--- a/OpenGLPlayground/project2/RendererAPI.h
++++ b/OpenGLPlayground/project2/RendererAPI.h
+@@ -33,11 +33,15 @@ public:
+ 
+     void ClearViewport();
+ 
++    void SetViewProjectionMatrix(const glm::mat4 &vp) { m_ViewProjection = vp; }
++
+ private:
+     GLuint m_CurrentShader;
+ 
+     GLint GetUniformID(const std::string &name);
+ 
++    glm::mat4 m_ViewProjection;
++
+     // Line
+ public:
+     void BindLineShader() { assert(m_LineShader); m_CurrentShader = m_LineShader; BindShader(); } // TODO: remove
+@@ -53,10 +57,12 @@ private:
+     // Mesh
+ public:
+     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }
+-    void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
++    void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, bool outline);
+     void SendMeshData();
+     void DrawMeshs();
+ 
++    void DrawOutlineMesh();
++
+ private:
+     GLuint m_MeshShader;
+     GLuint m_MeshVAO, m_MeshVBO, m_MeshIBO;
+@@ -67,7 +73,9 @@ private:
+         glm::vec3 scale;
+         glm::vec4 tint;
+     };
++    // TODO: use ref
+     std::vector<MeshData> m_Meshes;
++    std::vector<MeshData> m_OutlineMeshes;
+ 
+     // Light
+ public:
+diff --git a/OpenGLPlayground/project2/main.cpp b/OpenGLPlayground/project2/main.cpp
+index 4796a42..2750657 100644
+--- a/OpenGLPlayground/project2/main.cpp
++++ b/OpenGLPlayground/project2/main.cpp
+@@ -6,6 +6,7 @@
+ #include <array>
+ #include <stack>   
+ #include <sstream>
++#include <map>
+ 
+ #include <glad/glad.h>
+ #include <GLFW/glfw3.h>
+@@ -233,7 +234,11 @@ void InitOpenGL() {
+ 	// Cull triangles which normal is not towards the camera
+ 	glEnable(GL_CULL_FACE);
+ 
+-	// Projection matrix : 45?Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
++    glEnable(GL_STENCIL_TEST);
++    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
++    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
++
++    // Projection matrix : 45?Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+ 	gProjectionMatrix = glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f);
+ 
+ 	// Camera matrix
+@@ -371,9 +376,9 @@ void CreateObjects() {
+ 
+ void PickObject() {
+ 
+-
+     Renderer::BeginPickingScene(g_Camera);
+     // TODO: Hacks need to refactor in future
++    // 這個之所以不會當掉是因為 Renderer 的 valid 的時間剛好是程式執行的整個週期
+     auto basePtr = std::shared_ptr<Entity>(&base);
+     Renderer::TestPickingEntity(basePtr);
+     auto topPtr = std::shared_ptr<Entity>(&top);
+@@ -420,6 +425,12 @@ void PickObject() {
+ 	gPickedIndex = int(data[0]);
+     INFO("pick {}", gPickedIndex);
+ 
++    auto ent = Entity::GetEntityByID(gPickedIndex);
++    if(ent)
++    {
++        ent->SetPick(true);
++    }
++
+     Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
+ }
+ 
+@@ -758,22 +769,18 @@ void OnImGuiUpdate()
+ 
+ void OnRenderScene()
+ {
+-
+     Renderer::BeginScene(g_Camera);
+     Renderer::DrawGrid(5, 5);
+     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
+     Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+ 
+-// 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
++    // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
+ 
+-    base.Render();
++    base.Render(); // TODO: refactor with Renderer::DrawEntity()
+ 
+     auto sunDir = glm::normalize(g_Camera->GetDir());
+     Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+     Renderer::EndScene();
+-
+-    // Test
+-//    PickObject();
+ }
+ 
+ // TODO: remove
+diff --git a/OpenGLPlayground/project2/shaders/StandardShading.frag b/OpenGLPlayground/project2/shaders/StandardShading.frag
+index 6cf8907..1b24c32 100644
+--- a/OpenGLPlayground/project2/shaders/StandardShading.frag
++++ b/OpenGLPlayground/project2/shaders/StandardShading.frag
+@@ -24,6 +24,7 @@ struct DirectionalLight
+ uniform DirectionalLight dirLight;
+ 
+ uniform bool uEnableLight;
++uniform bool uUseSingleColor;
+ 
+ uniform vec4 Color;
+ 
+@@ -51,6 +52,13 @@ void main()
+ 	}
+ 	else
+ 	{
+-		color = vs_vertexColor.rgb;
++		if(uUseSingleColor)
++		{
++			color = Color.rgb;
++		}
++		else
++		{
++			color = vs_vertexColor.rgb;
++		}
+ 	}
+ }
+\ No newline at end of file

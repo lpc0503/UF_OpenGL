@@ -9,7 +9,6 @@ set(GLFW_BUILD_DOCS "Build the GLFW documentation" OFF)
 add_subdirectory(deps)
 add_subdirectory(common)
 
-#add_subdirectory(tutorial01_first_window)
-#add_subdirectory(tutorial02_red_triangle)
 add_subdirectory(project1)
 add_subdirectory(project2)
+add_subdirectory(project3)
