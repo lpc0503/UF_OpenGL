@@ -15,6 +15,7 @@ struct Vertex
     glm::vec4 pos{};
     glm::vec4 color{};
     glm::vec3 normal{};
+    glm::vec2 uv {};
 
     Vertex() = default;
     Vertex(const Vertex &v)
@@ -22,6 +23,7 @@ struct Vertex
         pos = v.pos;
         color = v.color;
         normal = v.normal;
+        uv = v.uv;
     }
 
     Vertex& operator=(const Vertex &rhs)
@@ -29,6 +31,7 @@ struct Vertex
         pos = rhs.pos;
         color = rhs.color;
         normal = rhs.normal;
+        uv = rhs.uv;
         return *this;
     }
 
@@ -36,7 +39,8 @@ struct Vertex
     {
         return pos == rhs.pos &&
                color == rhs.color &&
-               normal == rhs.normal;
+               normal == rhs.normal &&
+               uv == uv;
     }
 
     bool operator<(const Vertex &rhs) const

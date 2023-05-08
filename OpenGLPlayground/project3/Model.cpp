@@ -3,6 +3,8 @@
 
 #include <tiny_obj_loader.h>
 #include <map>
+#include "objloader.hpp"
+#include "vboindexer.hpp"
 
 Model::Model(const std::string &path)
 {
@@ -122,5 +124,49 @@ Ref<Model> Model::LoadModel(const std::string &path)
         model->m_Meshes.push_back(mesh);
     }
 
+    return model;
+}
+
+Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
+
+    Ref<Model> model = MakeRef<Model>();
+    model->m_Path = path;
+
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    bool res = loadOBJ(path.c_str(), vertices, uvs, normals);
+//
+    std::vector<GLushort> indices;
+    std::vector<glm::vec3> indexed_vertices;
+    std::vector<glm::vec2> indexed_uvs;
+    std::vector<glm::vec3> indexed_normals;
+    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+
+    const size_t vertCount = indexed_vertices.size();
+    const size_t idxCount = indices.size();
+
+    // populate output arrays
+    Ref<Mesh> mesh = MakeRef<Mesh>();
+    for (int i = 0; i < vertCount; i++) {
+
+        Vertex vertex{};
+        vertex.pos = glm::vec4 {indexed_vertices[i].x, indexed_vertices[i].y, indexed_vertices[i].z, 0.f};
+        vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
+        vertex.color = color;
+        vertex.uv = glm::vec2{indexed_uvs[i].x, indexed_uvs[i].y};
+//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
+//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
+//        out_Vertices[i].SetColor(&color[0]);
+//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
+
+        mesh->m_Vertices.push_back(vertex);
+    }
+
+    for (int i = 0; i < idxCount; i++) {
+        mesh->m_Indices.push_back(indices[i]);
+    }
+
+    model->m_Meshes.push_back(mesh);
     return model;
 }

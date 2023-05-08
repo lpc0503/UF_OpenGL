@@ -4,6 +4,7 @@
 
 #include "Core.h"
 #include "Mesh.h"
+#include <glad/glad.h>
 
 #include <filesystem>
 
@@ -19,6 +20,9 @@ public:
     size_t GetMeshCount() const { return m_Meshes.size(); }
 
     static Ref<Model> LoadModel(const std::string &path);
+    static Ref<Model> LoadModel(const std::string &path, glm::vec4 color);
+
+
 private:
     std::vector<Ref<Mesh>> m_Meshes;
     std::string m_Path;

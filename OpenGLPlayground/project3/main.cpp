@@ -22,10 +22,9 @@ using namespace glm;
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
-#include <shader.hpp>
-#include <controls.hpp>
-#include <objloader.hpp>
-#include <vboindexer.hpp>
+#include "objloader.hpp"
+#include "vboindexer.hpp"
+//#include <controls.hpp>
 
 #include "Renderer.h"
 #include "Camera.h"
@@ -40,6 +39,7 @@ struct Vertex2 {
 	float Position[4];
 	float Color[4];
 	float Normal[3];
+    float UV[2];
 	void SetPosition(float *coords) {
 		Position[0] = coords[0];
 		Position[1] = coords[1];
@@ -57,6 +57,10 @@ struct Vertex2 {
 		Normal[1] = coords[1];
 		Normal[2] = coords[2];
 	}
+    void SetUV(float* uv) {
+        UV[0] = uv[0];
+        UV[1] = uv[1];
+    }
 };
 
 // function prototypes
@@ -127,6 +131,10 @@ int Index[6] = {3, 1, 4, 0, 5, 2};
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
 //Ref<Model> TestModel;
+
+Ref<Model> HeadModel;
+
+
 glm::vec3 Rotate[6];
 
 std::vector<Ref<Model>> TModel(8);
@@ -270,25 +278,68 @@ void PickObject() {
     Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 }
 
+// Ensure your .obj files are in the correct format and properly loaded by looking at the following function
+void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
+    // Read our .obj file
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    bool res = loadOBJ(file, vertices, uvs, normals);
+//
+    std::vector<GLushort> indices;
+    std::vector<glm::vec3> indexed_vertices;
+    std::vector<glm::vec2> indexed_uvs;
+    std::vector<glm::vec3> indexed_normals;
+    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+
+    const size_t vertCount = indexed_vertices.size();
+    const size_t idxCount = indices.size();
+
+    // populate output arrays
+    out_Vertices = new Vertex2[vertCount];
+    for (int i = 0; i < vertCount; i++) {
+        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
+        out_Vertices[i].SetNormal(&indexed_normals[i].x);
+        out_Vertices[i].SetColor(&color[0]);
+        out_Vertices[i].SetUV(&indexed_uvs[i].x);
+    }
+    out_Indices = new GLushort[idxCount];
+    for (int i = 0; i < idxCount; i++) {
+        out_Indices[i] = indices[i];
+    }
+
+    // set global variables!!
+    NumIdcs[ObjectId] = idxCount;
+    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
+    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
+}
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
-    BunnyModel = Model::LoadModel("../asset/bunny.obj");
+//    BunnyModel = Model::LoadModel("./asset/bunny.obj");
+//    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
+
+    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
 }
 
+
+
+
+
 float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{1.f};
+glm::vec3 BunnyScale = glm::vec3{10.f};
 
 void OnUpdateScene(float dt)
 {
@@ -384,10 +435,10 @@ void OnRenderScene()
 
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
-    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-    Renderer::DrawMesh(BunnyModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-    auto sunDir = glm::normalize(g_Camera->GetDir());
-    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+//    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
+    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+//    auto sunDir = glm::normalize(g_Camera->GetDir());
+//    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
 
     // Test

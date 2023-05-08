@@ -22,7 +22,9 @@ add_executable(${PROJECT_NAME}
         Model.cpp
         Model.h
         Vertex.h
-        debugbreak.h Entity.cpp Entity.h)
+        debugbreak.h
+        Entity.cpp
+        Entity.h)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

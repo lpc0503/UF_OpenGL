@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 project(common)
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
         controls.cpp
         controls.hpp
         objloader.cpp
