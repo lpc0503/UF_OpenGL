@@ -57,10 +57,10 @@ void Renderer::EndScene()
     // TODO: figure out how to batch rendering mesh
 //    g_RenderAPI->BindMeshShader();
 //    g_RenderAPI->SendMeshData();
-//    g_RenderAPI->DrawMeshs();
+//    g_RenderAPI->DrawMeshes();
 //    g_RenderAPI->UnbindShader();
 
-    g_RenderAPI->DrawMeshs();
+    g_RenderAPI->DrawMeshes();
 
     g_RenderAPI->ClearRendererState();
     g_IsRendering = false;

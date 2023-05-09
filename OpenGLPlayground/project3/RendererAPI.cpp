@@ -147,7 +147,7 @@ void RendererAPI::SendMeshData()
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);*/
 }
 
-void RendererAPI::DrawMeshs()
+void RendererAPI::DrawMeshes()
 {
     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
     {

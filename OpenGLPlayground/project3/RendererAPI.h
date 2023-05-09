@@ -55,7 +55,7 @@ public:
     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }
     void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
     void SendMeshData();
-    void DrawMeshs();
+    void DrawMeshes();
 
 private:
     GLuint m_MeshShader;
