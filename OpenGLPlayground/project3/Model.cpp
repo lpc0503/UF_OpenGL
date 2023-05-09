@@ -152,7 +152,7 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
     for (int i = 0; i < vertCount; i++) {
 
         Vertex vertex{};
-        vertex.pos = glm::vec4 {indexed_vertices[i].x, indexed_vertices[i].y, indexed_vertices[i].z, 0.f};
+        vertex.pos = glm::vec4 {indexed_vertices[i].x, indexed_vertices[i].y, indexed_vertices[i].z, 1.f};
         vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
         vertex.color = color;
         vertex.uv = glm::vec2{indexed_uvs[i].x, indexed_uvs[i].y};
