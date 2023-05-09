@@ -148,6 +148,7 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
 
     // populate output arrays
     Ref<Mesh> mesh = MakeRef<Mesh>();
+    mesh->m_Name = "test";
     for (int i = 0; i < vertCount; i++) {
 
         Vertex vertex{};
@@ -159,11 +160,11 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
 //        out_Vertices[i].SetNormal(&indexed_normals[i].x);
 //        out_Vertices[i].SetColor(&color[0]);
 //        out_Vertices[i].SetUV(&indexed_uvs[i].x);
-
         mesh->m_Vertices.push_back(vertex);
     }
 
     for (int i = 0; i < idxCount; i++) {
+
         mesh->m_Indices.push_back(indices[i]);
     }
 

@@ -130,6 +130,7 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
 
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
 {
+
     g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint);
 }
 

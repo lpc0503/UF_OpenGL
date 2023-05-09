@@ -339,7 +339,7 @@ glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{10.f};
+glm::vec3 BunnyScale = glm::vec3{1.f};
 
 void OnUpdateScene(float dt)
 {
