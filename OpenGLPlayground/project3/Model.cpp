@@ -23,13 +23,13 @@ Ref<Model> Model::LoadModel(const std::string &path)
 
     if (!reader.ParseFromFile(path, reader_config)) {
         if (!reader.Error().empty()) {
-            ERROR_TAG("TinyObjReader", "{}", reader.Error());
+            ERROR_TAG_STR("TinyObjReader", reader.Error());
         }
         return nullptr;
     }
 
     if (!reader.Warning().empty()) {
-        INFO_TAG("TinyObjReader", "{}", reader.Warning());
+        INFO_TAG_STR("TinyObjReader", reader.Warning());
     }
 
     auto& attrib = reader.GetAttrib();

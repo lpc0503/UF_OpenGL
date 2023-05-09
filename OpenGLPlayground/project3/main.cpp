@@ -153,9 +153,10 @@ float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {1.f, 1.f, -1.2f};
 
 int InitWindow() {
-    // Initialise GLFW
     if (!glfwInit()) {
-        fprintf(stderr, "Failed to initialize GLFW\n");
+        const char* des;
+        glfwGetError(&des);
+        ERROR_TAG(TAG_OPENGL, "Failed to initialize GLFW: {}", des);
         return -1;
     }
 
@@ -175,18 +176,28 @@ int InitWindow() {
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
 #endif
 
-    window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", NULL, NULL);
-    if (window == NULL) {
-        fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
+    window = glfwCreateWindow(window_width, window_height, "Po_Chuan,Liang(7336-5707)", nullptr, nullptr);
+    if (window == nullptr) {
+        const char* des;
+        glfwGetError(&des);
+        ERROR_TAG(TAG_OPENGL, "Failed to open GLFW window. {}", des);
         glfwTerminate();
         return -1;
     }
     glfwMakeContextCurrent(window);
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        ERROR_TAG_STR(TAG_OPENGL, "Failed to initialize GLAD");
         return -1;
     }
+
+    GLenum error = glGetError();
+    if(error != GL_NO_ERROR)
+    {
+        ERROR_TAG(TAG_OPENGL, "error code: {}", error);
+        return -1;
+    }
+
     glfwSwapInterval(1);
 
 #if defined(WIN32)
@@ -228,6 +239,7 @@ int InitWindow() {
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     Renderer::Init();
+
     return 0;
 }
 
@@ -323,16 +335,12 @@ void OnInitScene()
 //    BunnyModel = Model::LoadModel("./asset/bunny.obj");
 //    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
 
-    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
+    HeadModel = Model::LoadModel("../asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
 //    INFO("size = {}", TestModel->GetMeshes().size());
 }
-
-
-
-
 
 float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
