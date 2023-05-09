@@ -588,7 +588,7 @@ int main() {
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
-//    Renderer::Shutdown();
+    Renderer::Shutdown();
 
     Cleanup();
 }
