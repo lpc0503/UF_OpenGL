@@ -95,6 +95,20 @@ public:
     void DrawEntitiesForPicking(Ref<Camera> camera);
 private:
     std::vector<Ref<Entity>> m_Entities;
+
+    // Mode
+public:
+
+    enum class RendererMode : uint8_t {
+
+        Fill,
+        Line,
+        Texture
+    };
+
+    void SetRendererMode(RendererMode mode);
+
+    RendererMode GetRendererMode();
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H

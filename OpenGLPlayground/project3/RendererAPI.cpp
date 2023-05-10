@@ -234,6 +234,20 @@ void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
     }
 }
 
+void RendererAPI::SetRendererMode(RendererMode mode) {
+
+    if(mode == RendererMode::Line) {
+
+        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
+    }
+    else if(mode == RendererMode::Fill) {
+
+        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    }
+}
+
+
+
 void RendererAPI::ClearViewport()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

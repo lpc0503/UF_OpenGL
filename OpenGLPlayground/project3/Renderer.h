@@ -40,6 +40,18 @@ public:
 
     static void BeginPickingScene(Ref<Camera> camera);
     static void EndPickingScene();
+
+    // Mode
+    enum class RendererMode : uint8_t {
+
+        Fill,
+        Line,
+        Texture
+    };
+
+    static void SetRendererMode(RendererMode mode);
+
+    static RendererMode GetRendererMode();
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

@@ -335,7 +335,7 @@ void OnInitScene()
 //    BunnyModel = Model::LoadModel("./asset/bunny.obj");
 //    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
 
-    HeadModel = Model::LoadModel("../asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
+    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
@@ -438,6 +438,7 @@ void OnImGuiUpdate()
     ImGui::End();
 }
 
+bool DrawMeshLine = false;
 void OnRenderScene()
 {
 
@@ -489,6 +490,10 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
 
             switch (key){
 
+                case GLFW_KEY_F:
+                    DrawMeshLine = !DrawMeshLine;
+                    Renderer::SetRendererMode(static_cast<Renderer::RendererMode>(DrawMeshLine));
+                    break;
                 case GLFW_KEY_B:
                     break;
                 case GLFW_KEY_T:

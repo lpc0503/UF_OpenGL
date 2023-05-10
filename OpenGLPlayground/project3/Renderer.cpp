@@ -149,6 +149,14 @@ void Renderer::TestPickingEntity(Ref<Entity> entity)
     g_RenderAPI->PushPickingEntity(entity);
 }
 
+void Renderer::SetRendererMode(RendererMode mode) {
+
+    RendererAPI::RendererMode modeAPI = static_cast<RendererAPI::RendererMode>(mode);
+
+    g_RenderAPI->SetRendererMode(modeAPI);
+}
+
+
 void Renderer::ClearViewport()
 {
     g_RenderAPI->ClearViewport();
