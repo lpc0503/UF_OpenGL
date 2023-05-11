@@ -128,6 +128,13 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
+void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec4 &color) {
+
+    DrawLine(p0, p1, color);
+    DrawLine(p1, p2, color);
+    DrawLine(p2, p0, color);
+}
+
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
 {
 

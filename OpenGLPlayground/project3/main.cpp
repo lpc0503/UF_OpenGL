@@ -32,6 +32,7 @@ using namespace glm;
 #include "Model.h"
 #include "Utils.h"
 #include "Entity.h"
+#include "PNTriangle.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -326,6 +327,15 @@ void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& 
     IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
 }
 
+
+// Test
+Vertex tmp0;
+Vertex tmp1;
+Vertex tmp2;
+std::vector<Vertex> tt(3);
+PNTriangle *pnTriangle;
+
+float u,v;
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -335,7 +345,28 @@ void OnInitScene()
 //    BunnyModel = Model::LoadModel("./asset/bunny.obj");
 //    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
 
-    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0));
+    tmp0.pos = {0.f, 0.f, 0.f, 1.f};
+    tmp1.pos = {1.f, 0.f, 0.f, 1.f};
+    tmp2.pos = {0.5f, 0.f, 1.f, 1.f};
+    tmp0.normal = {0.f, -1.f, 0.f};
+    glm::normalize(tmp0.normal);
+    tmp1.normal = {1.f, -1.f, 0.f};
+    glm::normalize(tmp1.normal);
+    tmp2.normal = {0.5f, -1.f, 1.f};
+    glm::normalize(tmp2.normal);
+
+    u = 0.3, v = 0.4;
+
+    tt[0] = tmp0;
+    tt[1] = tmp1;
+    tt[2] = tmp2;
+    pnTriangle = new PNTriangle();
+
+    pnTriangle->GenControlPoint(tt, u, v);
+
+    INFO("{}", tt.size());
+
+    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
@@ -347,7 +378,7 @@ glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{1.f};
+glm::vec3 BunnyScale = glm::vec3{0.1f};
 
 void OnUpdateScene(float dt)
 {
@@ -431,6 +462,17 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Bunny Scale", &BunnyScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
+    if(ImGui::DragFloat("u", &u, 0.05)) {
+
+        tt.pop_back();
+        pnTriangle->GenControlPoint(tt, u, v);
+    }
+
+    if(ImGui::DragFloat("v", &v, 0.05)) {
+
+        tt.pop_back();
+        pnTriangle->GenControlPoint(tt, u,v);
+    }
     // ==== 測試用 之後拿掉我 ====
     if(ImGui::CollapsingHeader("Test"))
     {
@@ -444,8 +486,14 @@ void OnRenderScene()
 
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
+
+    for(int i = 0 ; i < 3 ; i++) {
+
+        Renderer::DrawTriangle(tt[i].pos, tt[i+1==3? 0: i+1].pos, tt[3].pos);
+    }
+//    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+//    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 //    auto sunDir = glm::normalize(g_Camera->GetDir());
 //    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();

@@ -24,7 +24,7 @@ add_executable(${PROJECT_NAME}
         Vertex.h
         debugbreak.h
         Entity.cpp
-        Entity.h)
+        Entity.h PNTriangle.cpp PNTriangle.h)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

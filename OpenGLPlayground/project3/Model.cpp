@@ -156,10 +156,6 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
         vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
         vertex.color = color;
         vertex.uv = glm::vec2{indexed_uvs[i].x, indexed_uvs[i].y};
-//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
-//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
-//        out_Vertices[i].SetColor(&color[0]);
-//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
         mesh->m_Vertices.push_back(vertex);
     }
 
