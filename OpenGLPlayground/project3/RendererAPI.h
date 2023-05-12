@@ -116,7 +116,8 @@ public:
 
         Fill,
         Line,
-        Point
+        Point,
+        Invalid = 0xFF
     };
     void SetRendererMode(RendererMode mode);
     RendererMode GetRendererMode();

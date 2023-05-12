@@ -13,11 +13,21 @@ bool g_IsRendering = false;
 // TODO: pimpl
 Ref<Camera> g_CurrentCamera;
 
+
+struct RendererData
+{
+    float CurrentPointSize = 3.f;
+};
+
+Uniq<RendererData> Renderer::m_RenderData = nullptr;
+
 void Renderer::Init()
 {
     INFO_TAG("Renderer", "Init");
     g_RenderAPI = new RendererAPI();
     g_RenderAPI->Init();
+
+    m_RenderData = MakeUniq<RendererData>();
 }
 
 void Renderer::Shutdown()
@@ -57,7 +67,7 @@ void Renderer::BeginScene(Ref<Camera> camera)
 void Renderer::EndScene()
 {
     g_RenderAPI->BindPointShader();
-    g_RenderAPI->SetFloat("vertexPointSize", 3.f);
+    g_RenderAPI->SetFloat("vertexPointSize", m_RenderData->CurrentPointSize);
     g_RenderAPI->SendPointData();
     g_RenderAPI->DrawPoints();
     g_RenderAPI->UnbindShader();
@@ -94,8 +104,9 @@ void Renderer::EndPickingScene()
     g_IsRendering = false;
 }
 
-void Renderer::DrawPoint(const glm::vec3& p0, const glm::vec4& color)
+void Renderer::DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize)
 {
+    m_RenderData->CurrentPointSize = pointSize;
     g_RenderAPI->PushPoint(p0, color);
 }
 
@@ -172,6 +183,12 @@ void Renderer::SetRendererMode(RendererMode mode)
 {
     RendererAPI::RendererMode modeAPI = static_cast<RendererAPI::RendererMode>(mode);
     g_RenderAPI->SetRendererMode(modeAPI);
+}
+
+Renderer::RendererMode Renderer::GetRendererMode()
+{
+    auto mode = g_RenderAPI->GetRendererMode();
+    return static_cast<Renderer::RendererMode>(mode);
 }
 
 void Renderer::ClearViewport()

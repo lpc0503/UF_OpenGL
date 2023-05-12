@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 
 class Entity;
+struct RendererData;
 
 class Renderer
 {
@@ -23,7 +24,7 @@ public:
 
     static void ClearViewport();
 
-    static void DrawPoint(const glm::vec3& p0, const glm::vec4& color);
+    static void DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize);
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 
     static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
@@ -52,6 +53,9 @@ public:
     };
     static void SetRendererMode(RendererMode mode);
     static RendererMode GetRendererMode();
+
+private:
+    static Uniq<RendererData> m_RenderData;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

@@ -269,6 +269,7 @@ RendererAPI::RendererMode RendererAPI::GetRendererMode()
         default:
             assert(0);
     }
+    return RendererAPI::RendererMode::Invalid;
 }
 
 void RendererAPI::ClearViewport()
