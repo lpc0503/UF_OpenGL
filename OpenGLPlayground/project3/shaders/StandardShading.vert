@@ -20,8 +20,10 @@ uniform mat4 V;
 uniform mat4 P;
 uniform vec3 LightPosition_worldspace;
 
+uniform float vertexPointSize;
+
 void main() {
-	gl_PointSize = 100.0;
+	gl_PointSize = vertexPointSize;
 	// Output position of the vertex, in clip space : MVP * position
 	gl_Position =  P * V * M * vertexPosition_modelspace;
 

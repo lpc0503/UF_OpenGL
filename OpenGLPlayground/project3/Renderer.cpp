@@ -56,8 +56,8 @@ void Renderer::BeginScene(Ref<Camera> camera)
 
 void Renderer::EndScene()
 {
-
     g_RenderAPI->BindPointShader();
+    g_RenderAPI->SetFloat("vertexPointSize", 3.f);
     g_RenderAPI->SendPointData();
     g_RenderAPI->DrawPoints();
     g_RenderAPI->UnbindShader();
@@ -150,7 +150,6 @@ void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm:
 
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
 {
-
     g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint);
 }
 
@@ -169,13 +168,11 @@ void Renderer::TestPickingEntity(Ref<Entity> entity)
     g_RenderAPI->PushPickingEntity(entity);
 }
 
-void Renderer::SetRendererMode(RendererMode mode) {
-
+void Renderer::SetRendererMode(RendererMode mode)
+{
     RendererAPI::RendererMode modeAPI = static_cast<RendererAPI::RendererMode>(mode);
-
     g_RenderAPI->SetRendererMode(modeAPI);
 }
-
 
 void Renderer::ClearViewport()
 {
