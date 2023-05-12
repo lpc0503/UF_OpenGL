@@ -10,52 +10,10 @@
 void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
-    glGenVertexArrays(1, &m_PointVAO);
-    glBindVertexArray(m_PointVAO);
-    glGenBuffers(1, &m_PointVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_PointVBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
-    glBindVertexArray(0);
-    m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 
-    glGenVertexArrays(1, &m_LineVAO);
-    glBindVertexArray(m_LineVAO);
-    glGenBuffers(1, &m_LineVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
-    glBindVertexArray(0);
-    m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
-
-    glGenVertexArrays(1, &m_MeshVAO);
-    glBindVertexArray(m_MeshVAO);
-    glGenBuffers(1, &m_MeshVBO);
-    glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
-    glGenBuffers(1, &m_MeshIBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
-    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
-    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    glEnableVertexAttribArray(2);
-    glEnableVertexAttribArray(3);
-    glBindVertexArray(0);
-    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+    InitPointRenderer();
+    InitLineRenderer();
+    InitMeshRenderer();
 
     m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
 }
@@ -278,20 +236,98 @@ void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
 
 void RendererAPI::SetRendererMode(RendererMode mode) {
 
-    if(mode == RendererMode::Line) {
-
-        glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-    }
-    else if(mode == RendererMode::Fill) {
-
-        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+    switch(mode)
+    {
+        case RendererMode::Line:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+            break;
+        case RendererMode::Fill:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+            break;
+        case RendererMode::Point:
+            glPolygonMode(GL_FRONT_AND_BACK, GL_POINT);
+            glPointSize(5.f);
+            break;
+        default:
+            assert(0);
     }
 }
 
+RendererAPI::RendererMode RendererAPI::GetRendererMode()
+{
+    GLint polygonMode;
+    glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
 
+    switch (polygonMode)
+    {
+        case GL_LINE:
+            return RendererAPI::RendererMode::Line;
+        case GL_FILL:
+            return RendererAPI::RendererMode::Fill;
+        case GL_POINTS:
+            return RendererAPI::RendererMode::Point;
+        default:
+            assert(0);
+    }
+}
 
 void RendererAPI::ClearViewport()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void RendererAPI::InitPointRenderer()
+{
+    glGenVertexArrays(1, &m_PointVAO);
+    glBindVertexArray(m_PointVAO);
+    glGenBuffers(1, &m_PointVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_PointVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glBindVertexArray(0);
+    m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+}
+
+void RendererAPI::InitLineRenderer()
+{
+    glGenVertexArrays(1, &m_LineVAO);
+    glBindVertexArray(m_LineVAO);
+    glGenBuffers(1, &m_LineVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glBindVertexArray(0);
+    m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+}
+
+void RendererAPI::InitMeshRenderer()
+{
+    glGenVertexArrays(1, &m_MeshVAO);
+    glBindVertexArray(m_MeshVAO);
+    glGenBuffers(1, &m_MeshVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
+    glGenBuffers(1, &m_MeshIBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glBindVertexArray(0);
+    m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+}

@@ -40,6 +40,7 @@ private:
 
     // Line
 public:
+    void InitLineRenderer();
     void BindLineShader() { assert(m_LineShader); m_CurrentShader = m_LineShader; BindShader(); } // TODO: remove
     void PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color);
     void SendLineData();
@@ -50,7 +51,9 @@ private:
     std::vector<Vertex> m_LineVertices;
     //
 
+    // Point
 public:
+    void InitPointRenderer();
     void BindPointShader() {assert(m_LineShader); m_CurrentShader = m_PointShader; BindShader();}
     void PushPoint(const glm::vec3 &p0, const glm::vec4 &color);
     void SendPointData();
@@ -60,9 +63,9 @@ private:
     GLuint m_PointShader;
     std::vector<Vertex> m_PointVertices;
 
-
     // Mesh
 public:
+    void InitMeshRenderer();
     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }
     void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
     void SendMeshData();
@@ -109,16 +112,13 @@ private:
 
     // Mode
 public:
-
     enum class RendererMode : uint8_t {
 
         Fill,
         Line,
-        Texture
+        Point
     };
-
     void SetRendererMode(RendererMode mode);
-
     RendererMode GetRendererMode();
 };
 

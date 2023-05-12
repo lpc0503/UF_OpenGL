@@ -48,11 +48,9 @@ public:
 
         Fill,
         Line,
-        Texture
+        Points
     };
-
     static void SetRendererMode(RendererMode mode);
-
     static RendererMode GetRendererMode();
 };
 
