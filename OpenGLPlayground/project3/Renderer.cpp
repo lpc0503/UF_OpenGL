@@ -32,6 +32,13 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_CurrentCamera = camera;
     g_IsRendering = true;
 
+    g_RenderAPI->BindPointShader();
+    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    g_RenderAPI->SetMatrix("V", camera->GetView());
+    g_RenderAPI->SetMatrix("P", camera->GetProjection());
+    g_RenderAPI->SetBool("uEnableLight", false);
+    g_RenderAPI->UnbindShader();
+
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
     g_RenderAPI->SetMatrix("V", camera->GetView());
@@ -49,6 +56,12 @@ void Renderer::BeginScene(Ref<Camera> camera)
 
 void Renderer::EndScene()
 {
+
+    g_RenderAPI->BindPointShader();
+    g_RenderAPI->SendPointData();
+    g_RenderAPI->DrawPoints();
+    g_RenderAPI->UnbindShader();
+
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SendLineData();
     g_RenderAPI->DrawLines();
@@ -81,9 +94,9 @@ void Renderer::EndPickingScene()
     g_IsRendering = false;
 }
 
-void Renderer::DrawPoint()
+void Renderer::DrawPoint(const glm::vec3& p0, const glm::vec4& color)
 {
-    // TODO: implement
+    g_RenderAPI->PushPoint(p0, color);
 }
 
 void Renderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)

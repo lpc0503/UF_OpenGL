@@ -50,6 +50,17 @@ private:
     std::vector<Vertex> m_LineVertices;
     //
 
+public:
+    void BindPointShader() {assert(m_LineShader); m_CurrentShader = m_PointShader; BindShader();}
+    void PushPoint(const glm::vec3 &p0, const glm::vec4 &color);
+    void SendPointData();
+    void DrawPoints();
+private:
+    GLuint m_PointVAO, m_PointVBO;
+    GLuint m_PointShader;
+    std::vector<Vertex> m_PointVertices;
+
+
     // Mesh
 public:
     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }

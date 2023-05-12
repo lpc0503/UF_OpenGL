@@ -334,7 +334,8 @@ Vertex tmp1;
 Vertex tmp2;
 std::vector<Vertex> tt(3);
 PNTriangle *pnTriangle;
-
+std::vector<glm::vec4> cp;
+Vertex point;
 float u,v;
 void OnInitScene()
 {
@@ -355,7 +356,7 @@ void OnInitScene()
     tmp2.normal = {0.5f, -1.f, 1.f};
     glm::normalize(tmp2.normal);
 
-    u = 0.3, v = 0.4;
+    u = 0.0, v = 0.0;
 
     tt[0] = tmp0;
     tt[1] = tmp1;
@@ -364,9 +365,12 @@ void OnInitScene()
 
     pnTriangle->GenControlPoint(tt, u, v);
 
-    INFO("{}", tt.size());
+    point.pos = {2.0, 2.0, 2.0, 1.f};
 
     HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+
+//    HeadModel->GetMeshes().front()->m_PNVertices = pnTriangle->GenControlPoint(HeadModel->GetMeshes().front()->m_Vertices, u, v);
+
 //    TestModel = Model::LoadModel("../asset/Robot.obj");
 
 //    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
@@ -487,9 +491,25 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
 
+
+
+    if(v == 0.f) u+=0.01;
+    if(u > 1.f) u = 0;
+    v+=0.01;
+    if(u + v > 1.f) v = 0.f;
+
+    tt.pop_back();
+    cp = pnTriangle->GenControlPoint(tt, u, v);
+
     for(int i = 0 ; i < 3 ; i++) {
 
         Renderer::DrawTriangle(tt[i].pos, tt[i+1==3? 0: i+1].pos, tt[3].pos);
+    }
+
+    for(int i = 0 ; i < cp.size() ; i++) {
+
+        auto cp_ = cp[i];
+        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, glm::vec4{1.f, 0.f, 0.f, 1.f});
     }
 //    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});

@@ -10,6 +10,21 @@
 void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
+    glGenVertexArrays(1, &m_PointVAO);
+    glBindVertexArray(m_PointVAO);
+    glGenBuffers(1, &m_PointVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_PointVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glBindVertexArray(0);
+    m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+
     glGenVertexArrays(1, &m_LineVAO);
     glBindVertexArray(m_LineVAO);
     glGenBuffers(1, &m_LineVBO);
@@ -129,6 +144,33 @@ void RendererAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::
 void RendererAPI::DrawLines()
 {
     glDrawArrays(GL_LINES, 0, m_LineVertices.size());
+}
+
+//////////////////////////////////////////////////////////////////////
+// Point
+//////////////////////////////////////////////////////////////////////
+
+void RendererAPI::PushPoint(const glm::vec3 &p0, const glm::vec4 &color) {
+
+    Vertex v0;
+    v0.pos = glm::vec4(p0, 1.f);
+    v0.color = color;
+    v0.normal = glm::vec4{0.f};
+    m_PointVertices.emplace_back(v0);
+}
+
+void RendererAPI::SendPointData() {
+
+    glBindVertexArray(m_PointVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_PointVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_PointVertices.size(), glm::value_ptr(m_PointVertices[0].pos), GL_STATIC_DRAW);
+}
+
+void RendererAPI::DrawPoints() {
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glDrawArrays(GL_POINTS, 0, m_PointVertices.size());
+    glDisable(GL_PROGRAM_POINT_SIZE);
 }
 
 //////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 
 #include "PNTriangle.h"
 
-void PNTriangle::GenControlPoint(std::vector<Vertex> &vertices, float &u, float &v) {
+std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices, float &u, float &v) {
 
     auto b300 = vertices[0].pos;
     auto b030 = vertices[1].pos;
@@ -21,7 +21,7 @@ void PNTriangle::GenControlPoint(std::vector<Vertex> &vertices, float &u, float 
 
                 auto jpos = vertices[j].pos;
                 auto ipos = vertices[i].pos;
-                wij[i][j] = glm::dot(glm::vec3(jpos - ipos), vertices[j].normal);
+                wij[i][j] = glm::dot(glm::vec3(jpos - ipos), glm::normalize(vertices[j].normal));
             }
         }
     }
@@ -57,60 +57,18 @@ void PNTriangle::GenControlPoint(std::vector<Vertex> &vertices, float &u, float 
     add.pos = pos;
     vertices.push_back(add);
 
-//    vertices.clear();
-//    Vertex tmp1, tmp2, tmp3;
-//    tmp1.pos = b300;
-//    tmp2.pos = b210;
-//    tmp3.pos = b201;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b201;
-//    tmp2.pos = b210;
-//    tmp3.pos = b111;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b111;
-//    tmp2.pos = b210;
-//    tmp3.pos = b120;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b120;
-//    tmp2.pos = b030;
-//    tmp3.pos = b021;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b021;
-//    tmp2.pos = b111;
-//    tmp3.pos = b120;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b201;
-//    tmp2.pos = b111;
-//    tmp3.pos = b102;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b102;
-//    tmp2.pos = b111;
-//    tmp3.pos = b012;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b012;
-//    tmp2.pos = b003;
-//    tmp3.pos = b102;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
-//    tmp1.pos = b111;
-//    tmp2.pos = b021;
-//    tmp3.pos = b012;
-//    vertices.push_back(tmp1);
-//    vertices.push_back(tmp2);
-//    vertices.push_back(tmp3);
+    std::vector<glm::vec4> controlPoint(10);
+
+//    controlPoint[0] = b300;
+//    controlPoint[1] = b030;
+//    controlPoint[2] = b003;
+    controlPoint[3] = b210;
+    controlPoint[4] = b021;
+    controlPoint[5] = b201;
+    controlPoint[6] = b120;
+    controlPoint[7] = b012;
+    controlPoint[8] = b102;
+    controlPoint[9] = b111;
+
+    return controlPoint;
 }

@@ -17,7 +17,7 @@ public:
 
     PNTriangle() = default;
 
-    void GenControlPoint(std::vector<Vertex>& vertices, float &u, float &v);
+    std::vector<glm::vec4> GenControlPoint(std::vector<Vertex>& vertices, float &u, float &v);
 
 };
 

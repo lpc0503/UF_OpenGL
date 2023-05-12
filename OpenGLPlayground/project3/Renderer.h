@@ -23,7 +23,7 @@ public:
 
     static void ClearViewport();
 
-    static void DrawPoint();
+    static void DrawPoint(const glm::vec3& p0, const glm::vec4& color);
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 
     static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
