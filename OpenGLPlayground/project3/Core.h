@@ -15,4 +15,6 @@ constexpr Ref<T> MakeRef(Args&& ... args)
     return std::make_shared<T>(std::forward<Args>(args)...);
 }
 
+#define BIT(x) (1<<(x))
+
 #endif //OPENGLPLAYGROUND_CORE_H
