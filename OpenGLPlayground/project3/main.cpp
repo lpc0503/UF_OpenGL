@@ -509,7 +509,18 @@ void OnRenderScene()
     for(int i = 0 ; i < cp.size() ; i++) {
 
         auto cp_ = cp[i];
-        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, glm::vec4{1.f, 0.f, 0.f, 1.f});
+        glm::vec4 color = {1.0f, 0.f, 0.f, 1.f};
+
+        if(i == cp.size() - 1) {
+
+            color = {1.f, 1.f, 1.f, 1.f};
+        }
+        else {
+
+            color = {1.f, 0.f, 0.f, 1.f};
+        }
+
+        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color);
     }
 //    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});

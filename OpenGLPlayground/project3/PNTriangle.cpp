@@ -11,6 +11,10 @@ std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices
     auto b003 = vertices[2].pos;
     INFO("{} {} {}", b003.x, b003.y, b003.z);
 
+    auto P1 = b300;
+    auto P2 = b030;
+    auto P3 = b003;
+
     std::vector<std::vector<float>> wij(3, std::vector<float>(3, 0.f));
 
     for(int i = 0 ; i < vertices.size() ; i++) {
@@ -26,12 +30,12 @@ std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices
         }
     }
 
-    auto b210 = (2.f*b300 + b030 - glm::vec4(wij[0][1]*vertices[0].normal, 0.0f))/3.f;
-    auto b021 = (2.f*b030 + b003 - glm::vec4(wij[1][2]*vertices[1].normal, 0.0f))/3.f;
-    auto b201 = (2.f*b003 + b300 - glm::vec4(wij[2][0]*vertices[2].normal, 0.0f))/3.f;
-    auto b120 = (2.f*b030 + b300 - glm::vec4(wij[1][0]*vertices[1].normal, 0.0f))/3.f;
-    auto b012 = (2.f*b003 + b030 - glm::vec4(wij[2][1]*vertices[2].normal, 0.0f))/3.f;
-    auto b102 = (2.f*b300 + b003 - glm::vec4(wij[0][2]*vertices[0].normal, 0.0f))/3.f;
+    auto b210 = (2.f*P1 + P2 - glm::vec4(wij[0][1]*vertices[0].normal, 1.0f))/3.f;
+    auto b120 = (2.f*P2 + P1 - glm::vec4(wij[1][0]*vertices[1].normal, 1.0f))/3.f;
+    auto b021 = (2.f*P2 + P3 - glm::vec4(wij[1][2]*vertices[1].normal, 1.0f))/3.f;
+    auto b012 = (2.f*P3 + P2 - glm::vec4(wij[2][1]*vertices[2].normal, 1.0f))/3.f;
+    auto b102 = (2.f*P1 + P3 - glm::vec4(wij[0][2]*vertices[2].normal, 1.0f))/3.f;
+    auto b201 = (2.f*P3 + P1 - glm::vec4(wij[2][0]*vertices[0].normal, 1.0f))/3.f;
 
     auto E = (b210 + b120 + b021 + b012 + b201 + b102) / 6.f;
     auto V = (b300 + b030 + b003) / 3.f;
@@ -59,9 +63,9 @@ std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices
 
     std::vector<glm::vec4> controlPoint(10);
 
-//    controlPoint[0] = b300;
-//    controlPoint[1] = b030;
-//    controlPoint[2] = b003;
+    controlPoint[0] = b300;
+    controlPoint[1] = b030;
+    controlPoint[2] = b003;
     controlPoint[3] = b210;
     controlPoint[4] = b021;
     controlPoint[5] = b201;
