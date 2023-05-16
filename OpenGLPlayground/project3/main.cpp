@@ -520,7 +520,7 @@ void OnRenderScene()
             color = {1.f, 0.f, 0.f, 1.f};
         }
 
-        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color);
+        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color, 100);
     }
 //    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
