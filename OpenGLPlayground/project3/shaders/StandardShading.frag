@@ -58,12 +58,12 @@ void main() {
 //		color = vs_vertexColor.rgb;
 //		// color = vec3(UV, 0.0);
 //	}
-	if(uEnableLight)
-	{
-		color = Color.rgb * CalcDirectionalLight(dirLight, Normal_cameraspace);
-	}
-	else
-	{
+//	if(uEnableLight)
+//	{
+//		color = Color.rgb * CalcDirectionalLight(dirLight, Normal_cameraspace);
+//	}
+//	else
+//	{
 		color = vs_vertexColor.rgb;
-	}
+//	}
 }

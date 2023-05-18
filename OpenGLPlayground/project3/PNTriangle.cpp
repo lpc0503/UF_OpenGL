@@ -9,7 +9,6 @@ std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices
     auto b300 = vertices[0].pos;
     auto b030 = vertices[1].pos;
     auto b003 = vertices[2].pos;
-    INFO("{} {} {}", b003.x, b003.y, b003.z);
 
     auto P1 = b300;
     auto P2 = b030;
@@ -56,7 +55,6 @@ std::vector<glm::vec4> PNTriangle::GenControlPoint(std::vector<Vertex> &vertices
                + b021 * 3.f * u2 * v + b102 * 3.f * w * v2 + b012 * 3.f * u * v2
                + b012 * 6.f * w * u * v;
 
-    INFO("{} {} {}", pos.x, pos.y, pos.z);
     Vertex add;
     add.pos = pos;
     vertices.push_back(add);

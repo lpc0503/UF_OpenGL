@@ -337,6 +337,7 @@ PNTriangle *pnTriangle;
 std::vector<glm::vec4> cp;
 Vertex point;
 float u,v;
+std::vector<std::vector<Vertex>> facetmp;
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -356,7 +357,7 @@ void OnInitScene()
     tmp2.normal = {0.5f, -1.f, 1.f};
     glm::normalize(tmp2.normal);
 
-    u = 0.0, v = 0.0;
+    u = 0.5, v = 0.3;
 
     tt[0] = tmp0;
     tt[1] = tmp1;
@@ -367,7 +368,19 @@ void OnInitScene()
 
     point.pos = {2.0, 2.0, 2.0, 1.f};
 
-    HeadModel = Model::LoadModel("./asset/head.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+    HeadModel = Model::LoadModel("../asset/head.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+
+    for(int i = 0 ; i < HeadModel->GetMeshes().front()->m_Vertices.size() ; i++) {
+
+        auto vertex = HeadModel->GetMeshes().front()->m_Vertices;
+        auto size = HeadModel->GetMeshes().front()->m_Vertices.size();
+        std::vector<Vertex> add;
+        add.push_back(vertex[i%size]);
+        add.push_back(vertex[(i+1)%size]);
+        add.push_back(vertex[(i+2)%size]);
+        pnTriangle->GenControlPoint(add, u, v);
+        facetmp.push_back(add);
+    }
 
 //    HeadModel->GetMeshes().front()->m_PNVertices = pnTriangle->GenControlPoint(HeadModel->GetMeshes().front()->m_Vertices, u, v);
 
@@ -382,7 +395,11 @@ glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{0.1f};
+glm::vec3 BunnyScale = glm::vec3{1.f};
+float pointSize = 3.f;
+int pointRange = 0;
+int triangleRange = 0;
+
 
 void OnUpdateScene(float dt)
 {
@@ -477,6 +494,12 @@ void OnImGuiUpdate()
         tt.pop_back();
         pnTriangle->GenControlPoint(tt, u,v);
     }
+
+    ImGui::DragFloat("Point Size", &pointSize, 0.1f);
+    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
+    ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
+
+
     // ==== 測試用 之後拿掉我 ====
     if(ImGui::CollapsingHeader("Test"))
     {
@@ -484,7 +507,8 @@ void OnImGuiUpdate()
     ImGui::End();
 }
 
-bool DrawMeshLine = false;
+bool DrawMeshLine = true;
+bool TmpFlag = false;
 void OnRenderScene()
 {
 
@@ -493,38 +517,63 @@ void OnRenderScene()
 
 
 
-    if(v == 0.f) u+=0.01;
-    if(u > 1.f) u = 0;
-    v+=0.01;
-    if(u + v > 1.f) v = 0.f;
+//    if(v == 0.f) u+=0.01;
+//    if(u > 1.f) u = 0;
+//    v+=0.01;
+//    if(u + v > 1.f) v = 0.f;
 
-    tt.pop_back();
-    cp = pnTriangle->GenControlPoint(tt, u, v);
+//    tt.pop_back();
+//    cp = pnTriangle->GenControlPoint(tt, u, v);
+//
+//    for(int i = 0 ; i < 3 ; i++) {
+//
+//        Renderer::DrawTriangle(tt[i].pos, tt[i+1==3? 0: i+1].pos, tt[3].pos);
+//    }
+//
+//    for(int i = 0 ; i < cp.size() ; i++) {
+//
+//        auto cp_ = cp[i];
+//        glm::vec4 color = {1.0f, 0.f, 0.f, 1.f};
+//
+//        if(i == cp.size() - 1) {
+//
+//            color = {1.f, 1.f, 1.f, 1.f};
+//        }
+//        else {
+//
+//            color = {1.f, 0.f, 0.f, 1.f};
+//        }
+//
+//        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color, 100);
+//    }
+    glm::vec4 color = {1.0f, 1.f, 1.f, 1.f};
+    if(TmpFlag) {
 
-    for(int i = 0 ; i < 3 ; i++) {
+        for(int i = 0 ; i < facetmp.size()/facetmp.size() + triangleRange ; i++) {
 
-        Renderer::DrawTriangle(tt[i].pos, tt[i+1==3? 0: i+1].pos, tt[3].pos);
+            for(int j = 0 ; j < 1 + pointRange ; j++) {
+
+
+                Renderer::DrawPoint(facetmp[i][j].pos, color, pointSize);
+                Renderer::DrawPoint(facetmp[i][j+1==3? 0: j+1].pos, color, pointSize);
+                Renderer::DrawPoint(facetmp[i][j+2==3? 0: j+1].pos, color, pointSize);
+
+
+                Renderer::DrawTriangle(facetmp[i][j].pos, facetmp[i][j+1==3? 0: j+1].pos, facetmp[i][3].pos);
+            }
+        }
+//        for(int i = 0 ; i < HeadModel->GetMeshes().front()->m_Vertices.size() / HeadModel->GetMeshes().front()->m_Vertices.size() + triangleRange ; i++) {
+//
+//            Renderer::DrawPoint(HeadModel->GetMeshes().front()->m_Vertices[i].pos, color, pointSize);
+//        }
+
     }
 
-    for(int i = 0 ; i < cp.size() ; i++) {
 
-        auto cp_ = cp[i];
-        glm::vec4 color = {1.0f, 0.f, 0.f, 1.f};
 
-        if(i == cp.size() - 1) {
-
-            color = {1.f, 1.f, 1.f, 1.f};
-        }
-        else {
-
-            color = {1.f, 0.f, 0.f, 1.f};
-        }
-
-        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color, 100);
-    }
 //    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-//    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
 //    auto sunDir = glm::normalize(g_Camera->GetDir());
 //    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
@@ -574,6 +623,7 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                     Renderer::SetRendererMode(static_cast<Renderer::RendererMode>(DrawMeshLine));
                     break;
                 case GLFW_KEY_B:
+                    TmpFlag = !TmpFlag;
                     break;
                 case GLFW_KEY_T:
                     break;
