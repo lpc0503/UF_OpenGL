@@ -15,6 +15,7 @@ void RendererAPI::Init()
     InitLineRenderer();
     InitMeshRenderer();
 
+    m_ShaderMode = ShaderMode::STANDARD;
     m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
 }
 
@@ -167,7 +168,15 @@ void RendererAPI::DrawMeshes()
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
-        glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+        if(GetShaderMode() == ShaderMode::STANDARD) {
+
+            glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+        }
+        else if(GetShaderMode() == ShaderMode::TESSELATION){
+
+            glPatchParameteri(GL_PATCH_VERTICES, 3);
+            glDrawElements(GL_PATCHES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+        }
     };
 
     BindMeshShader();
@@ -332,3 +341,28 @@ void RendererAPI::InitMeshRenderer()
     glBindVertexArray(0);
     m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
+
+void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode) {
+
+    m_ShaderMode = mode;
+
+    if(m_ShaderMode == ShaderMode::STANDARD) {
+
+        m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+        m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+        m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+    }
+
+    if(m_ShaderMode == ShaderMode::TESSELATION) {
+
+//        m_PointShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
+//        m_LineShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
+        m_MeshShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
+    }
+}
+
+RendererAPI::ShaderMode RendererAPI::GetShaderMode() {
+
+    return m_ShaderMode;
+}
+

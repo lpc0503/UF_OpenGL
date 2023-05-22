@@ -54,7 +54,19 @@ public:
     static void SetRendererMode(RendererMode mode);
     static RendererMode GetRendererMode();
 
+    enum class ShaderMode : uint8_t {
+
+        STANDARD,
+        TESSELATION
+    };
+
+    static void SetShaderMode(ShaderMode mode);
+
+    static ShaderMode GetShaderMode();
+
 private:
+
+    static ShaderMode m_ShaderMode;
     static Uniq<RendererData> m_RenderData;
 };
 

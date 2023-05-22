@@ -128,6 +128,9 @@ glm::vec4 MeshColor[9] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, YELLOW, W
 #define BULLET 7
 int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
+#define STANDARD 0
+#define TESSELATION 1
+
 
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
@@ -626,6 +629,8 @@ void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
                     TmpFlag = !TmpFlag;
                     break;
                 case GLFW_KEY_T:
+                    Renderer::SetShaderMode(Renderer::GetShaderMode() == static_cast<Renderer::ShaderMode>(STANDARD) ?
+                    static_cast<Renderer::ShaderMode>(TESSELATION) : static_cast<Renderer::ShaderMode>(STANDARD));
                     break;
                 case GLFW_KEY_1:
                     break;

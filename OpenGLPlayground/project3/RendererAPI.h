@@ -121,6 +121,17 @@ public:
     };
     void SetRendererMode(RendererMode mode);
     RendererMode GetRendererMode();
+
+    enum class ShaderMode : uint8_t {
+
+        STANDARD,
+        TESSELATION
+    };
+
+    void SetShaderMode(ShaderMode mode);
+    ShaderMode GetShaderMode();
+private:
+    ShaderMode m_ShaderMode;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H

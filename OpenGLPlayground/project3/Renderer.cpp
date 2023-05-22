@@ -13,13 +13,13 @@ bool g_IsRendering = false;
 // TODO: pimpl
 Ref<Camera> g_CurrentCamera;
 
-
 struct RendererData
 {
     float CurrentPointSize = 3.f;
 };
 
 Uniq<RendererData> Renderer::m_RenderData = nullptr;
+Renderer::ShaderMode Renderer::m_ShaderMode;
 
 void Renderer::Init()
 {
@@ -27,6 +27,7 @@ void Renderer::Init()
     g_RenderAPI = new RendererAPI();
     g_RenderAPI->Init();
 
+    m_ShaderMode = ShaderMode::STANDARD;
     m_RenderData = MakeUniq<RendererData>();
 }
 
@@ -59,7 +60,12 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->BindMeshShader();
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetMatrix("MV", camera->GetView());
+    g_RenderAPI->SetMatrix("M", camera->GetView());
+    if(g_RenderAPI->GetShaderMode() == static_cast<RendererAPI::ShaderMode>(m_ShaderMode)) {
+
+        g_RenderAPI->SetFloat("tessellationLevelInner", 2);
+        g_RenderAPI->SetFloat("tessellationLevelOuter", 4);
+    }
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();
 }
@@ -194,4 +200,15 @@ Renderer::RendererMode Renderer::GetRendererMode()
 void Renderer::ClearViewport()
 {
     g_RenderAPI->ClearViewport();
+}
+
+void Renderer::SetShaderMode(Renderer::ShaderMode mode) {
+
+    m_ShaderMode = mode;
+    g_RenderAPI->SetShaderMode(static_cast<RendererAPI::ShaderMode>(mode));
+}
+
+Renderer::ShaderMode Renderer::GetShaderMode() {
+
+    return static_cast<Renderer::ShaderMode>(g_RenderAPI->GetShaderMode());
 }
