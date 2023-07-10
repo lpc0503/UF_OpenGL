@@ -14,18 +14,27 @@ in vec3 lightDirection_cameraspace;
 in T2F tedata;
 out vec3 color;
 
+struct DirectionalLight
+{
+    vec3 dir;
+    vec3 ambient;
+    vec3 diffuse;
+    vec3 specular;
+};
+uniform DirectionalLight dirLight;
+
 uniform vec3 lightPosition_worldspace;
 
 void main()
 {
     vec3 lightColor = vec3(1, 1, 0.5);
-    float lightPower = 600.0f;
+    float lightPower = 600.f;
 
     vec3 materialDiffuseColor = tedata.color.rgb;
     vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
     vec3 materialSpecularColor = vec3(0.5, 0.5, 0.5) * materialDiffuseColor;
 
-    float distance = length(lightPosition_worldspace - position_worldspace);
+    float distance = length(dirLight.dir - position_worldspace);
 
     vec3 n = normalize(normal_cameraspace);
     vec3 l = normalize(lightDirection_cameraspace);
@@ -37,8 +46,8 @@ void main()
 
     float cosAlpha = clamp(dot(e,r), 0.f, 1.f);
 
-    color = vec3(1.f, .5f, .5f);
-//    color = materialAmbientColor
-//    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-//    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+//    color = tedata.color.rgb;
+    color = materialAmbientColor
+    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 }

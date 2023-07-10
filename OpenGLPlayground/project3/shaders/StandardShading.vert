@@ -40,7 +40,7 @@ void main() {
 	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
 
 	// Normal of the the vertex, in camera space	// TL
-	Normal_cameraspace = vec3((V * M * vec4(vertexNormal, 1.0)).xyz); // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
+	Normal_cameraspace = vec3((V * M * vec4(normalize(vertexNormal), 1.0)).xyz); // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
 
 	// UV of the vertex. No special space for this one.
 	vs_vertexColor = vertexColor;

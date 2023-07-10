@@ -167,6 +167,11 @@ void RendererAPI::DrawMeshes()
         glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
+//        for(auto x : mesh->m_Vertices) {
+//
+//            INFO("{} {} {}", x.normal.x, x.normal.y, x.normal.z);
+//        }
+
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
         if(GetShaderMode() == ShaderMode::STANDARD) {
 

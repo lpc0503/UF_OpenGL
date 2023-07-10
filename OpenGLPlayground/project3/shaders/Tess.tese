@@ -81,6 +81,18 @@ void main()
     vec3 p2 = tcdata[1].position;
     vec3 p3 = tcdata[2].position;
 
+//    vec3 n1 = tcdata[0].position;
+//    vec3 n2 = tcdata[1].position;
+//    vec3 n3 = tcdata[2].position;
+//
+//    vec3 n1 = (tcdata[0].normal + tcdata[3].normal) / 2;
+//    vec3 n2 = (tcdata[0].normal + tcdata[4].normal) / 2;
+//    vec3 n3 = (tcdata[0].normal + tcdata[5].normal) / 2;
+
+//    vec3 n1 = tcdata[3].normal;
+//    vec3 n2 = tcdata[4].normal;
+//    vec3 n3 = tcdata[5].normal;
+
     vec3 n1 = tcdata[0].normal;
     vec3 n2 = tcdata[1].normal;
     vec3 n3 = tcdata[2].normal;
@@ -120,12 +132,12 @@ void main()
     vec3 b102 = (2.f*p3 + p1 - w31*n3) / 3.f;
     vec3 b201 = (2.f*p1 + p3 - w13*n1) / 3.f;
 
-    //vec3 ee = (b120 + b120 + b021 + b012 + b102 + b210) / 6.;
-    //vec3 vv = (p1 + p2 + p3) / 3.;
-    //vec3 b111 = ee + (ee - vv) / 2.;
+//    vec3 ee = (b120 + b201 + b021 + b012 + b102 + b210) / 6.;
+//    vec3 vv = (p1 + p2 + p3) / 3.;
+//    vec3 b111 = ee + (ee - vv) / 2.;
 
     //< use another calculation
-    vec3 ee = (b120 + b120 + b021 + b012 + b102 + b210) / 4.f;
+    vec3 ee = (b120 + b201 + b021 + b012 + b102 + b210) / 4.f;
     vec3 vv = (p1 + p2 + p3) / 6.f;
     vec3 b111 = ee - vv ;
 
@@ -141,6 +153,7 @@ void main()
     + b021 * 3. * u2 * v + b102 * 3. * w * v2 + b012 * 3. * u * v2
     + b012 * 6. * w * u * v;
 
+//    pos = b300 * w3 + b030 * u3 + b003 * v3;
     tedata.position = pos;
 
     #if 1
@@ -158,10 +171,13 @@ void main()
 
     tedata.normal = n200 * w2 + n020 * u2 + n002 * v2
     + n110 * w * u + n011 * u * v + n101 * w * v;
+//    tedata.color = vec4(0.0, 0.0, 0.0, 1.0);
     #else
     tedata.normal = n1 * w + n2 * u + n3 * v;
+//    tedata.color = vec4(c1 * w + c2 * u + c3 * v, 1.0);
     #endif
 
+//    tedata.color = vec4(tedata.normal.x, tedata.normal.y, tedata.normal.z, 1.0);
     tedata.color = vec4(c1 * w + c2 * u + c3 * v, 1.0);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
@@ -171,7 +187,7 @@ void main()
     vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 1.0)).xyz;
     eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;
 
-    vec3 lightPosition_cameraspace = (V * vec4(lightPosition_worldspace, 1)).xyz;
+    vec3 lightPosition_cameraspace = (V * vec4(lightPosition_worldspace, 1.0)).xyz;
     lightDirection_cameraspace = lightPosition_cameraspace + eyeDirection_cameraspace;
 
     normal_cameraspace = vec3((V * M * vec4(tedata.normal, 0)).xyz);

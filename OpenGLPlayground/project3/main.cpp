@@ -6,6 +6,7 @@
 #include <array>
 #include <stack>   
 #include <sstream>
+#include <unordered_map>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -154,7 +155,7 @@ Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
-glm::vec3 g_SunLight = {1.f, 1.f, -1.2f};
+glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
 
 int InitWindow() {
     if (!glfwInit()) {
@@ -341,6 +342,19 @@ std::vector<glm::vec4> cp;
 Vertex point;
 float u,v;
 std::vector<std::vector<Vertex>> facetmp;
+Ref<Model> TestModel;
+
+glm::vec3 tq[3] = {
+        {0.0f, 0.0, 0.f},
+        {0.f, 0.f, -1.f},
+        {1.f, 0.f, -0.5f}
+};
+glm::vec3 n[3] = {
+        {0.0, 1.f, 0.f},
+        {0.0, 1.f, 0.f},
+        {0.0, -1.f, 0.f}
+};
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -350,40 +364,69 @@ void OnInitScene()
 //    BunnyModel = Model::LoadModel("./asset/bunny.obj");
 //    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
 
-    tmp0.pos = {0.f, 0.f, 0.f, 1.f};
-    tmp1.pos = {1.f, 0.f, 0.f, 1.f};
-    tmp2.pos = {0.5f, 0.f, 1.f, 1.f};
-    tmp0.normal = {0.f, -1.f, 0.f};
-    glm::normalize(tmp0.normal);
-    tmp1.normal = {1.f, -1.f, 0.f};
-    glm::normalize(tmp1.normal);
-    tmp2.normal = {0.5f, -1.f, 1.f};
-    glm::normalize(tmp2.normal);
+    HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 
-    u = 0.5, v = 0.3;
+//    INFO("{}", HeadModel->GetMeshes().front()->m_Vertices.size());
+//    for(auto x : HeadModel->GetMeshes().front()->m_Vertices) {
+//
+//        auto tt = x.pos;
+//        auto tn = x.normal;
+//    }
 
-    tt[0] = tmp0;
-    tt[1] = tmp1;
-    tt[2] = tmp2;
-    pnTriangle = new PNTriangle();
+    struct normalcnt {
 
-    pnTriangle->GenControlPoint(tt, u, v);
+        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
+        double cnt = 0.f;
+    };
 
-    point.pos = {2.0, 2.0, 2.0, 1.f};
+    std::unordered_map<glm::vec4, normalcnt> sum;
+    auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
+    for(int i = 0 ; i < hvertices.size() ; i++) {
 
-    HeadModel = Model::LoadModel("../asset/head.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
-
-    for(int i = 0 ; i < HeadModel->GetMeshes().front()->m_Vertices.size() ; i++) {
-
-        auto vertex = HeadModel->GetMeshes().front()->m_Vertices;
-        auto size = HeadModel->GetMeshes().front()->m_Vertices.size();
-        std::vector<Vertex> add;
-        add.push_back(vertex[i%size]);
-        add.push_back(vertex[(i+1)%size]);
-        add.push_back(vertex[(i+2)%size]);
-        pnTriangle->GenControlPoint(add, u, v);
-        facetmp.push_back(add);
+        sum[hvertices[i].pos].normal += hvertices[i].normal;
+        sum[hvertices[i].pos].cnt += 1.f;
+//        sum[hvertices[i].pos] += 1;
     }
+
+    for(int i = 0 ; i < hvertices.size() ; i++) {
+
+        auto xx = sum.find(hvertices[i].pos);
+//        INFO("{}", sum[hvertices[i].pos].cnt);
+        hvertices[i].normal = xx->second.normal/float(xx->second.cnt);
+    }
+
+//    TestModel = MakeRef<Model>();
+//
+//    Ref<Mesh> mesh = MakeRef<Mesh>();
+//    for(int i = 0 ; i < 3 ; i++) {
+//
+//        Vertex vertex{};
+//        vertex.pos = glm::vec4 {tq[i].x, tq[i].y, tq[i].z, 1.f}; // TODO: 為什麼 1 就會過?
+//        vertex.normal = glm::vec3 {n[i].x, n[i].y, n[i].z};
+//        vertex.color = glm::vec4(1.0, 0.4, 0.2, 1.f);
+//        vertex.uv = glm::vec2{1.f, 1.f};
+//        mesh->m_Vertices.push_back(vertex);
+//    }
+//
+//    for (int i = 0; i < 3; i++) {
+//
+//        mesh->m_Indices.push_back(i);
+//    }
+//    TestModel->m_Meshes.push_back(mesh);
+
+//    for(int i = 0 ; i < TestModel->GetMeshes().front()->m_Vertices.size() ; i++) {
+//
+//        auto vertex = TestModel->GetMeshes().front()->m_Vertices;
+//        auto size = TestModel->GetMeshes().front()->m_Vertices.size();
+////        INFO("{}", vertex.size());
+//        std::vector<Vertex> add;
+//        add.push_back(vertex[i%size]);
+//        add.push_back(vertex[(i+1)%size]);
+//        add.push_back(vertex[(i+2)%size]);
+////        INFO("{} {} {}", vertex[i].pos.x, vertex[i].pos.y, vertex[i].pos.z);
+//        cp = pnTriangle->GenControlPoint(add, u, v);
+////        facetmp.push_back(add);
+//    }
 
 //    HeadModel->GetMeshes().front()->m_PNVertices = pnTriangle->GenControlPoint(HeadModel->GetMeshes().front()->m_Vertices, u, v);
 
@@ -461,6 +504,7 @@ void OnUpdateScene(float dt)
     }
 }
 
+int qwe = 0;
 void OnImGuiUpdate()
 {
 //    ImGui::ShowDemoWindow();
@@ -477,6 +521,7 @@ void OnImGuiUpdate()
         g_SunLight = dir;
     }
 
+    ImGui::DragInt("tmp", &qwe, 1, 1, 24);
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
@@ -518,67 +563,29 @@ void OnRenderScene()
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
 
-
-
-//    if(v == 0.f) u+=0.01;
-//    if(u > 1.f) u = 0;
-//    v+=0.01;
-//    if(u + v > 1.f) v = 0.f;
-
-//    tt.pop_back();
-//    cp = pnTriangle->GenControlPoint(tt, u, v);
-//
-//    for(int i = 0 ; i < 3 ; i++) {
-//
-//        Renderer::DrawTriangle(tt[i].pos, tt[i+1==3? 0: i+1].pos, tt[3].pos);
-//    }
-//
-//    for(int i = 0 ; i < cp.size() ; i++) {
-//
-//        auto cp_ = cp[i];
-//        glm::vec4 color = {1.0f, 0.f, 0.f, 1.f};
-//
-//        if(i == cp.size() - 1) {
-//
-//            color = {1.f, 1.f, 1.f, 1.f};
-//        }
-//        else {
-//
-//            color = {1.f, 0.f, 0.f, 1.f};
-//        }
-//
-//        Renderer::DrawPoint(glm::vec3{cp_.x, cp_.y, cp_.z}, color, 100);
-//    }
     glm::vec4 color = {1.0f, 1.f, 1.f, 1.f};
-    if(TmpFlag) {
 
-        for(int i = 0 ; i < facetmp.size()/facetmp.size() + triangleRange ; i++) {
-
-            for(int j = 0 ; j < 1 + pointRange ; j++) {
-
-
-                Renderer::DrawPoint(facetmp[i][j].pos, color, pointSize);
-                Renderer::DrawPoint(facetmp[i][j+1==3? 0: j+1].pos, color, pointSize);
-                Renderer::DrawPoint(facetmp[i][j+2==3? 0: j+1].pos, color, pointSize);
-
-
-                Renderer::DrawTriangle(facetmp[i][j].pos, facetmp[i][j+1==3? 0: j+1].pos, facetmp[i][3].pos);
-            }
-        }
-//        for(int i = 0 ; i < HeadModel->GetMeshes().front()->m_Vertices.size() / HeadModel->GetMeshes().front()->m_Vertices.size() + triangleRange ; i++) {
+//    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //
-//            Renderer::DrawPoint(HeadModel->GetMeshes().front()->m_Vertices[i].pos, color, pointSize);
-//        }
+    for(int i = 0 ; i < qwe ; i++) {
 
+        auto asd = HeadModel->GetMeshes().front()->m_Vertices[i].pos;
+//        auto asn = HeadModel->GetMeshes().front()->m_Vertices[i].normal;
+        Renderer::DrawPoint(asd, color, 20);
+//        INFO("{}: {} {} {}",i, asd.x, asd.y, asd.z);
     }
 
 
+//    for(auto d : cp) {
+//
+//        Renderer::DrawPoint(d, color, 20);
+//        INFO("{} {} {}", d.x, d.y, d.z);
+//    }
 
-//    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
-//    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
+    Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
     Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-//    auto sunDir = glm::normalize(g_Camera->GetDir());
-//    Renderer::DrawLine({1.f, 1.f, 1.f}, glm::vec3{1.f, 1.f, 1.f} + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+    auto sunDir = glm::normalize(g_Camera->GetDir());
+    Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
 
     // Test

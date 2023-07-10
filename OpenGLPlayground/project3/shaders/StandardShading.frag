@@ -58,12 +58,35 @@ void main() {
 //		color = vs_vertexColor.rgb;
 //		// color = vec3(UV, 0.0);
 //	}
-//	if(uEnableLight)
-//	{
-//		color = Color.rgb * CalcDirectionalLight(dirLight, Normal_cameraspace);
-//	}
-//	else
-//	{
+
+	vec3 lightColor = vec3(1,1,0.5);
+	float lightPower = 600.f;
+
+	vec3 materialDiffuseColor = vec3(vs_vertexColor);
+	vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
+	vec3 materialSpecularColor = vec3(0.5, 0.5, 0.5) * materialDiffuseColor;
+
+	float distance = length(dirLight.dir - Position_worldspace);
+
+	vec3 n = normalize(Normal_cameraspace);
+	vec3 l = normalize(LightDirection_cameraspace);
+
+	float cosTheta = clamp(dot(n, l), 0.f, 1.f);
+
+	vec3 e = normalize(EyeDirection_cameraspace);
+	vec3 r = reflect(-l, n);
+
+	float cosAlpha = clamp(dot(e,r), 0.f, 1.f);
+
+	if(uEnableLight)
+	{
+//		color = vs_vertexColor.rgb;
+		color = materialAmbientColor
+		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+	}
+	else
+	{
 		color = vs_vertexColor.rgb;
-//	}
+	}
 }
