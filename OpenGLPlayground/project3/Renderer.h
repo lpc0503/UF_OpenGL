@@ -57,7 +57,8 @@ public:
     enum class ShaderMode : uint8_t {
 
         STANDARD,
-        TESSELATION
+        TESSELATION,
+        GEOMETRY
     };
 
     static void SetShaderMode(ShaderMode mode);

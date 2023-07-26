@@ -269,4 +269,134 @@ GLuint LoadTessShaders(const char *tess_vert_file_path, const char *tess_ctrl_fi
     return tessProgramID;
 }
 
+GLuint LoadGeoShaders(const char *geo_vert_file_path, const char *geo_file_path, const char *geo_frag_file_path) {
+
+    // Create the shaders
+    GLuint VertexShaderID = glCreateShader(GL_VERTEX_SHADER);
+    GLuint GeometryShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+    GLuint FragmentShaderID = glCreateShader(GL_FRAGMENT_SHADER);
+
+    // Read the Vertex2 Shader code from the file
+    std::string VertexShaderCode;
+    std::ifstream VertexShaderStream(geo_vert_file_path, std::ios::in);
+    if(VertexShaderStream.is_open()){
+        std::stringstream sstr;
+        sstr << VertexShaderStream.rdbuf();
+        VertexShaderCode = sstr.str();
+        VertexShaderStream.close();
+    }else{
+        printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", geo_vert_file_path);
+        getchar();
+        return 0;
+    }
+
+    std::string geoShaderCode;
+    std::ifstream geoShaderStream(geo_file_path, std::ios::in);
+    if(geoShaderStream.is_open())
+    {
+        std::string line;
+        while(std::getline(geoShaderStream, line))
+        {
+            geoShaderCode += "\n" + line;
+        }
+        geoShaderStream.close();
+    }
+    else
+    {
+        printf("Couldn't open %s", geo_file_path);
+//        Err(std::string("Couldn't open ") + tess_ctrl_file_path);
+        exit(1);
+    }
+
+    // Read the Fragment Shader code from the file
+    std::string FragmentShaderCode;
+    std::ifstream FragmentShaderStream(geo_frag_file_path, std::ios::in);
+    if(FragmentShaderStream.is_open()){
+        std::stringstream sstr;
+        sstr << FragmentShaderStream.rdbuf();
+        FragmentShaderCode = sstr.str();
+        FragmentShaderStream.close();
+    }
+
+    GLint Result = GL_FALSE;
+    int InfoLogLength;
+
+
+    // Compile Vertex2 Shader
+    printf("Compiling shader : %s\n", geo_vert_file_path);
+    char const * VertexSourcePointer = VertexShaderCode.c_str();
+    glShaderSource(VertexShaderID, 1, &VertexSourcePointer , NULL);
+    glCompileShader(VertexShaderID);
+
+    // Check Vertex2 Shader
+    glGetShaderiv(VertexShaderID, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(VertexShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 ){
+        std::vector<char> VertexShaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(VertexShaderID, InfoLogLength, NULL, &VertexShaderErrorMessage[0]);
+        printf("%s\n", &VertexShaderErrorMessage[0]);
+    }
+
+    // Compile Geometry shader
+    printf("Compiling shader : %s\n", geo_file_path);
+    char const * GeoSourcePointer = geoShaderCode.c_str();
+    glShaderSource(GeometryShaderID, 1, &GeoSourcePointer , NULL);
+    glCompileShader(GeometryShaderID);
+
+    // Check Geometry Shader
+    glGetShaderiv(GeometryShaderID, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(GeometryShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 ){
+        std::vector<char> GeometryShaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(GeometryShaderID, InfoLogLength, NULL, &GeometryShaderErrorMessage[0]);
+        printf("%s\n", &GeometryShaderErrorMessage[0]);
+    }
+
+
+    // Compile Fragment Shader
+    printf("Compiling shader : %s\n", geo_frag_file_path);
+    char const * FragmentSourcePointer = FragmentShaderCode.c_str();
+    glShaderSource(FragmentShaderID, 1, &FragmentSourcePointer , NULL);
+    glCompileShader(FragmentShaderID);
+
+
+    // Check Fragment Shader
+    glGetShaderiv(FragmentShaderID, GL_COMPILE_STATUS, &Result);
+    glGetShaderiv(FragmentShaderID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 ){
+        std::vector<char> FragmentShaderErrorMessage(InfoLogLength+1);
+        glGetShaderInfoLog(FragmentShaderID, InfoLogLength, NULL, &FragmentShaderErrorMessage[0]);
+        printf("%s\n", &FragmentShaderErrorMessage[0]);
+    }
+
+
+    // Link the program
+    printf("Linking program\n");
+    GLuint ProgramID = glCreateProgram();
+    glAttachShader(ProgramID, VertexShaderID);
+    glAttachShader(ProgramID, GeometryShaderID);
+    glAttachShader(ProgramID, FragmentShaderID);
+    glLinkProgram(ProgramID);
+
+    // Check the program
+    glGetProgramiv(ProgramID, GL_LINK_STATUS, &Result);
+    glGetProgramiv(ProgramID, GL_INFO_LOG_LENGTH, &InfoLogLength);
+    if ( InfoLogLength > 0 ){
+        std::vector<char> ProgramErrorMessage(InfoLogLength+1);
+        glGetProgramInfoLog(ProgramID, InfoLogLength, NULL, &ProgramErrorMessage[0]);
+        printf("%s\n", &ProgramErrorMessage[0]);
+    }
+
+
+    glDetachShader(ProgramID, VertexShaderID);
+    glDetachShader(ProgramID, GeometryShaderID);
+    glDetachShader(ProgramID, FragmentShaderID);
+
+    glDeleteShader(VertexShaderID);
+    glDeleteShader(GeometryShaderID);
+    glDeleteShader(FragmentShaderID);
+
+    return ProgramID;
+}
+
 

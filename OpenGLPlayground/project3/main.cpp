@@ -35,6 +35,8 @@ using namespace glm;
 #include "Entity.h"
 #include "PNTriangle.h"
 
+static int SHADERMODE;
+
 const int window_width = 1024, window_height = 768;
 
 struct Vertex2 {
@@ -131,6 +133,7 @@ int Index[6] = {3, 1, 4, 0, 5, 2};
 // 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 #define STANDARD 0
 #define TESSELATION 1
+#define GEOMETRY 2
 
 
 Ref<Model> BunnyModel;
@@ -361,6 +364,8 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
+    SHADERMODE = STANDARD;
+
 //    BunnyModel = Model::LoadModel("./asset/bunny.obj");
 //    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
 
@@ -513,22 +518,41 @@ void OnImGuiUpdate()
 
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
-    auto dir = g_Camera->GetDir();
-    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z);
-    ImGui::Text("Sun Direction = %.2f %.2f %.2f", g_SunLight.x, g_SunLight.y, g_SunLight.z);
-    if(ImGui::Button("Set Sun"))
-    {
-        g_SunLight = dir;
+//    auto dir = g_Camera->GetDir();
+//    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z);
+//    ImGui::Text("Sun Direction = %.2f %.2f %.2f", g_SunLight.x, g_SunLight.y, g_SunLight.z);
+//    if(ImGui::Button("Set Sun"))
+//    {
+//        g_SunLight = dir;
+//    }
+
+//    ImGui::DragInt("tmp", &qwe, 1, 1, 24);
+    ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
+
+
+    // ShaderMode
+    if(ImGui::RadioButton("Standard shader", &SHADERMODE, STANDARD)) {
+
+        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
+    } ImGui::SameLine();
+
+    if(ImGui::RadioButton("Tessellation shader", &SHADERMODE, TESSELATION)) {
+
+        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
     }
 
-    ImGui::DragInt("tmp", &qwe, 1, 1, 24);
-    ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
+    if(ImGui::RadioButton("Geometry shader", &SHADERMODE, GEOMETRY)) {
+
+        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
+    }
+
+
 
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
     ImGui::DragFloat3("Pos", &CameraPos);
     ImGui::DragFloat3("Rotation", &CameraRotate);
-    ImGui::DragFloat3("Bunny Pos", &BunnyPos);
-    ImGui::DragFloat3("Bunny Scale", &BunnyScale);
+    ImGui::DragFloat3("Pos", &BunnyPos);
+    ImGui::DragFloat3("Scale", &BunnyScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
     if(ImGui::DragFloat("u", &u, 0.05)) {
@@ -547,12 +571,8 @@ void OnImGuiUpdate()
     ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
     ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
 
-
-    // ==== 測試用 之後拿掉我 ====
-    if(ImGui::CollapsingHeader("Test"))
-    {
-    }
     ImGui::End();
+
 }
 
 bool DrawMeshLine = true;
@@ -605,17 +625,6 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset)
 }
 
 int b = 0;
-void CreateBullet()
-{
-    Ref<Entity> bullet = Entity::Create("bullet" + std::to_string(b++));
-    bullet->transform.pos = {0.f, 0.f, -1.5f};
-    bullet->color = MeshColor[BULLET];
-    bullet->mesh = TModel[BULLET] -> GetMeshes().back();
-    bullet->UpdateSelfAndChild();
-    bullet->transform.modelMatrix = pen->transform.modelMatrix * bullet->transform.modelMatrix;
-    bullet->transform.GetRTS(bullet->transform.pos, bullet->transform.rotate, bullet->transform.scale);
-    bullets.push_back(bullet);
-}
 
 bool hold = false;
 void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {

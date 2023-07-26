@@ -177,6 +177,10 @@ void RendererAPI::DrawMeshes()
 
             glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
+        else if(GetShaderMode() == ShaderMode::GEOMETRY) {
+
+            glDrawElements(GL_TRIANGLES_ADJACENCY, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+        }
         else if(GetShaderMode() == ShaderMode::TESSELATION){
 
             glPatchParameteri(GL_PATCH_VERTICES, 3);
@@ -363,6 +367,11 @@ void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode) {
 //        m_PointShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
 //        m_LineShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
         m_MeshShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
+    }
+
+    if(m_ShaderMode == ShaderMode::GEOMETRY) {
+
+        m_MeshShader = LoadGeoShaders("shaders/Geo.vert", "shaders/Geo.geom", "shaders/Geo.frag");
     }
 }
 
