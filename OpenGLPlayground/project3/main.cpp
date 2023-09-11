@@ -299,40 +299,40 @@ void PickObject() {
 }
 
 // Ensure your .obj files are in the correct format and properly loaded by looking at the following function
-void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
-    // Read our .obj file
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec2> uvs;
-    std::vector<glm::vec3> normals;
-    bool res = loadOBJ(file, vertices, uvs, normals);
+//void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
+//    // Read our .obj file
+//    std::vector<glm::vec3> vertices;
+//    std::vector<glm::vec2> uvs;
+//    std::vector<glm::vec3> normals;
+//    bool res = loadOBJ(file, vertices, uvs, normals);
+////
+//    std::vector<GLushort> indices;
+//    std::vector<glm::vec3> indexed_vertices;
+//    std::vector<glm::vec2> indexed_uvs;
+//    std::vector<glm::vec3> indexed_normals;
+//    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
 //
-    std::vector<GLushort> indices;
-    std::vector<glm::vec3> indexed_vertices;
-    std::vector<glm::vec2> indexed_uvs;
-    std::vector<glm::vec3> indexed_normals;
-    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
-
-    const size_t vertCount = indexed_vertices.size();
-    const size_t idxCount = indices.size();
-
-    // populate output arrays
-    out_Vertices = new Vertex2[vertCount];
-    for (int i = 0; i < vertCount; i++) {
-        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
-        out_Vertices[i].SetNormal(&indexed_normals[i].x);
-        out_Vertices[i].SetColor(&color[0]);
-        out_Vertices[i].SetUV(&indexed_uvs[i].x);
-    }
-    out_Indices = new GLushort[idxCount];
-    for (int i = 0; i < idxCount; i++) {
-        out_Indices[i] = indices[i];
-    }
-
-    // set global variables!!
-    NumIdcs[ObjectId] = idxCount;
-    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
-    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
-}
+//    const size_t vertCount = indexed_vertices.size();
+//    const size_t idxCount = indices.size();
+//
+//    // populate output arrays
+//    out_Vertices = new Vertex2[vertCount];
+//    for (int i = 0; i < vertCount; i++) {
+//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
+//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
+//        out_Vertices[i].SetColor(&color[0]);
+//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
+//    }
+//    out_Indices = new GLushort[idxCount];
+//    for (int i = 0; i < idxCount; i++) {
+//        out_Indices[i] = indices[i];
+//    }
+//
+//    // set global variables!!
+//    NumIdcs[ObjectId] = idxCount;
+//    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
+//    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
+//}
 
 
 // Test
@@ -365,18 +365,7 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f);
 
     SHADERMODE = STANDARD;
-
-//    BunnyModel = Model::LoadModel("./asset/bunny.obj");
-//    loadObject("Head.obj", glm::vec4(0.5, 0.5, 0.5, 1.0), Head_Verts, Head_Idcs, 3);
-
     HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
-
-//    INFO("{}", HeadModel->GetMeshes().front()->m_Vertices.size());
-//    for(auto x : HeadModel->GetMeshes().front()->m_Vertices) {
-//
-//        auto tt = x.pos;
-//        auto tn = x.normal;
-//    }
 
     struct normalcnt {
 
@@ -384,61 +373,9 @@ void OnInitScene()
         double cnt = 0.f;
     };
 
-    std::unordered_map<glm::vec4, normalcnt> sum;
+    std::unordered_map<uint32_t, normalcnt> sum;
     auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
-    for(int i = 0 ; i < hvertices.size() ; i++) {
-
-        sum[hvertices[i].pos].normal += hvertices[i].normal;
-        sum[hvertices[i].pos].cnt += 1.f;
-//        sum[hvertices[i].pos] += 1;
-    }
-
-    for(int i = 0 ; i < hvertices.size() ; i++) {
-
-        auto xx = sum.find(hvertices[i].pos);
-//        INFO("{}", sum[hvertices[i].pos].cnt);
-        hvertices[i].normal = xx->second.normal/float(xx->second.cnt);
-    }
-
-//    TestModel = MakeRef<Model>();
-//
-//    Ref<Mesh> mesh = MakeRef<Mesh>();
-//    for(int i = 0 ; i < 3 ; i++) {
-//
-//        Vertex vertex{};
-//        vertex.pos = glm::vec4 {tq[i].x, tq[i].y, tq[i].z, 1.f}; // TODO: 為什麼 1 就會過?
-//        vertex.normal = glm::vec3 {n[i].x, n[i].y, n[i].z};
-//        vertex.color = glm::vec4(1.0, 0.4, 0.2, 1.f);
-//        vertex.uv = glm::vec2{1.f, 1.f};
-//        mesh->m_Vertices.push_back(vertex);
-//    }
-//
-//    for (int i = 0; i < 3; i++) {
-//
-//        mesh->m_Indices.push_back(i);
-//    }
-//    TestModel->m_Meshes.push_back(mesh);
-
-//    for(int i = 0 ; i < TestModel->GetMeshes().front()->m_Vertices.size() ; i++) {
-//
-//        auto vertex = TestModel->GetMeshes().front()->m_Vertices;
-//        auto size = TestModel->GetMeshes().front()->m_Vertices.size();
-////        INFO("{}", vertex.size());
-//        std::vector<Vertex> add;
-//        add.push_back(vertex[i%size]);
-//        add.push_back(vertex[(i+1)%size]);
-//        add.push_back(vertex[(i+2)%size]);
-////        INFO("{} {} {}", vertex[i].pos.x, vertex[i].pos.y, vertex[i].pos.z);
-//        cp = pnTriangle->GenControlPoint(add, u, v);
-////        facetmp.push_back(add);
-//    }
-
-//    HeadModel->GetMeshes().front()->m_PNVertices = pnTriangle->GenControlPoint(HeadModel->GetMeshes().front()->m_Vertices, u, v);
-
-//    TestModel = Model::LoadModel("../asset/Robot.obj");
-
-//    RobotArmModel = Model::LoadModel("../asset/robot-arm/robot-arm.obj");
-//    INFO("size = {}", TestModel->GetMeshes().size());
+    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
 }
 
 float CameraMoveSpeed = 5.f;
@@ -513,20 +450,10 @@ int qwe = 0;
 void OnImGuiUpdate()
 {
 //    ImGui::ShowDemoWindow();
-
     ImGui::Begin("Settings");
 
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
-//    auto dir = g_Camera->GetDir();
-//    ImGui::Text("Camera Direction = %.2f %.2f %.2f", dir.x, dir.y, dir.z);
-//    ImGui::Text("Sun Direction = %.2f %.2f %.2f", g_SunLight.x, g_SunLight.y, g_SunLight.z);
-//    if(ImGui::Button("Set Sun"))
-//    {
-//        g_SunLight = dir;
-//    }
-
-//    ImGui::DragInt("tmp", &qwe, 1, 1, 24);
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
 
@@ -587,23 +514,14 @@ void OnRenderScene()
 
 //    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
 //
-    for(int i = 0 ; i < qwe ; i++) {
-
-        auto asd = HeadModel->GetMeshes().front()->m_Vertices[i].pos;
-//        auto asn = HeadModel->GetMeshes().front()->m_Vertices[i].normal;
-        Renderer::DrawPoint(asd, color, 20);
-//        INFO("{}: {} {} {}",i, asd.x, asd.y, asd.z);
-    }
-
-
-//    for(auto d : cp) {
+//    for(int i = 0 ; i < qwe ; i++) {
 //
-//        Renderer::DrawPoint(d, color, 20);
-//        INFO("{} {} {}", d.x, d.y, d.z);
+//        auto asd = HeadModel->GetMeshes().front()->m_Vertices[i].pos;
+//        Renderer::DrawPoint(asd, color, 20);
 //    }
 
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+//    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
@@ -683,9 +601,6 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 }
 
 int main() {
-
-//    printf(">>");
-//    getchar();
 
 	// Initialize window
 	int errorCode = InitWindow();

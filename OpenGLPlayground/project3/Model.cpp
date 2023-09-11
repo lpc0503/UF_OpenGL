@@ -141,7 +141,8 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
     std::vector<glm::vec3> indexed_vertices;
     std::vector<glm::vec2> indexed_uvs;
     std::vector<glm::vec3> indexed_normals;
-    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+    std::vector<glm::vec3> indexed_normalsforavg;
+    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals, indexed_normalsforavg);
 
     const size_t vertCount = indexed_vertices.size();
     const size_t idxCount = indices.size();
@@ -149,14 +150,34 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
     // populate output arrays
     Ref<Mesh> mesh = MakeRef<Mesh>();
     mesh->m_Name = "test";
+
     for (int i = 0; i < vertCount; i++) {
 
         Vertex vertex{};
         vertex.pos = glm::vec4 {indexed_vertices[i].x, indexed_vertices[i].y, indexed_vertices[i].z, 1.f}; // TODO: 為什麼 1 就會過?
-        vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
+//        vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
         vertex.color = color;
         vertex.uv = glm::vec2{indexed_uvs[i].x, indexed_uvs[i].y};
         mesh->m_Vertices.push_back(vertex);
+    }
+
+    struct normalcnt {
+
+        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
+        double cnt = 0.f;
+    };
+
+    std::map<uint32_t, normalcnt> m;
+    for(int i = 0 ; i < indices.size() ; i++) {
+
+        m[indices[i]].normal += indexed_normalsforavg[i];
+        m[indices[i]].cnt += 1;
+    }
+
+    for(int i = 0 ; i < vertCount ; i++) {
+
+        auto xx = m.find(i);
+        mesh->m_Vertices[i].normal = xx->second.normal/float(xx->second.cnt);
     }
 
     for (int i = 0; i < idxCount; i++) {

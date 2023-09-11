@@ -46,7 +46,6 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 	GLint Result = GL_FALSE;
 	int InfoLogLength;
 
-
 	// Compile Vertex2 Shader
 	printf("Compiling shader : %s\n", vertex_file_path);
 	char const * VertexSourcePointer = VertexShaderCode.c_str();

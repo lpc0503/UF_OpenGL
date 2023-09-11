@@ -179,7 +179,7 @@ void RendererAPI::DrawMeshes()
         }
         else if(GetShaderMode() == ShaderMode::GEOMETRY) {
 
-            glDrawElements(GL_TRIANGLES_ADJACENCY, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
+            glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
         else if(GetShaderMode() == ShaderMode::TESSELATION){
 
