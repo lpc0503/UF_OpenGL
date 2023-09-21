@@ -366,16 +366,16 @@ void OnInitScene()
 
     SHADERMODE = STANDARD;
     HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
-
-    struct normalcnt {
-
-        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
-        double cnt = 0.f;
-    };
-
-    std::unordered_map<uint32_t, normalcnt> sum;
-    auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
-    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
+//
+//    struct normalcnt {
+//
+//        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
+//        double cnt = 0.f;
+//    };
+//
+//    std::unordered_map<uint32_t, normalcnt> sum;
+//    auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
+//    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
 }
 
 float CameraMoveSpeed = 5.f;
@@ -511,14 +511,6 @@ void OnRenderScene()
     Renderer::DrawGrid(5, 5);
 
     glm::vec4 color = {1.0f, 1.f, 1.f, 1.f};
-
-//    Renderer::DrawTriangle(tmp0.pos, tmp1.pos, tmp2.pos);
-//
-//    for(int i = 0 ; i < qwe ; i++) {
-//
-//        auto asd = HeadModel->GetMeshes().front()->m_Vertices[i].pos;
-//        Renderer::DrawPoint(asd, color, 20);
-//    }
 
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
 //    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
