@@ -618,8 +618,7 @@ int main() {
 			lastTime += 1.0;
 		}
 
-        glClearColor(g_ClearColor.x, g_ClearColor.y, g_ClearColor.z, g_ClearColor.w);
-
+        Renderer::SetClearColor(g_ClearColor);
         Renderer::ClearViewport();
 
         ImGui_ImplOpenGL3_NewFrame();

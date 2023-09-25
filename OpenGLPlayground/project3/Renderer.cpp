@@ -202,13 +202,18 @@ void Renderer::ClearViewport()
     g_RenderAPI->ClearViewport();
 }
 
-void Renderer::SetShaderMode(Renderer::ShaderMode mode) {
-
+void Renderer::SetShaderMode(Renderer::ShaderMode mode)
+{
     m_ShaderMode = mode;
     g_RenderAPI->SetShaderMode(static_cast<RendererAPI::ShaderMode>(mode));
 }
 
-Renderer::ShaderMode Renderer::GetShaderMode() {
-
+Renderer::ShaderMode Renderer::GetShaderMode()
+{
     return static_cast<Renderer::ShaderMode>(g_RenderAPI->GetShaderMode());
+}
+
+void Renderer::SetClearColor(const glm::vec4 &color)
+{
+    g_RenderAPI->SetClearColor(color);
 }

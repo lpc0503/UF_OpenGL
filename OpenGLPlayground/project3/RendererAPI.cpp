@@ -351,32 +351,33 @@ void RendererAPI::InitMeshRenderer()
     m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
-void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode) {
-
+void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode)
+{
     m_ShaderMode = mode;
 
     if(m_ShaderMode == ShaderMode::STANDARD) {
-
         m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
         m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
         m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
     }
 
     if(m_ShaderMode == ShaderMode::TESSELATION) {
-
 //        m_PointShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
 //        m_LineShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
         m_MeshShader = LoadTessShaders("shaders/Tess.vert", "shaders/Tess.tesc", "shaders/Tess.tese","shaders/Tess.frag");
     }
 
     if(m_ShaderMode == ShaderMode::GEOMETRY) {
-
         m_MeshShader = LoadGeoShaders("shaders/Geo.vert", "shaders/Geo.geom", "shaders/Geo.frag");
     }
 }
 
-RendererAPI::ShaderMode RendererAPI::GetShaderMode() {
-
+RendererAPI::ShaderMode RendererAPI::GetShaderMode()
+{
     return m_ShaderMode;
 }
 
+void RendererAPI::SetClearColor(const glm::vec4 &color)
+{
+    glClearColor(color.x, color.y, color.z, color.w);
+}

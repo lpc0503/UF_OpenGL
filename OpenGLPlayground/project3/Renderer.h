@@ -23,6 +23,7 @@ public:
     static bool IsSceneRendering(); // not thread-safe
 
     static void ClearViewport();
+    static void SetClearColor(const glm::vec4 &color);
 
     static void DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize);
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);

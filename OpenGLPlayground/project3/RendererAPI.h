@@ -113,7 +113,6 @@ private:
     // Mode
 public:
     enum class RendererMode : uint8_t {
-
         Fill,
         Line,
         Point,
@@ -122,17 +121,19 @@ public:
     void SetRendererMode(RendererMode mode);
     RendererMode GetRendererMode();
 
+    // Shader Mode
     enum class ShaderMode : uint8_t {
-
         STANDARD,
         TESSELATION,
         GEOMETRY
     };
-
     void SetShaderMode(ShaderMode mode);
     ShaderMode GetShaderMode();
 private:
     ShaderMode m_ShaderMode;
+
+public:
+    void SetClearColor(const glm::vec4 &color);
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H
