@@ -593,6 +593,8 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 }
 
 int main() {
+    // disable buffer
+    setvbuf(stdout, NULL, _IONBF, 0);
 
 	// Initialize window
 	int errorCode = InitWindow();

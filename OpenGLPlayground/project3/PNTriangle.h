@@ -5,7 +5,7 @@
 #ifndef OPENGLPLAYGROUND_PNTRIANGLE_H
 #define OPENGLPLAYGROUND_PNTRIANGLE_H
 
-#include "Core.h";
+#include "Core.h"
 #include "Vertex.h"
 #include <vector>
 

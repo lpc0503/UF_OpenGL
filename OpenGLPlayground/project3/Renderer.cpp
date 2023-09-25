@@ -61,8 +61,8 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
     g_RenderAPI->SetMatrix("M", camera->GetView());
-    if(g_RenderAPI->GetShaderMode() == static_cast<RendererAPI::ShaderMode>(m_ShaderMode)) {
-
+    if(g_RenderAPI->GetShaderMode() == RendererAPI::ShaderMode::TESSELATION)
+    {
         g_RenderAPI->SetFloat("tessellationLevelInner", 12);
         g_RenderAPI->SetFloat("tessellationLevelOuter", 12);
     }
