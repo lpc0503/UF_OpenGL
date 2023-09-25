@@ -12,12 +12,14 @@
 #include "Log.h"
 #include "debugbreak.h"
 
+#define ASSERT_DEBUG_BREAK 0
+
 #define ASSERT(x, fmt, ...) \
     do {                    \
         if(!(x))            \
         {                   \
             ERROR("Assertion Failed: " fmt, ##__VA_ARGS__);  \
-            debug_break();  \
+            if(ASSERT_DEBUG_BREAK) debug_break();  \
         }                   \
     } while(0)
 
