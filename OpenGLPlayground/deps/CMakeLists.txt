@@ -4,7 +4,7 @@ project(deps)
 
 add_subdirectory(glm)
 if(WIN32)
-    add_subdirectory(glad-4.6)
+    add_subdirectory(glad-win)
 else()
     add_subdirectory(glad)
 endif()
