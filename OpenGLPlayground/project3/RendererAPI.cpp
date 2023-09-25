@@ -65,13 +65,15 @@ void RendererAPI::SetBool(const std::string &name, bool b)
 GLint RendererAPI::GetUniformID(const std::string &name)
 {
     auto id = glGetUniformLocation(m_CurrentShader, name.c_str());
-//    ASSERT(id >= 0, "Invalid shader uniform name");
+    ASSERT(id != -1, "Invalid shader uniform name");
     return id;
 }
 
 void RendererAPI::ClearRendererState()
 {
+    UnbindShader();
     m_LineVertices.clear();
+    m_PointVertices.clear();
     m_Meshes.clear();
 }
 
@@ -174,15 +176,12 @@ void RendererAPI::DrawMeshes()
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
         if(GetShaderMode() == ShaderMode::STANDARD) {
-
             glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
         else if(GetShaderMode() == ShaderMode::GEOMETRY) {
-
             glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
-        else if(GetShaderMode() == ShaderMode::TESSELATION){
-
+        else if(GetShaderMode() == ShaderMode::TESSELATION) {
             glPatchParameteri(GL_PATCH_VERTICES, 3);
             glDrawElements(GL_PATCHES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }

@@ -22,22 +22,21 @@ public:
     void Shutdown();
 
     void BindShader() const { glUseProgram(m_CurrentShader); }
-    void UnbindShader() { glUseProgram(0); m_CurrentShader = 0; } // TODO: remove
+    void UnbindShader() { glUseProgram(0); m_CurrentShader = -1; } // TODO: remove
     void ClearRendererState();
 
+    // Shader Uniforms
     void SetMatrix(const std::string &name, const glm::mat4 &mat);
     void SetFloat(const std::string &name, const float f);
     void SetFloat3(const std::string &name, const glm::vec3 &v);
     void SetFloat4(const std::string &name, const glm::vec4 &v);
     void SetBool(const std::string &name, bool b);
 
-    void ClearViewport();
-
 private:
     GLuint m_CurrentShader;
-
     GLint GetUniformID(const std::string &name);
 
+    // ======================================================================================
     // Line
 public:
     void InitLineRenderer();
@@ -49,8 +48,8 @@ private:
     GLuint m_LineVAO, m_LineVBO, m_LineIBO;
     GLuint m_LineShader;
     std::vector<Vertex> m_LineVertices;
-    //
 
+    // ======================================================================================
     // Point
 public:
     void InitPointRenderer();
@@ -63,6 +62,7 @@ private:
     GLuint m_PointShader;
     std::vector<Vertex> m_PointVertices;
 
+    // ======================================================================================
     // Mesh
 public:
     void InitMeshRenderer();
@@ -83,6 +83,7 @@ private:
     };
     std::vector<MeshData> m_Meshes;
 
+    // ======================================================================================
     // Light
 public:
 //    void BindLightShader() { assert(m_LightShader); m_CurrentShader = m_LightShader; BindShader(); }
@@ -97,12 +98,14 @@ public:
     DirectionalLightData m_DirectionalLight;
     static constexpr size_t MaxNumLight = 10;
 
+    // ======================================================================================
     // Picking
 public:
     void BindPickingShader() { assert(m_PickingShader); m_CurrentShader = m_PickingShader; BindShader(); }
 private:
     GLuint m_PickingShader;
 
+    // ======================================================================================
     // Entity
 public:
     void PushPickingEntity(Ref<Entity> entity) { m_Entities.push_back(entity); }
@@ -110,6 +113,7 @@ public:
 private:
     std::vector<Ref<Entity>> m_Entities;
 
+    // ======================================================================================
     // Mode
 public:
     enum class RendererMode : uint8_t {
@@ -121,6 +125,7 @@ public:
     void SetRendererMode(RendererMode mode);
     RendererMode GetRendererMode();
 
+    // ======================================================================================
     // Shader Mode
     enum class ShaderMode : uint8_t {
         STANDARD,
@@ -132,7 +137,9 @@ public:
 private:
     ShaderMode m_ShaderMode;
 
+    // ======================================================================================
 public:
+    void ClearViewport();
     void SetClearColor(const glm::vec4 &color);
 };
 

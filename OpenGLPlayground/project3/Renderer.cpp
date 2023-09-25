@@ -187,7 +187,7 @@ void Renderer::TestPickingEntity(Ref<Entity> entity)
 
 void Renderer::SetRendererMode(RendererMode mode)
 {
-    RendererAPI::RendererMode modeAPI = static_cast<RendererAPI::RendererMode>(mode);
+    const auto modeAPI = static_cast<RendererAPI::RendererMode>(mode);
     g_RenderAPI->SetRendererMode(modeAPI);
 }
 
