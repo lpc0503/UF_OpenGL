@@ -598,6 +598,11 @@ int main() {
     // disable buffer
     setvbuf(stdout, NULL, _IONBF, 0);
 
+#if 0
+    INFO("Attach RenderDoc...");
+    getchar();
+#endif
+
 	// Initialize window
 	int errorCode = InitWindow();
 	if (errorCode != 0)
