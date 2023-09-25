@@ -515,6 +515,21 @@ void OnRenderScene()
     glm::vec4 color = {1.0f, 1.f, 1.f, 1.f};
 
     Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
+
+    glm::vec3 start = {-1.f, 1.f, -1.f};
+    glm::vec3 end = {1.f, 1.f, 1.f};
+
+    int num = 10;
+    float stepX = fabs(end.x-start.x)/num;
+    float stepZ = fabs(end.z-start.z)/num;
+    for(float x = start.x; x <= end.x; x += stepX)
+    {
+        for(float z = start.z; z <= end.z; z += stepZ)
+        {
+            Renderer::DrawPoint({x, 1.f, z}, {1.f, 0.f, 0.f, 1.f}, 10.f);
+        }
+    }
+
 //    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
