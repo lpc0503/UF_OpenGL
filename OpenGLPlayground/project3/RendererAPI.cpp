@@ -7,6 +7,17 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+bool CheckOpenGLError()
+{
+    auto err = glGetError();
+    if(err != GL_NO_ERROR)
+    {
+        ERROR_TAG(TAG_OPENGL, "Error: {}", err);
+        return false;
+    }
+    return true;
+}
+
 void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
@@ -65,7 +76,10 @@ void RendererAPI::SetBool(const std::string &name, bool b)
 GLint RendererAPI::GetUniformID(const std::string &name)
 {
     auto id = glGetUniformLocation(m_CurrentShader, name.c_str());
-    ASSERT(id != -1, "Invalid shader uniform name");
+    if(!CheckOpenGLError())
+    {
+        ASSERT(id != -1, "Invalid shader uniform name");
+    }
     return id;
 }
 
@@ -266,7 +280,7 @@ void RendererAPI::SetRendererMode(RendererMode mode) {
             glPointSize(5.f);
             break;
         default:
-            assert(0);
+            ASSERT(0, "Failed");
     }
 }
 
@@ -284,7 +298,7 @@ RendererAPI::RendererMode RendererAPI::GetRendererMode()
         case GL_POINTS:
             return RendererAPI::RendererMode::Point;
         default:
-            assert(0);
+            ASSERT(0, "Failed");
     }
     return RendererAPI::RendererMode::Invalid;
 }
