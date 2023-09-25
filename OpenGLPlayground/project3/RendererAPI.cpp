@@ -27,7 +27,7 @@ void RendererAPI::Init()
     InitMeshRenderer();
 
     m_ShaderMode = ShaderMode::STANDARD;
-    m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag");
+    m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag"); // TODO: make InitPickingXXX?
 }
 
 void RendererAPI::Shutdown()
@@ -166,6 +166,7 @@ void RendererAPI::SendMeshData()
 
 void RendererAPI::DrawMeshes()
 {
+    // TODO: extract
     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
     {
         glm::mat4 m{1.f};

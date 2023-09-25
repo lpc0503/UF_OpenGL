@@ -364,7 +364,7 @@ void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
-    g_Camera->LookAt(0.f, 0.f, 0.f);
+    g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
     SHADERMODE = STANDARD;
     HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
