@@ -78,6 +78,17 @@ glm::vec3 BunnyScale = glm::vec3{1.f};
 float pointSize = 3.f;
 int pointRange = 0;
 int triangleRange = 0;
+
+glm::vec3 tOffset = glm::vec3{2.4f, 0.f, 1.5f};
+
+struct BezierSurfaceMethod {
+    enum {
+        DeCasteljau = 0,
+        Formula     = 1
+    };
+};
+int bezierSurfaceMethod = BezierSurfaceMethod::DeCasteljau;
+
 // ===============================================================
 
 int InitWindow() {
@@ -251,12 +262,101 @@ int factorial(int n)
     return r;
 }
 
+float bernstein(int i, int n, float t)
+{
+    float r = (float) factorial(n) / (float) (factorial(i) * factorial(n - i));
+    r *= pow(t, i);
+    r *= pow(1-t, n-i);
+    return r;
+}
+
+glm::vec3 deCasteljau(std::vector<glm::vec3> points, int degree, float t)
+{
+    std::vector<float> p((degree + 1) * 3);
+
+    const int w = 3;
+    for(int j = 0; j <= degree; j++)
+    {
+        p[j*w + 0] = points[j].x;
+        p[j*w + 1] = points[j].y;
+        p[j*w + 2] = points[j].z;
+    }
+    for(int k = 1; k <= degree; k++)
+    {
+        for(int j = 0; j <= degree - k; j++)
+        {
+            int jw = j * w;
+            int jp1w = (j + 1) * w;
+            p[jw + 0] = (1.f - t) * p[jw + 0] + t * p[jp1w + 0];
+            p[jw + 1] = (1.f - t) * p[jw + 1] + t * p[jp1w + 1];
+            p[jw + 2] = (1.f - t) * p[jw + 2] + t * p[jp1w + 2];
+        }
+    }
+
+    glm::vec3 result(p[0], p[1], p[2]);
+    return result;
+}
+
+int precision = 5;
+std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::vector<std::vector<glm::vec3>> controlPoints)
+{
+    using ::precision;
+    std::vector<std::vector<glm::vec3>> curvePoints(precision+1, std::vector<glm::vec3>(precision+1));
+
+    if(bezierSurfaceMethod == BezierSurfaceMethod::DeCasteljau)
+    {
+        // de Casteljau's Algorithm
+        for(int ui = 0; ui <= precision; ui++)
+        {
+            float u = float(ui)/float(precision);
+            for(int vi = 0; vi <= precision; vi++)
+            {
+                float v = float(vi)/float(precision);
+                std::vector<glm::vec3> qPoints(uPoints+1);
+                for(int i=0; i <= u; i++)
+                {
+                    qPoints[i] = deCasteljau(controlPoints[i], vPoints, v);
+                }
+                curvePoints[ui][vi] = deCasteljau(qPoints, uPoints, u);
+            }
+        }
+    }
+    else if(bezierSurfaceMethod == BezierSurfaceMethod::Formula)
+    {
+        for(int ui = 0; ui <= precision; ui++)
+        {
+            float u = float(ui)/float(precision);
+            for(int vi = 0; vi <= precision; vi++)
+            {
+                float v = float(vi)/float(precision);
+
+                glm::vec3 point = glm::vec3{0.f};
+                for(int m = 0; m <= uPoints; m++)
+                {
+                    for(int n = 0; n <= vPoints; n++)
+                    {
+                        float bm = bernstein(m, uPoints, u);
+                        float bn = bernstein(n, vPoints, v);
+                        float b = bm * bn;
+                        point.x += b * controlPoints[m][n].x;
+                        point.y += b * controlPoints[m][n].y;
+                        point.z += b * controlPoints[m][n].z;
+                    }
+                }
+
+                curvePoints[ui][vi] = point;
+            }
+        }
+    }
+
+    return curvePoints;
+}
 
 void OnUpdateScene(float dt)
 {
     glfwPollEvents();
 
-    { // Camera rotate
+    { // Camera rotates
         { // Camera Pan
             double x, y, offX, offY;
             glfwGetCursorPos(window, &x, &y);
@@ -319,24 +419,18 @@ void OnImGuiUpdate()
 
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
-
     // ShaderMode
     if(ImGui::RadioButton("Standard shader", &SHADERMODE, STANDARD)) {
-
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
     } ImGui::SameLine();
 
     if(ImGui::RadioButton("Tessellation shader", &SHADERMODE, TESSELATION)) {
-
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
     }
 
     if(ImGui::RadioButton("Geometry shader", &SHADERMODE, GEOMETRY)) {
-
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
-
-
 
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
     ImGui::DragFloat3("Pos", &CameraPos);
@@ -349,6 +443,12 @@ void OnImGuiUpdate()
     ImGui::DragFloat("Point Size", &pointSize, 0.1f);
 //    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
     ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
+
+    ImGui::Separator();
+
+    ImGui::DragFloat3("Move to origin", &tOffset);
+    ImGui::RadioButton("de Casteljau's", &bezierSurfaceMethod, BezierSurfaceMethod::DeCasteljau);
+    ImGui::RadioButton("formula of Bezier curve", &bezierSurfaceMethod, BezierSurfaceMethod::Formula);
 
     ImGui::End();
 
@@ -369,14 +469,59 @@ void OnRenderScene()
     glm::vec3 start = {-1.f, 1.f, -1.f};
     glm::vec3 end = {1.f, 1.f, 1.f};
 
-    int num = 10;
-    float stepX = fabs(end.x-start.x)/num;
-    float stepZ = fabs(end.z-start.z)/num;
-    for(float x = start.x; x <= end.x; x += stepX)
+//    std::vector<std::vector<glm::vec3>> p;
+//    int num = 2;
+//    float stepX = fabs(end.x-start.x)/num;
+//    float stepZ = fabs(end.z-start.z)/num;
+//    for(float x = start.x; x <= end.x; x += stepX)
+//    {
+//        std::vector<glm::vec3> tmp;
+//        for(float z = start.z; z <= end.z; z += stepZ)
+//        {
+//            Renderer::DrawPoint({x, 1.f, z}, {1.f, 0.f, 0.f, 1.f}, 10.f);
+//            tmp.emplace_back(x, 1.f, z);
+//        }
+//        p.emplace_back(tmp);
+//    }
+
+    std::vector<glm::vec3> points = {
+        {1.0, 1.0, 1.0},
+        {2.0, 1.2, 1.0},
+        {3.0, 0.8, 1.0},
+        {4.0, 1.0, 1.0},
+        {1.0, 1.0, 2.0},
+        {2.0, 5.0, 2.0},
+        {3.0, 0.8, 2.0},
+        {4.0, 1.0, 2.0},
+        {1.0, 1.0, 3.0},
+        {2.0, 0.8, 3.0},
+        {3.0, 1.2, 3.0},
+        {4.0, 1.0, 3.0}
+    };
+    int u = 2, v = 3;
+    std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
+    for(int m = 0; m <= u; m++)
     {
-        for(float z = start.z; z <= end.z; z += stepZ)
+        for(int n = 0; n <= v; n++)
         {
-            Renderer::DrawPoint({x, 1.f, z}, {1.f, 0.f, 0.f, 1.f}, 10.f);
+            auto& p = points[m*(u+1)+n];
+
+            p.x -= tOffset.x;
+            p.z -= tOffset.z;
+
+            controlPoints[m][n] = p;
+            Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, 6.f);
+//            printf("[%d][%d] = [%d]\n", m, n, m*(v+1)+n);
+        }
+    }
+
+    auto curve = calSurface(u, v, controlPoints);
+    using ::precision;
+    for(int i = 0; i <= precision; i++)
+    {
+        for(int j = 0; j <= precision; j++)
+        {
+            Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, 5.f);
         }
     }
 
