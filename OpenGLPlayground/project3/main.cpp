@@ -68,6 +68,16 @@ Ref<Camera> g_Camera;
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
+
+float CameraMoveSpeed = 5.f;
+glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
+glm::vec3 CameraPos = {0.f, 0.f, 10.f};
+double PrevMouseX, PrevMouseY;
+glm::vec3 BunnyPos = glm::vec3{0.f};
+glm::vec3 BunnyScale = glm::vec3{1.f};
+float pointSize = 3.f;
+int pointRange = 0;
+int triangleRange = 0;
 // ===============================================================
 
 int InitWindow() {
@@ -231,15 +241,15 @@ void OnInitScene()
 //    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
 }
 
-float CameraMoveSpeed = 5.f;
-glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
-glm::vec3 CameraPos = {0.f, 0.f, 10.f};
-double PrevMouseX, PrevMouseY;
-glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{1.f};
-float pointSize = 3.f;
-int pointRange = 0;
-int triangleRange = 0;
+int factorial(int n)
+{
+    int r = 1;
+    for(int i = n; i>0; i--)
+    {
+        r *= i;
+    }
+    return r;
+}
 
 
 void OnUpdateScene(float dt)
