@@ -39,40 +39,8 @@ static int SHADERMODE;
 
 const int window_width = 1024, window_height = 768;
 
-struct Vertex2 {
-	float Position[4];
-	float Color[4];
-	float Normal[3];
-    float UV[2];
-	void SetPosition(float *coords) {
-		Position[0] = coords[0];
-		Position[1] = coords[1];
-		Position[2] = coords[2];
-		Position[3] = 1.0;
-	}
-	void SetColor(float *color) {
-		Color[0] = color[0];
-		Color[1] = color[1];
-		Color[2] = color[2];
-		Color[3] = color[3];
-	}
-	void SetNormal(float *coords) {
-		Normal[0] = coords[0];
-		Normal[1] = coords[1];
-		Normal[2] = coords[2];
-	}
-    void SetUV(float* uv) {
-        UV[0] = uv[0];
-        UV[1] = uv[1];
-    }
-};
-
-// function prototypes
 int InitWindow();
 void InitOpenGL();
-void CreateVAOs(Vertex2[], GLushort[], int);
-void LoadObject(char*, glm::vec4, Vertex2* &, GLushort* &, int);
-void CreateObjects();
 void PickObject();
 void OnRenderScene();
 void Cleanup();
@@ -80,85 +48,27 @@ void MouseWheelCallback(GLFWwindow* window, double xoffset, double yoffset);
 void KeyCallback(GLFWwindow*, int, int, int, int);
 void MouseCallback(GLFWwindow*, int, int, int);
 
+// ===============================================================
 // GLOBAL VARIABLES
 GLFWwindow* window;
 
-glm::mat4 gProjectionMatrix;
-glm::mat4 gViewMatrix;
-
 GLuint gPickedIndex = -1;
-std::string gMessage;
 
-GLuint programID;
-GLuint pickingProgramID;
-
-const GLuint NumObjects = 1;	// ATTN: THIS NEEDS TO CHANGE AS YOU ADD NEW OBJECTS
-GLuint VertexArrayId[NumObjects];
-GLuint VertexBufferId[NumObjects];
-GLuint IndexBufferId[NumObjects];
-
-// TL
-size_t VertexBufferSize[NumObjects];
-size_t IndexBufferSize[NumObjects];
-size_t NumIdcs[NumObjects];
-size_t NumVerts[NumObjects];
-
-GLint MatrixID;
-GLint ModelMatrixID;
-GLint ViewMatrixID;
-GLint ProjMatrixID;
-GLint PickingMatrixID;
-GLint pickingColorID;
-GLint LightID;
-
-// hotfix
-#define RED {1.f, 0.f, 0.f, 1.f}
-#define GREEN {0.f, 1.f, 0.f, 1.f}
-#define BLUE {0.f, 0.f, 1.f, 1.f}
-#define PURPLE {1.f, 0.f, 1.f, 1.f}
-#define CYAN {0.f, 1.f, 1.f, 1.f}
-#define YELLOW {1.f, 1.f, 0.f, 1.f}
-#define WHITE {1.f, 1.f, 1.f, 1.f}
-glm::vec4 MeshColor[9] = {RED, GREEN, BLUE, PURPLE, CYAN, YELLOW, RED, YELLOW, WHITE};
-#define BASE 0
-#define TOP 1
-#define ARM1 2
-#define JOINT 3
-#define ARM2 4
-#define PEN 5
-#define BOTTOM 6
-#define SELECT 8
-#define BULLET 7
-int Index[6] = {3, 1, 4, 0, 5, 2};
-// 0 joint, 1 top, 2 pen, 3 base, 4 arm1, 5 arm2
 #define STANDARD 0
 #define TESSELATION 1
 #define GEOMETRY 2
 
-
 Ref<Model> BunnyModel;
 Ref<Model> RobotArmModel;
 //Ref<Model> TestModel;
-
 Ref<Model> HeadModel;
-
-
-glm::vec3 Rotate[6];
-
-std::vector<Ref<Model>> TModel(8);
-glm::vec3 MeshPos[7];
-
-Ref<Entity> base, top, arm1, joint, arm2, pen, bottom;
-
-
-std::vector<Ref<Entity>> bullets;
-//std::vector<Ref<Entity>> g_RobotArm;
 
 Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
+// ===============================================================
 
 int InitWindow() {
     if (!glfwInit()) {
@@ -300,66 +210,6 @@ void PickObject() {
     Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 }
 
-// Ensure your .obj files are in the correct format and properly loaded by looking at the following function
-//void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
-//    // Read our .obj file
-//    std::vector<glm::vec3> vertices;
-//    std::vector<glm::vec2> uvs;
-//    std::vector<glm::vec3> normals;
-//    bool res = loadOBJ(file, vertices, uvs, normals);
-////
-//    std::vector<GLushort> indices;
-//    std::vector<glm::vec3> indexed_vertices;
-//    std::vector<glm::vec2> indexed_uvs;
-//    std::vector<glm::vec3> indexed_normals;
-//    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
-//
-//    const size_t vertCount = indexed_vertices.size();
-//    const size_t idxCount = indices.size();
-//
-//    // populate output arrays
-//    out_Vertices = new Vertex2[vertCount];
-//    for (int i = 0; i < vertCount; i++) {
-//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
-//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
-//        out_Vertices[i].SetColor(&color[0]);
-//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
-//    }
-//    out_Indices = new GLushort[idxCount];
-//    for (int i = 0; i < idxCount; i++) {
-//        out_Indices[i] = indices[i];
-//    }
-//
-//    // set global variables!!
-//    NumIdcs[ObjectId] = idxCount;
-//    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
-//    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
-//}
-
-
-// Test
-Vertex tmp0;
-Vertex tmp1;
-Vertex tmp2;
-std::vector<Vertex> tt(3);
-PNTriangle *pnTriangle;
-std::vector<glm::vec4> cp;
-Vertex point;
-float u,v;
-std::vector<std::vector<Vertex>> facetmp;
-Ref<Model> TestModel;
-
-glm::vec3 tq[3] = {
-        {0.0f, 0.0, 0.f},
-        {0.f, 0.f, -1.f},
-        {1.f, 0.f, -0.5f}
-};
-glm::vec3 n[3] = {
-        {0.0, 1.f, 0.f},
-        {0.0, 1.f, 0.f},
-        {0.0, -1.f, 0.f}
-};
-
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -367,7 +217,8 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
     SHADERMODE = STANDARD;
-    HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+//    HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+//    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 //
 //    struct normalcnt {
 //
@@ -484,20 +335,9 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Scale", &BunnyScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
-    if(ImGui::DragFloat("u", &u, 0.05)) {
-
-        tt.pop_back();
-        pnTriangle->GenControlPoint(tt, u, v);
-    }
-
-    if(ImGui::DragFloat("v", &v, 0.05)) {
-
-        tt.pop_back();
-        pnTriangle->GenControlPoint(tt, u,v);
-    }
 
     ImGui::DragFloat("Point Size", &pointSize, 0.1f);
-    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
+//    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
     ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
 
     ImGui::End();
