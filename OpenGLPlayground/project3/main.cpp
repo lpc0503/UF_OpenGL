@@ -231,6 +231,54 @@ void PickObject() {
     Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 }
 
+// Ensure your .obj files are in the correct format and properly loaded by looking at the following function
+//void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
+//    // Read our .obj file
+//    std::vector<glm::vec3> vertices;
+//    std::vector<glm::vec2> uvs;
+//    std::vector<glm::vec3> normals;
+//    bool res = loadOBJ(file, vertices, uvs, normals);
+////
+//    std::vector<GLushort> indices;
+//    std::vector<glm::vec3> indexed_vertices;
+//    std::vector<glm::vec2> indexed_uvs;
+//    std::vector<glm::vec3> indexed_normals;
+//    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
+//
+//    const size_t vertCount = indexed_vertices.size();
+//    const size_t idxCount = indices.size();
+//
+//    // populate output arrays
+//    out_Vertices = new Vertex2[vertCount];
+//    for (int i = 0; i < vertCount; i++) {
+//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
+//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
+//        out_Vertices[i].SetColor(&color[0]);
+//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
+//    }
+//    out_Indices = new GLushort[idxCount];
+//    for (int i = 0; i < idxCount; i++) {
+//        out_Indices[i] = indices[i];
+//    }
+//
+//    // set global variables!!
+//    NumIdcs[ObjectId] = idxCount;
+//    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
+//    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
+//}
+
+
+// Test
+Vertex tmp0;
+Vertex tmp1;
+Vertex tmp2;
+std::vector<Vertex> tt(3);
+PNTriangle *pnTriangle;
+std::vector<glm::vec4> cp;
+Vertex point;
+float u,v;
+std::vector<std::vector<Vertex>> facetmp;
+
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
