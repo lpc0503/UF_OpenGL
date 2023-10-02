@@ -24,6 +24,7 @@ void RendererAPI::Init()
 
     InitPointRenderer();
     InitLineRenderer();
+    InitTriangleRenderer();
     InitMeshRenderer();
 
     m_ShaderMode = ShaderMode::STANDARD;
@@ -88,6 +89,7 @@ void RendererAPI::ClearRendererState()
     UnbindShader();
     m_LineVertices.clear();
     m_PointVertices.clear();
+    m_TriangleVertices.clear();
     m_Meshes.clear();
 }
 
@@ -146,6 +148,27 @@ void RendererAPI::DrawPoints() {
     glEnable(GL_PROGRAM_POINT_SIZE);
     glDrawArrays(GL_POINTS, 0, m_PointVertices.size());
     glDisable(GL_PROGRAM_POINT_SIZE);
+}
+
+//////////////////////////////////////////////////////////////////////
+// Triangle
+//////////////////////////////////////////////////////////////////////
+
+void RendererAPI::PushTriangle(const std::array<Vertex, 3> &t)
+{
+    m_TriangleVertices.insert(m_TriangleVertices.end(), t.begin(), t.end());
+}
+
+void RendererAPI::SendTriangleData()
+{
+    glBindVertexArray(m_TriangleVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_TriangleVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_TriangleVertices.size(), glm::value_ptr(m_TriangleVertices[0].pos), GL_STATIC_DRAW);
+}
+
+void RendererAPI::DrawTriangles()
+{
+    glDrawArrays(GL_TRIANGLES, 0, m_TriangleVertices.size());
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -343,6 +366,24 @@ void RendererAPI::InitLineRenderer()
     glEnableVertexAttribArray(3);
     glBindVertexArray(0);
     m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+}
+
+void RendererAPI::InitTriangleRenderer()
+{
+    glGenVertexArrays(1, &m_TriangleVAO);
+    glBindVertexArray(m_TriangleVAO);
+    glGenBuffers(1, &m_TriangleVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_TriangleVBO);
+    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+    glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 4));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 8));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)(sizeof(float) * 11));
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glBindVertexArray(0);
+    m_TriangleShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
 void RendererAPI::InitMeshRenderer()

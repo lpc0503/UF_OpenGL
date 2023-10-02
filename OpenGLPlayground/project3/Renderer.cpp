@@ -57,6 +57,13 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();
 
+    g_RenderAPI->BindTriangleShader();
+    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    g_RenderAPI->SetMatrix("V", camera->GetView());
+    g_RenderAPI->SetMatrix("P", camera->GetProjection());
+    g_RenderAPI->SetBool("uEnableLight", true);
+    g_RenderAPI->UnbindShader();
+
     g_RenderAPI->BindMeshShader();
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
@@ -81,6 +88,11 @@ void Renderer::EndScene()
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SendLineData();
     g_RenderAPI->DrawLines();
+    g_RenderAPI->UnbindShader();
+
+    g_RenderAPI->BindTriangleShader();
+    g_RenderAPI->SendTriangleData();
+    g_RenderAPI->DrawTriangles();
     g_RenderAPI->UnbindShader();
 
     // TODO: figure out how to batch rendering mesh
@@ -158,11 +170,26 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
-void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec4 &color) {
+void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec4 &color)
+{
+    std::array<Vertex, 3> vertices;
 
-    DrawLine(p0, p1, color);
-    DrawLine(p1, p2, color);
-    DrawLine(p2, p0, color);
+    Vertex v;
+    v.pos = {p0, 1.f};
+    v.color = color;
+    vertices[0] = v;
+
+    v = {};
+    v.pos = {p1, 1.f};
+    v.color = color;
+    vertices[1] = v;
+
+    v = {};
+    v.pos = {p2, 1.f};
+    v.color = color;
+    vertices[2] = v;
+
+    g_RenderAPI->PushTriangle(vertices);
 }
 
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)

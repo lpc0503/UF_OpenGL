@@ -26,14 +26,7 @@ struct Vertex
         uv = v.uv;
     }
 
-    Vertex& operator=(const Vertex &rhs)
-    {
-        pos = rhs.pos;
-        color = rhs.color;
-        normal = rhs.normal;
-        uv = rhs.uv;
-        return *this;
-    }
+    Vertex& operator=(const Vertex &rhs) = default;
 
     bool operator==(const Vertex &rhs) const
     {

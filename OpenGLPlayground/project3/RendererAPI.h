@@ -53,7 +53,7 @@ private:
     // Point
 public:
     void InitPointRenderer();
-    void BindPointShader() {assert(m_LineShader); m_CurrentShader = m_PointShader; BindShader();}
+    void BindPointShader() { assert(m_LineShader); m_CurrentShader = m_PointShader; BindShader(); }
     void PushPoint(const glm::vec3 &p0, const glm::vec4 &color);
     void SendPointData();
     void DrawPoints();
@@ -61,6 +61,20 @@ private:
     GLuint m_PointVAO, m_PointVBO;
     GLuint m_PointShader;
     std::vector<Vertex> m_PointVertices;
+
+    // ======================================================================================
+    // Triangle
+public:
+    void InitTriangleRenderer();
+    void BindTriangleShader() { assert(m_TriangleShader); m_CurrentShader = m_TriangleShader; BindShader(); }
+    void PushTriangle(const std::array<Vertex, 3> &t);
+    void SendTriangleData();
+    void DrawTriangles();
+
+private:
+    GLuint m_TriangleVAO, m_TriangleVBO;
+    GLuint m_TriangleShader;
+    std::vector<Vertex> m_TriangleVertices;
 
     // ======================================================================================
     // Mesh

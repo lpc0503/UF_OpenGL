@@ -532,6 +532,12 @@ void OnRenderScene()
 //        p.emplace_back(tmp);
 //    }
 
+    glm::vec3 a = {3.0, 1.0, 0.0};
+    glm::vec3 b = {-2.0, 1.0, -3.0};
+    glm::vec3 c = {-2.0, 1.0, 3.0};
+
+    Renderer::DrawTriangle(a, b, c);
+
     std::vector<glm::vec3> points = {
         {1.0, 1.0, 1.0},
         {2.0, 1.0, 1.0},
