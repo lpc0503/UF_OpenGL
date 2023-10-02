@@ -345,7 +345,7 @@ glm::vec3 deCasteljau(std::vector<glm::vec3> points, int degree, float t)
     return result;
 }
 
-int precision = 4;
+int precision = 5;
 std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::vector<std::vector<glm::vec3>> controlPoints)
 {
     using ::precision;
@@ -497,6 +497,7 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Move to origin", &tOffset);
     ImGui::RadioButton("de Casteljau's", &bezierSurfaceMethod, BezierSurfaceMethod::DeCasteljau);
     ImGui::RadioButton("formula of Bezier curve", &bezierSurfaceMethod, BezierSurfaceMethod::Formula);
+    ImGui::DragInt("Precision", &::precision, 1.f, 1, 100);
 
     ImGui::End();
 
@@ -536,7 +537,7 @@ void OnRenderScene()
     glm::vec3 b = {-2.0, 1.0, -3.0};
     glm::vec3 c = {-2.0, 1.0, 3.0};
 
-    Renderer::DrawTriangle(a, b, c);
+//    Renderer::DrawTriangle(a, b, c);
 
     std::vector<glm::vec3> points = {
         {1.0, 1.0, 1.0},
@@ -576,6 +577,41 @@ void OnRenderScene()
         for(int j = 0; j <= precision; j++)
         {
             Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, pointSize);
+        }
+    }
+
+    { // Draw surface
+        const auto white = glm::vec4{1.f, 1.f, 1.f, 1.f};
+        const auto black = glm::vec4{0.f, 0.f, 0.f, 1.f};
+        bool useWhite = true;
+        for(int ui = 0; ui <= precision - 1; ui++)
+        {
+            std::vector<glm::vec3> strip;
+            for(int vi = 0; vi <= precision; vi++)
+            {
+                glm::vec3 p1 = curve[ui][vi];
+                glm::vec3 p2 = curve[ui+1][vi];
+                strip.push_back(p1);
+                strip.push_back(p2);
+            }
+            // convert GL_TRIANGLE_STRIP to GL_TRIANGLES: https://blog.csdn.net/sinat_29255093/article/details/103276431
+            std::vector<glm::vec3> triangleVertices;
+            for(int i = 2; i < strip.size(); i++)
+            {
+                if(i % 2 != 0)
+                {
+                    Renderer::DrawTriangle(strip[i-1], strip[i-2], strip[i], useWhite ? white : black);
+                }
+                else
+                {
+                    Renderer::DrawTriangle(strip[i-2], strip[i-1], strip[i], useWhite ? white : black);
+                }
+
+//                if(i != 2 && i % 2 == 0)
+//                {
+//                    useWhite = !useWhite;
+//                }
+            }
         }
     }
 
