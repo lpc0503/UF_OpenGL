@@ -345,7 +345,7 @@ glm::vec3 deCasteljau(std::vector<glm::vec3> points, int degree, float t)
     return result;
 }
 
-int precision = 5;
+int precision = 4;
 std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::vector<std::vector<glm::vec3>> controlPoints)
 {
     using ::precision;
@@ -361,7 +361,7 @@ std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::ve
             {
                 float v = float(vi)/float(precision);
                 std::vector<glm::vec3> qPoints(uPoints+1);
-                for(int i=0; i <= u; i++)
+                for(int i=0; i <= uPoints; i++)
                 {
                     qPoints[i] = deCasteljau(controlPoints[i], vPoints, v);
                 }
@@ -533,18 +533,18 @@ void OnRenderScene()
 //    }
 
     std::vector<glm::vec3> points = {
-        {1.0, 0.0, 1.0},
-        {2.0, 0.0, 1.0},
-        {3.0, 0.0, 1.0},
-        {4.0, 0.0, 1.0},
+        {1.0, 1.0, 1.0},
+        {2.0, 1.0, 1.0},
+        {3.0, 1.0, 1.0},
+        {4.0, 1.0, 1.0},
         {1.0, 0.0, 2.0},
-        {2.0, 3.0, 2.0},
+        {2.0, 0.0, 2.0},
         {3.0, 0.0, 2.0},
         {4.0, 0.0, 2.0},
-        {1.0, 0.0, 3.0},
-        {2.0, 0.0, 3.0},
-        {3.0, 0.0, 3.0},
-        {4.0, 0.0, 3.0}
+        {1.0, 1.0, 3.0},
+        {2.0, 1.0, 3.0},
+        {3.0, 1.0, 3.0},
+        {4.0, 1.0, 3.0}
     };
     int u = 2, v = 3;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
