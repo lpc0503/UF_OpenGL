@@ -533,18 +533,18 @@ void OnRenderScene()
 //    }
 
     std::vector<glm::vec3> points = {
-        {1.0, 1.0, 1.0},
-        {2.0, 1.2, 1.0},
-        {3.0, 0.8, 1.0},
-        {4.0, 1.0, 1.0},
-        {1.0, 1.0, 2.0},
-        {2.0, 5.0, 2.0},
-        {3.0, 0.8, 2.0},
-        {4.0, 1.0, 2.0},
-        {1.0, 1.0, 3.0},
-        {2.0, 0.8, 3.0},
-        {3.0, 1.2, 3.0},
-        {4.0, 1.0, 3.0}
+        {1.0, 0.0, 1.0},
+        {2.0, 0.0, 1.0},
+        {3.0, 0.0, 1.0},
+        {4.0, 0.0, 1.0},
+        {1.0, 0.0, 2.0},
+        {2.0, 3.0, 2.0},
+        {3.0, 0.0, 2.0},
+        {4.0, 0.0, 2.0},
+        {1.0, 0.0, 3.0},
+        {2.0, 0.0, 3.0},
+        {3.0, 0.0, 3.0},
+        {4.0, 0.0, 3.0}
     };
     int u = 2, v = 3;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
@@ -552,13 +552,13 @@ void OnRenderScene()
     {
         for(int n = 0; n <= v; n++)
         {
-            auto& p = points[m*(u+1)+n];
+            auto& p = points[m*(v+1)+n];
 
             p.x -= tOffset.x;
             p.z -= tOffset.z;
 
             controlPoints[m][n] = p;
-            Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, 6.f);
+            Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, pointSize);
 //            printf("[%d][%d] = [%d]\n", m, n, m*(v+1)+n);
         }
     }
@@ -569,7 +569,7 @@ void OnRenderScene()
     {
         for(int j = 0; j <= precision; j++)
         {
-            Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, 5.f);
+            Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, pointSize);
         }
     }
 
