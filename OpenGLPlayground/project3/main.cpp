@@ -278,6 +278,7 @@ std::vector<glm::vec4> cp;
 Vertex point;
 float u,v;
 std::vector<std::vector<Vertex>> facetmp;
+std::vector<glm::vec3> points;
 
 void OnInitScene()
 {
@@ -286,6 +287,36 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
     SHADERMODE = STANDARD;
+    points = {
+            {-8.0, 1.0, -8.0},
+            {-4.0, 1.0, -8.0},
+            {0.0, 1.0, -8.0},
+            {4.0, 1.0, -8.0},
+            {8.0, 1.0, -8.0},
+            {-8.0, -1.0, -4.0},
+            {-4.0, -1.0, -4.0},
+            {0.0, -1.0, -4.0},
+            {4.0, -1.0, -4.0},
+            {8.0, -1.0, -4.0},
+            {-8.0, 4.0, 0.0},
+            {-4.0, 4.0, 0.0},
+            {0.0, 4.0, 0.0},
+            {4.0, 4.0, 0.0},
+            {8.0, 4.0, 0.0},
+            {-8.0, -1.0, 4.0},
+            {-4.0, -1.0, 4.0},
+            {0.0, -1.0, 4.0},
+            {4.0, -1.0, 4.0},
+            {8.0, -1.0, 4.0},
+            {-8.0, 1.0, 8.0},
+            {-4.0, 1.0, 8.0},
+            {0.0, 1.0, 8.0},
+            {4.0, 1.0, 8.0},
+            {8.0, 1.0, 8.0},
+    };
+
+    // u*v = 4*4
+
 //    HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 //    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 //
@@ -345,7 +376,7 @@ glm::vec3 deCasteljau(std::vector<glm::vec3> points, int degree, float t)
     return result;
 }
 
-int precision = 5;
+int precision = 100;
 std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::vector<std::vector<glm::vec3>> controlPoints)
 {
     using ::precision;
@@ -400,6 +431,7 @@ std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::ve
     return curvePoints;
 }
 
+float u1[5] = {1, -1, 4, -1, 1};
 void OnUpdateScene(float dt)
 {
     glfwPollEvents();
@@ -454,6 +486,17 @@ void OnUpdateScene(float dt)
 
         auto tmp = glm::vec4{CameraPos, 1.f} * mat;
         g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
+
+
+        for(int i = 0 ; i < 5 ; i++) {
+
+            for(int j = 0 ; j < 5 ; j++) {
+
+                int index = 5*i+j;
+                points[index].y = u1[i];
+            }
+        }
+
     }
 }
 
@@ -480,17 +523,17 @@ void OnImGuiUpdate()
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 
-    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
-    ImGui::DragFloat3("Pos", &CameraPos);
-    ImGui::DragFloat3("Rotation", &CameraRotate);
-    ImGui::DragFloat3("Pos", &BunnyPos);
-    ImGui::DragFloat3("Scale", &BunnyScale);
+//    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
+//    ImGui::DragFloat3("Pos", &CameraPos);
+//    ImGui::DragFloat3("Rotation", &CameraRotate);
+//    ImGui::DragFloat3("Pos", &BunnyPos);
+//    ImGui::DragFloat3("Scale", &BunnyScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
     ImGui::DragFloat("Point Size", &pointSize, 0.1f);
 //    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
-    ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
+//    ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
 
     ImGui::Separator();
 
@@ -498,6 +541,11 @@ void OnImGuiUpdate()
     ImGui::RadioButton("de Casteljau's", &bezierSurfaceMethod, BezierSurfaceMethod::DeCasteljau);
     ImGui::RadioButton("formula of Bezier curve", &bezierSurfaceMethod, BezierSurfaceMethod::Formula);
     ImGui::DragInt("Precision", &::precision, 1.f, 1, 100);
+    ImGui::DragFloat("u1", &u1[0], 0.01f, -50, 50);
+    ImGui::DragFloat("u2", &u1[1], 0.01f, -50, 50);
+    ImGui::DragFloat("u3", &u1[2], 0.01f, -50, 50);
+    ImGui::DragFloat("u4", &u1[3], 0.01f, -50, 50);
+    ImGui::DragFloat("u5", &u1[4], 0.01f, -50, 50);
 
     ImGui::End();
 
@@ -539,21 +587,7 @@ void OnRenderScene()
 
 //    Renderer::DrawTriangle(a, b, c);
 
-    std::vector<glm::vec3> points = {
-        {1.0, 1.0, 1.0},
-        {2.0, 1.0, 1.0},
-        {3.0, 1.0, 1.0},
-        {4.0, 1.0, 1.0},
-        {1.0, 0.0, 2.0},
-        {2.0, 0.0, 2.0},
-        {3.0, 0.0, 2.0},
-        {4.0, 0.0, 2.0},
-        {1.0, 1.0, 3.0},
-        {2.0, 1.0, 3.0},
-        {3.0, 1.0, 3.0},
-        {4.0, 1.0, 3.0}
-    };
-    int u = 2, v = 3;
+    int u = 4, v = 4;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
     for(int m = 0; m <= u; m++)
     {
@@ -561,8 +595,8 @@ void OnRenderScene()
         {
             auto& p = points[m*(v+1)+n];
 
-            p.x -= tOffset.x;
-            p.z -= tOffset.z;
+//            p.x -= tOffset.x;
+//            p.z -= tOffset.z;
 
             controlPoints[m][n] = p;
             Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, pointSize);
