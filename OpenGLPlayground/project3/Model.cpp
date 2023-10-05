@@ -5,6 +5,8 @@
 #include <map>
 #include "objloader.hpp"
 #include "vboindexer.hpp"
+#include <glm/glm.hpp>
+#include <glm/vector_relational.hpp>
 
 Model::Model(const std::string &path)
 {
@@ -35,6 +37,8 @@ Ref<Model> Model::LoadModel(const std::string &path)
     auto& attrib = reader.GetAttrib();
     auto& shapes = reader.GetShapes();
     auto& materials = reader.GetMaterials();
+
+    std::map<glm::vec4, glm::vec3> m;
 
     for (size_t s = 0; s < shapes.size(); s++)
     {
@@ -76,6 +80,8 @@ Ref<Model> Model::LoadModel(const std::string &path)
                     vertex.normal.z = nz;
 //                    INFO("n {} {} {} {}", idx.normal_index, nx, ny, nz);
                 }
+
+
 
                 // Check if `texcoord_index` is zero or positive. negative = no texcoord data
 //                if (idx.texcoord_index >= 0)

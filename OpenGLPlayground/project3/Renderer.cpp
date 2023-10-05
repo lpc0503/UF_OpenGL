@@ -72,7 +72,7 @@ void Renderer::BeginScene(Ref<Camera> camera)
     if(g_RenderAPI->GetShaderMode() == RendererAPI::ShaderMode::TESSELATION)
     {
         g_RenderAPI->SetFloat("tessellationLevelInner", 12);
-        g_RenderAPI->SetFloat("tessellationLevelOuter", 12);
+        g_RenderAPI->SetFloat3("tessellationLevelOuter", {4,4,4});
     }
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();

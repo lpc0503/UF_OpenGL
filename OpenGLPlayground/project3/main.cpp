@@ -73,8 +73,8 @@ float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
-glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{1.f};
+glm::vec3 BunnyPos = glm::vec3{1.f};
+glm::vec3 BunnyScale = glm::vec3{.3f};
 float pointSize = 3.f;
 int pointRange = 0;
 int triangleRange = 0;
@@ -322,7 +322,7 @@ void OnInitScene()
 
     // u*v = 4*4
 
-    HeadModel = Model::LoadModel("../asset/test.mtl.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
+    HeadModel = Model::LoadModel("assets/model/boat_.obj", glm::vec4(1, 0.5, 3,1));
 //    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
 //
 //    struct normalcnt {

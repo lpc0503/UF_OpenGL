@@ -14,8 +14,6 @@ layout(location = 3) in vec2 vertexUV;
 
 out V2T vdata;
 
-uniform vec3 mesh_color;
-
 void main()
 {
     vdata.position = vec3((vertexPosition_modelspace).xyz);

@@ -80,10 +80,10 @@ void main() {
 
 	if(uEnableLight)
 	{
-//		color = vs_vertexColor.rgb;
-		color = materialAmbientColor
-		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+		color = vs_vertexColor.rgb;
+//		color = materialAmbientColor
+//		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+//		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 	}
 	else
 	{

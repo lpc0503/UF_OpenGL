@@ -7,7 +7,7 @@ struct T2F
     vec4 color;
 };
 
-in vec3 position_worldspace;
+//in vec3 position_worldspace;
 in vec3 normal_cameraspace;
 in vec3 eyeDirection_cameraspace;
 in vec3 lightDirection_cameraspace;
@@ -34,20 +34,20 @@ void main()
     vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
     vec3 materialSpecularColor = vec3(0.5, 0.5, 0.5) * materialDiffuseColor;
 
-    float distance = length(dirLight.dir - position_worldspace);
+    float distance = length(dirLight.dir - tedata.position);
 
-    vec3 n = normalize(normal_cameraspace);
-    vec3 l = normalize(lightDirection_cameraspace);
+    vec3 n = normalize(tedata.normal);
+    vec3 l = normalize(lightDirection_cameraspace - tedata.position);
 
     float cosTheta = clamp(dot(n, l), 0.f, 1.f);
 
-    vec3 e = normalize(eyeDirection_cameraspace);
+    vec3 e = normalize(eyeDirection_cameraspace - tedata.position);
     vec3 r = reflect(-l, n);
 
     float cosAlpha = clamp(dot(e,r), 0.f, 1.f);
 
-//    color = tedata.color.rgb;
-    color = materialAmbientColor
-    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+    color = tedata.color.rgb;
+//    color = materialAmbientColor
+//    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+//    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 }
