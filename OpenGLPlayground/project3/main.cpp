@@ -89,6 +89,11 @@ struct BezierSurfaceMethod {
 };
 int bezierSurfaceMethod = BezierSurfaceMethod::DeCasteljau;
 
+// y = A * sin(omega * t + phase)
+float A = 2.f;
+float omega = 180.f; // degree
+float phase = 90.f;  // degree
+
 // ===============================================================
 
 int InitWindow() {
@@ -376,7 +381,7 @@ glm::vec3 deCasteljau(std::vector<glm::vec3> points, int degree, float t)
     return result;
 }
 
-int precision = 100;
+int precision = 10;
 std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::vector<std::vector<glm::vec3>> controlPoints)
 {
     using ::precision;
@@ -431,11 +436,12 @@ std::vector<std::vector<glm::vec3>> calSurface(int uPoints, int vPoints, std::ve
     return curvePoints;
 }
 
-float u1[5] = {1, -1, 4, -1, 1};
+//float u1[5] = {1, -1, 4, -1, 1};
+float u1[5] = {0.f, 0.f, 0.f, 0.f, 0.f};
 void OnUpdateScene(float dt)
 {
     glfwPollEvents();
-
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     { // Camera rotates
         { // Camera Pan
             double x, y, offX, offY;
@@ -486,18 +492,23 @@ void OnUpdateScene(float dt)
 
         auto tmp = glm::vec4{CameraPos, 1.f} * mat;
         g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
-
-
-        for(int i = 0 ; i < 5 ; i++) {
-
-            for(int j = 0 ; j < 5 ; j++) {
-
-                int index = 5*i+j;
-                points[index].y = u1[i];
-            }
-        }
-
     }
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    static float sinceStart = 0.f;
+    const float DEG2RAD = 3.14159265 / 180;
+    for(int i = 0; i < 5; i++)
+    {
+        u1[i] = A * sin( omega*DEG2RAD*sinceStart + phase*i*DEG2RAD );
+    }
+
+    for(int i = 0 ; i < 5 ; i++) {
+        for(int j = 0 ; j < 5 ; j++) {
+            int index = 5*i+j;
+            points[index].y = u1[i];
+        }
+    }
+
+    sinceStart += dt;
 }
 
 int qwe = 0;
@@ -546,9 +557,13 @@ void OnImGuiUpdate()
     ImGui::DragFloat("u3", &u1[2], 0.01f, -50, 50);
     ImGui::DragFloat("u4", &u1[3], 0.01f, -50, 50);
     ImGui::DragFloat("u5", &u1[4], 0.01f, -50, 50);
+    ImGui::Separator();
+
+    ImGui::DragFloat("A", &A);
+    ImGui::DragFloat("omega", &omega);
+    ImGui::DragFloat("phase", &phase);
 
     ImGui::End();
-
 }
 
 bool DrawMeshLine = true;
@@ -581,10 +596,9 @@ void OnRenderScene()
 //        p.emplace_back(tmp);
 //    }
 
-    glm::vec3 a = {3.0, 1.0, 0.0};
-    glm::vec3 b = {-2.0, 1.0, -3.0};
-    glm::vec3 c = {-2.0, 1.0, 3.0};
-
+//    glm::vec3 a = {3.0, 1.0, 0.0};
+//    glm::vec3 b = {-2.0, 1.0, -3.0};
+//    glm::vec3 c = {-2.0, 1.0, 3.0};
 //    Renderer::DrawTriangle(a, b, c);
 
     int u = 4, v = 4;
