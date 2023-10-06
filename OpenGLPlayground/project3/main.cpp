@@ -58,10 +58,7 @@ GLuint gPickedIndex = -1;
 #define TESSELATION 1
 #define GEOMETRY 2
 
-Ref<Model> BunnyModel;
-Ref<Model> RobotArmModel;
-//Ref<Model> TestModel;
-Ref<Model> HeadModel;
+Ref<Model> g_Model;
 
 Ref<Camera> g_Camera;
 
@@ -88,6 +85,7 @@ struct BezierSurfaceMethod {
     };
 };
 int bezierSurfaceMethod = BezierSurfaceMethod::DeCasteljau;
+std::vector<glm::vec3> points;
 
 // y = A * sin(omega * t + phase)
 float A = 2.f;
@@ -236,55 +234,6 @@ void PickObject() {
     Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 }
 
-// Ensure your .obj files are in the correct format and properly loaded by looking at the following function
-//void loadObject(char* file, glm::vec4 color, Vertex2*& out_Vertices, GLushort*& out_Indices, int ObjectId) {
-//    // Read our .obj file
-//    std::vector<glm::vec3> vertices;
-//    std::vector<glm::vec2> uvs;
-//    std::vector<glm::vec3> normals;
-//    bool res = loadOBJ(file, vertices, uvs, normals);
-////
-//    std::vector<GLushort> indices;
-//    std::vector<glm::vec3> indexed_vertices;
-//    std::vector<glm::vec2> indexed_uvs;
-//    std::vector<glm::vec3> indexed_normals;
-//    indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
-//
-//    const size_t vertCount = indexed_vertices.size();
-//    const size_t idxCount = indices.size();
-//
-//    // populate output arrays
-//    out_Vertices = new Vertex2[vertCount];
-//    for (int i = 0; i < vertCount; i++) {
-//        out_Vertices[i].SetPosition(&indexed_vertices[i].x);
-//        out_Vertices[i].SetNormal(&indexed_normals[i].x);
-//        out_Vertices[i].SetColor(&color[0]);
-//        out_Vertices[i].SetUV(&indexed_uvs[i].x);
-//    }
-//    out_Indices = new GLushort[idxCount];
-//    for (int i = 0; i < idxCount; i++) {
-//        out_Indices[i] = indices[i];
-//    }
-//
-//    // set global variables!!
-//    NumIdcs[ObjectId] = idxCount;
-//    VertexBufferSize[ObjectId] = sizeof(out_Vertices[0]) * vertCount;
-//    IndexBufferSize[ObjectId] = sizeof(GLushort) * idxCount;
-//}
-
-
-// Test
-Vertex tmp0;
-Vertex tmp1;
-Vertex tmp2;
-std::vector<Vertex> tt(3);
-PNTriangle *pnTriangle;
-std::vector<glm::vec4> cp;
-Vertex point;
-float u,v;
-std::vector<std::vector<Vertex>> facetmp;
-std::vector<glm::vec3> points;
-
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
@@ -320,20 +269,7 @@ void OnInitScene()
             {8.0, 1.0, 8.0},
     };
 
-    // u*v = 4*4
-
-    HeadModel = Model::LoadModel("assets/model/boat_.obj", glm::vec4(1, 0.5, 3,1));
-//    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5, 1.0));
-//
-//    struct normalcnt {
-//
-//        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
-//        double cnt = 0.f;
-//    };
-//
-//    std::unordered_map<uint32_t, normalcnt> sum;
-//    auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
-//    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
+    g_Model = Model::LoadModel("assets/model/boat_.obj", glm::vec4(1, 0.5, 3, 1));
 }
 
 int factorial(int n)
@@ -495,7 +431,7 @@ void OnUpdateScene(float dt)
     }
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     static float sinceStart = 0.f;
-    const float DEG2RAD = 3.14159265 / 180;
+    static const float DEG2RAD = 3.14159265f / 180.f;
     for(int i = 0; i < 5; i++)
     {
         u1[i] = A * sin( omega*DEG2RAD*sinceStart + phase*i*DEG2RAD );
@@ -543,7 +479,7 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
     ImGui::DragFloat("Point Size", &pointSize, 0.1f);
-//    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, HeadModel->GetMeshes().front()->m_Vertices.size());
+//    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, g_Model->GetMeshes().front()->m_Vertices.size());
 //    ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
 
     ImGui::Separator();
@@ -663,7 +599,7 @@ void OnRenderScene()
         }
     }
 
-    Renderer::DrawMesh(HeadModel->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
     Renderer::EndScene();
