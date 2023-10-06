@@ -87,6 +87,20 @@ struct BezierSurfaceMethod {
 int bezierSurfaceMethod = BezierSurfaceMethod::DeCasteljau;
 std::vector<glm::vec3> points;
 
+struct WaveMethod {
+    enum {
+        Sine = 0,
+        SineWithDir = 1,
+        Count
+    };
+};
+int g_WaveMethod = WaveMethod::Sine;
+
+bool g_StartSimulateWave = false;
+
+glm::vec2 waveDir = {1.f, 0.f};
+float waveDirDegree = 0.f;
+
 // y = A * sin(omega * t + phase)
 float A = 2.f;
 float omega = 180.f; // degree
@@ -242,31 +256,31 @@ void OnInitScene()
 
     SHADERMODE = STANDARD;
     points = {
-            {-8.0, 1.0, -8.0},
-            {-4.0, 1.0, -8.0},
-            {0.0, 1.0, -8.0},
-            {4.0, 1.0, -8.0},
-            {8.0, 1.0, -8.0},
-            {-8.0, -1.0, -4.0},
-            {-4.0, -1.0, -4.0},
-            {0.0, -1.0, -4.0},
-            {4.0, -1.0, -4.0},
-            {8.0, -1.0, -4.0},
-            {-8.0, 4.0, 0.0},
-            {-4.0, 4.0, 0.0},
-            {0.0, 4.0, 0.0},
-            {4.0, 4.0, 0.0},
-            {8.0, 4.0, 0.0},
-            {-8.0, -1.0, 4.0},
-            {-4.0, -1.0, 4.0},
-            {0.0, -1.0, 4.0},
-            {4.0, -1.0, 4.0},
-            {8.0, -1.0, 4.0},
-            {-8.0, 1.0, 8.0},
-            {-4.0, 1.0, 8.0},
-            {0.0, 1.0, 8.0},
-            {4.0, 1.0, 8.0},
-            {8.0, 1.0, 8.0},
+        {-8.0, 1.0, -8.0},
+        {-4.0, 1.0, -8.0},
+        {0.0, 1.0, -8.0},
+        {4.0, 1.0, -8.0},
+        {8.0, 1.0, -8.0},
+        {-8.0, -1.0, -4.0},
+        {-4.0, -1.0, -4.0},
+        {0.0, -1.0, -4.0},
+        {4.0, -1.0, -4.0},
+        {8.0, -1.0, -4.0},
+        {-8.0, 4.0, 0.0},
+        {-4.0, 4.0, 0.0},
+        {0.0, 4.0, 0.0},
+        {4.0, 4.0, 0.0},
+        {8.0, 4.0, 0.0},
+        {-8.0, -1.0, 4.0},
+        {-4.0, -1.0, 4.0},
+        {0.0, -1.0, 4.0},
+        {4.0, -1.0, 4.0},
+        {8.0, -1.0, 4.0},
+        {-8.0, 1.0, 8.0},
+        {-4.0, 1.0, 8.0},
+        {0.0, 1.0, 8.0},
+        {4.0, 1.0, 8.0},
+        {8.0, 1.0, 8.0},
     };
 
     g_Model = Model::LoadModel("assets/model/boat_.obj", glm::vec4(1, 0.5, 3, 1));
@@ -432,19 +446,39 @@ void OnUpdateScene(float dt)
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     static float sinceStart = 0.f;
     static const float DEG2RAD = 3.14159265f / 180.f;
-    for(int i = 0; i < 5; i++)
-    {
-        u1[i] = A * sin( omega*DEG2RAD*sinceStart + phase*i*DEG2RAD );
-    }
 
-    for(int i = 0 ; i < 5 ; i++) {
-        for(int j = 0 ; j < 5 ; j++) {
-            int index = 5*i+j;
-            points[index].y = u1[i];
+    if(g_WaveMethod == WaveMethod::Sine)
+    {
+        for (int i = 0; i < 5; i++)
+        {
+            u1[i] = A * sin(omega * DEG2RAD * sinceStart + phase * i * DEG2RAD);
+        }
+
+        for(int i = 0 ; i < 5 ; i++)
+        {
+            for(int j = 0 ; j < 5 ; j++)
+            {
+                int index = 5*i+j;
+                points[index].y = u1[i];
+            }
+        }
+    }
+    else if(g_WaveMethod == WaveMethod::SineWithDir)
+    {
+        for(int i = 0; i < 5; i++)
+        {
+            for(int j = 0; j < 5; j++)
+            {
+                int index = 5*i + j;
+                points[index].y =  A * sin( glm::dot(waveDir, glm::vec2{points[index].x, points[index].z}) * (omega * DEG2RAD)  + (phase * DEG2RAD)* sinceStart );
+            }
         }
     }
 
-    sinceStart += dt;
+    if(g_StartSimulateWave)
+    {
+        sinceStart += dt;
+    }
 }
 
 int qwe = 0;
@@ -495,9 +529,28 @@ void OnImGuiUpdate()
     ImGui::DragFloat("u5", &u1[4], 0.01f, -50, 50);
     ImGui::Separator();
 
-    ImGui::DragFloat("A", &A);
-    ImGui::DragFloat("omega", &omega);
-    ImGui::DragFloat("phase", &phase);
+    ImGui::Text("Wave"); ImGui::SameLine();
+    ImGui::Checkbox("Start simulate", &g_StartSimulateWave);
+
+    ImGui::Text("Wave Method");
+    ImGui::RadioButton("Simple Sine", &g_WaveMethod, WaveMethod::Sine);
+    ImGui::RadioButton("Sine With Direction", &g_WaveMethod, WaveMethod::SineWithDir);
+    if(g_WaveMethod == WaveMethod::Sine)
+    {
+        ImGui::DragFloat("A", &A);
+        ImGui::DragFloat("omega", &omega);
+        ImGui::DragFloat("phase", &phase);
+    }
+    else if(g_WaveMethod == WaveMethod::SineWithDir)
+    {
+        ImGui::DragFloat("A", &A);
+        ImGui::DragFloat("omega", &omega);
+        ImGui::DragFloat("phase", &phase);
+        ImGui::DragFloat("dir (degree)", &waveDirDegree, 0.1f, 0.f, 360.f);
+        waveDir.y = sin(waveDirDegree * 0.0174532925);
+        waveDir.x = cos(waveDirDegree * 0.0174532925);
+        ImGui::Text("dir = %.2f %.2f", waveDir.x, waveDir.y);
+    }
 
     ImGui::End();
 }
@@ -536,6 +589,8 @@ void OnRenderScene()
 //    glm::vec3 b = {-2.0, 1.0, -3.0};
 //    glm::vec3 c = {-2.0, 1.0, 3.0};
 //    Renderer::DrawTriangle(a, b, c);
+
+    Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
 
     int u = 4, v = 4;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
