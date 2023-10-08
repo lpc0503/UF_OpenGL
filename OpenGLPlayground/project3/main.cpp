@@ -73,8 +73,8 @@ double PrevMouseX, PrevMouseY;
 glm::vec3 BunnyPos = glm::vec3{2.f};
 glm::vec3 BunnyScale = glm::vec3{.3f};
 float pointSize = 3.f;
-int pointRange = 0;
-int triangleRange = 0;
+int TessInner = 4;
+glm::vec3 TessOuter = {1.f, 1.f, 1.f};
 
 glm::vec3 tOffset = glm::vec3{2.4f, 0.f, 1.5f};
 
@@ -456,6 +456,10 @@ void OnUpdateScene(float dt)
         auto tmp = glm::vec4{CameraPos, 1.f} * mat;
         g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
     }
+
+    Renderer::TessInner = TessInner;
+    Renderer::TessOuter = TessOuter;
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     static float sinceStart = 0.f;
     static const float DEG2RAD = 3.14159265f / 180.f;
@@ -524,6 +528,9 @@ void OnImGuiUpdate()
 //    ImGui::DragFloat3("Scale", &BunnyScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
+
+    ImGui::DragInt("TessInner", &TessInner, 1);
+    ImGui::DragFloat3("TessOuter", &TessOuter, 1);
 
     ImGui::DragFloat("Point Size", &pointSize, 0.1f);
 //    ImGui::DragInt("Triangle Range", &triangleRange, 1, 0, g_Model->GetMeshes().front()->m_Vertices.size());

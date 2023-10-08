@@ -66,6 +66,9 @@ public:
 
     static ShaderMode GetShaderMode();
 
+    static int TessInner;
+    static glm::vec3 TessOuter;
+
 private:
 
     static ShaderMode m_ShaderMode;
