@@ -70,7 +70,7 @@ float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
-glm::vec3 BunnyPos = glm::vec3{1.f};
+glm::vec3 BunnyPos = glm::vec3{2.f};
 glm::vec3 BunnyScale = glm::vec3{.3f};
 float pointSize = 3.f;
 int pointRange = 0;
@@ -283,7 +283,20 @@ void OnInitScene()
         {8.0, 1.0, 8.0},
     };
 
-    g_Model = Model::LoadModel("assets/model/boat_.obj", glm::vec4(1, 0.5, 3, 1));
+    // u*v = 4*4
+
+    g_Model = Model::LoadModel("assets/model/boat.obj", glm::vec3(1, 0.5, 3));
+//    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5,1.0));
+//
+//    struct normalcnt {
+//
+//        glm::vec3 normal = glm::vec3(0.f, 0.f, 0.f);
+//        double cnt = 0.f;
+//    };
+//
+//    std::unordered_map<uint32_t, normalcnt> sum;
+//    auto &hvertices = HeadModel->GetMeshes().front()->m_Vertices;
+//    auto &hindex = HeadModel->GetMeshes().front()->m_Indices;
 }
 
 int factorial(int n)

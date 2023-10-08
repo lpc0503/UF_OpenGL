@@ -7,6 +7,7 @@
 #include "vboindexer.hpp"
 #include <glm/glm.hpp>
 #include <glm/vector_relational.hpp>
+#include <sstream>
 
 Model::Model(const std::string &path)
 {
@@ -161,7 +162,7 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
 
         Vertex vertex{};
         vertex.pos = glm::vec4 {indexed_vertices[i].x, indexed_vertices[i].y, indexed_vertices[i].z, 1.f}; // TODO: 為什麼 1 就會過?
-//        vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
+        vertex.normal = glm::vec3 {indexed_normals[i].x, indexed_normals[i].y, indexed_normals[i].z};
         vertex.color = color;
         vertex.uv = glm::vec2{indexed_uvs[i].x, indexed_uvs[i].y};
         mesh->m_Vertices.push_back(vertex);
@@ -192,5 +193,179 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec4 color) {
     }
 
     model->m_Meshes.push_back(mesh);
+    return model;
+}
+
+Ref<Model> Model::LoadModel(const std::string &path, glm::vec3 color) {
+
+    Ref<Model> model = MakeRef<Model>();
+
+    std::stringstream ss;
+    std::vector<tinyobj::material_t> materials;
+    tinyobj::attrib_t attrib;
+    std::vector<tinyobj::shape_t> shapes;
+
+    std::string str = "assets/model/";
+    std::string err;
+    if ( !tinyobj::LoadObj(&attrib, &shapes, &materials, &err, &err, path.c_str(), str.c_str()) )
+    {
+        throw std::runtime_error("Failed to load model : " + str);
+        return nullptr;
+    }
+//    INFO("{}", attrib.vertices.size());
+
+    if (materials.size() == 0)
+    {
+        throw std::runtime_error("No material found in model : " + path);
+        return nullptr;
+    }
+
+    //< There is a bug here: err may contain multiple '\n' terminated string
+    //< Research how to output multiple line log by spdlog
+    if (!err.empty())
+        printf("%s", err.c_str());
+
+    model->m_Meshes.resize(materials.size());
+    for(auto &e : model->m_Meshes) {
+
+        e = MakeRef<Mesh>();
+    }
+
+    //< is this macro: FLT_MAX OS dependent ?
+    //< should always prefer os independent ones
+    glm::vec3 pmin(FLT_MAX), pmax(-FLT_MAX);
+
+
+    // Additional data structure for storing the adjacency information
+    std::map<int, std::vector<glm::vec3>> vertex_to_normals;
+
+//    std::vector<SimpleVertex> silh_vertices;
+    std::vector<Vertex> vec;
+    int maxindice = 0;
+
+    // Loop over shapes
+    for (const auto &shape : shapes)
+    {
+        size_t index_offset = 0, face = 0;
+
+        //< Loop over all faces(polygon) in a mesh. vertex number of face maybe variable
+        //< for triangle num_face_vertices = 3
+        for (const auto &num_face_vertex : shape.mesh.num_face_vertices)
+        {
+            int mat = shape.mesh.material_ids[face];
+            // Loop over triangles in the face.
+            for (size_t v = 0; v < num_face_vertex; ++v)
+            {
+                tinyobj::index_t index = shape.mesh.indices[index_offset + v];
+
+//                model->m_Meshes.at(mat)->m_Vertices.emplace_back(); //< use "material id" to index mesh : mesh <--> material id is one-one map
+                vec.emplace_back();
+//                auto &vert = model->m_Meshes.at(mat)->m_Vertices.back();
+                auto &vert = vec.back();
+                model->m_Meshes.at(mat)->m_Indices.push_back(index.vertex_index);
+                maxindice = std::max(index.vertex_index, maxindice);
+
+                vert.pos =
+                        {
+                                attrib.vertices[3 * index.vertex_index + 0],
+                                attrib.vertices[3 * index.vertex_index + 1],
+                                attrib.vertices[3 * index.vertex_index + 2],
+                                1.0f
+                        };
+                pmin = glm::min(glm::vec3(vert.pos), pmin);
+                pmax = glm::max(glm::vec3(vert.pos), pmax);
+                if (~index.normal_index) //< -1 == 0xFFFFFFFF, it is equal to if (index.normal_index != -1)
+                {
+
+                    glm::vec3 normal =
+                            {
+                                    attrib.normals[3 * index.normal_index + 0],
+                                    attrib.normals[3 * index.normal_index + 1],
+                                    attrib.normals[3 * index.normal_index + 2]
+                            };
+
+
+                    vertex_to_normals[index.vertex_index].push_back(normal);
+                }
+                else
+                {
+                    throw std::runtime_error("No normal channel found in vertex");
+                    return nullptr;
+                }
+            }
+            index_offset += num_face_vertex;
+            face++;
+        }
+    }
+
+    // Average the normals
+    for (auto& mesh : model->m_Meshes) {
+
+        for (const auto& [vertexIndex, vertexNormals] : vertex_to_normals) {
+            glm::vec3 sum(0.0f);
+            for (const glm::vec3& normal : vertexNormals) {
+                sum += glm::normalize(normal);
+            }
+            glm::vec3 averagedNormal = glm::normalize(sum / static_cast<float>(vertexNormals.size()));
+
+            // Update all vertices with this index
+
+            auto indice = model->m_Meshes.back()->m_Indices;
+            for(int i = 0 ; i < indice.size() ; i++) {
+
+                if(indice[i] == vertexIndex) {
+
+                    vec[i].normal = averagedNormal;
+                }
+            }
+
+            mesh->m_Vertices.resize(maxindice+1);
+            for(int i = 0 ; i < vec.size() ; i++) {
+
+                mesh->m_Vertices[indice[i]] = vec[i];
+            }
+        }
+    }
+    for(auto e : model->m_Meshes) {
+
+        for(int i = 0 ; i < e->m_Vertices.size() ; i++) {
+
+            INFO("X:{} Y:{} Z:{}", (int)e->m_Vertices[i].pos.x, (int)e->m_Vertices[i].pos.y, (int)e->m_Vertices[i].pos.z);
+//            INFO("{} {} {}", e->m_Vertices[i].normal.x, e->m_Vertices[i].normal.y, e->m_Vertices[i].normal.z);
+//            INFO("{}", e->m_Indices[i]);
+        }
+    }
+//    Mesh silhou;
+//    silhou.vertices = silh_vertices;
+//    silh.push_back(silhou);
+//
+//    aabb.Extend(pmin);
+//    aabb.Extend(pmax);
+
+    ss << "After binning," << model->m_Meshes.size() << " meshes constructed(each mesh contains only one material)" << "\n"
+       << "Mesh file : " << path << "\n"
+            ;
+
+    printf("%s \n", ss.str().c_str());
+
+#if 0
+    //< normalize all the vertex to [-1, 1]
+    glm::vec3 extent3 = pmax - pmin;
+    float extent = glm::max(extent3.x, glm::max(extent3.y, extent3.z)) * 0.5f;
+    float inv_extent = 1.0f / extent;
+
+    glm::vec3 center = (pmax + pmin) * 0.5f;
+
+    for (auto &m : meshes)
+        for (auto &v : m.vertices)
+            v.position = (v.position - center) * inv_extent;
+
+    Log("[SCENE]: load {} meshes from file {}\t vertex position normalized to [-1, 1]", meshes.size(), filename);
+
+#endif
+
+//    return aabb;
+
+
     return model;
 }

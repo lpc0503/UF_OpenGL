@@ -21,6 +21,7 @@ public:
 
     static Ref<Model> LoadModel(const std::string &path);
     static Ref<Model> LoadModel(const std::string &path, glm::vec4 color);
+    static Ref<Model> LoadModel(const std::string &path, glm::vec3 color);
 
     std::vector<Ref<Mesh>> m_Meshes;
 private:
