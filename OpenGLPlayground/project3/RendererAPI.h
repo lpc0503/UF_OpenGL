@@ -155,6 +155,11 @@ private:
 public:
     void ClearViewport();
     void SetClearColor(const glm::vec4 &color);
+
+    // ======================================================================================
+    // Texture
+private:
+    GLuint m_Texture;
 };
 
 #endif //OPENGLPLAYGROUND_RENDERERAPI_H

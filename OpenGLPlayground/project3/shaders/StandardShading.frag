@@ -9,7 +9,8 @@ in vec3 LightDirection_cameraspace;
 in vec2 UV;
 
 // Ouput data
-out vec3 color;
+out vec4 color;
+out vec4 FragColor;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MV;
@@ -30,7 +31,7 @@ uniform DirectionalLight dirLight;
 
 uniform bool uEnableLight;
 
-uniform vec4 Color;
+//uniform vec4 Color;
 
 vec3 CalcDirectionalLight(DirectionalLight light, vec3 normal)
 {
@@ -80,13 +81,14 @@ void main() {
 
 	if(uEnableLight)
 	{
-		color = vs_vertexColor.rgb;
+		FragColor = vec4(texture(tex, UV));
+		color = texture(tex, UV);
 //		color = materialAmbientColor
 //		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
 //		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 	}
 	else
 	{
-		color = vs_vertexColor.rgb;
+		color = vs_vertexColor;
 	}
 }

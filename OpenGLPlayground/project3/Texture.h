@@ -1,0 +1,14 @@
+//
+// Created by ICEJJ on 2023/10/8.
+//
+
+#ifndef OPENGLPLAYGROUND_TEXTURE_H
+#define OPENGLPLAYGROUND_TEXTURE_H
+
+
+class Texture {
+
+};
+
+
+#endif //OPENGLPLAYGROUND_TEXTURE_H

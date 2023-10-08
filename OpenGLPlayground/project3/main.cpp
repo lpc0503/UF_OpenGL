@@ -17,6 +17,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
+#include "stb_image.h"
+
 using namespace glm;
 
 #include <imgui.h>
@@ -255,6 +257,33 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
     SHADERMODE = STANDARD;
+//    points = {
+//            {-8.0, 1.0, -8.0, 0.f, 0.f, 0.f},
+//            {-4.0, 1.0, -8.0, 1.f, 0.f, 0.f},
+//            {0.0, 1.0, -8.0, 0.f, 1.f, 0.f},
+//            {4.0, 1.0, -8.0, 0.f, 0.f, 1.f},
+//            {8.0, 1.0, -8.0, 1.f, 1.f, 0.f},
+//            {-8.0, -1.0, -4.0, 0.f, 0.f, 0.f},
+//            {-4.0, -1.0, -4.0, 1.f, 0.f, 0.f},
+//            {0.0, -1.0, -4.0, 0.f, 1.f, 0.f},
+//            {4.0, -1.0, -4.0, 0.f, 0.f, 1.f},
+//            {8.0, -1.0, -4.0, 1.f, 1.f, 0.f},
+//            {-8.0, 4.0, 0.0, 0.f, 0.f, 0.f},
+//            {-4.0, 4.0, 0.0, 1.f, 0.f, 0.f},
+//            {0.0, 4.0, 0.0, 0.f, 1.f, 0.f},
+//            {4.0, 4.0, 0.0, 0.f, 0.f, 1.f},
+//            {8.0, 4.0, 0.0, 1.f, 1.f, 0.f},
+//            {-8.0, -1.0, 4.0, 0.f, 0.f, 0.f},
+//            {-4.0, -1.0, 4.0, 1.f, 0.f, 0.f},
+//            {0.0, -1.0, 4.0, 0.f, 1.f, 0.f},
+//            {4.0, -1.0, 4.0, 0.f, 0.f, 1.f},
+//            {8.0, -1.0, 4.0, 1.f, 1.f, 0.f},
+//            {-8.0, 1.0, 8.0, 0.f, 0.f, 0.f},
+//            {-4.0, 1.0, 8.0, 1.f, 0.f, 0.f},
+//            {0.0, 1.0, 8.0, 0.f, 1.f, 0.f},
+//            {4.0, 1.0, 8.0, 0.f, 0.f, 1.f},
+//            {8.0, 1.0, 8.0, 1.f, 1.f, 0.f},
+//    };
     points = {
         {-8.0, 1.0, -8.0},
         {-4.0, 1.0, -8.0},
@@ -646,24 +675,38 @@ void OnRenderScene()
         for(int ui = 0; ui <= precision - 1; ui++)
         {
             std::vector<glm::vec3> strip;
+            std::vector<glm::vec2> uv;
+            glm::vec2 preuv = glm::vec2(0.f, 0.f);
             for(int vi = 0; vi <= precision; vi++)
             {
                 glm::vec3 p1 = curve[ui][vi];
                 glm::vec3 p2 = curve[ui+1][vi];
+
+                glm::vec2 uv1 = glm::vec2((float)ui/(float)precision, (float)vi/(float)precision);
+                glm::vec2 uv2 = glm::vec2((float)(ui+1)/(float)precision, (float)vi/(float)precision);
+
                 strip.push_back(p1);
                 strip.push_back(p2);
+                uv.push_back(uv1);
+                uv.push_back(uv2);
             }
             // convert GL_TRIANGLE_STRIP to GL_TRIANGLES: https://blog.csdn.net/sinat_29255093/article/details/103276431
             std::vector<glm::vec3> triangleVertices;
+//            INFO("{}", strip.size());
             for(int i = 2; i < strip.size(); i++)
             {
+                std::vector<glm::vec2> uv_(3);
+                uv_[0] = uv[i-1];
+                uv_[1] = uv[i-2];
+                uv_[2] = uv[i];
+
                 if(i % 2 != 0)
                 {
-                    Renderer::DrawTriangle(strip[i-1], strip[i-2], strip[i], useWhite ? white : black);
+                    Renderer::DrawTriangle(strip[i-1], strip[i-2], strip[i], uv_,useWhite ? white : black);
                 }
                 else
                 {
-                    Renderer::DrawTriangle(strip[i-2], strip[i-1], strip[i], useWhite ? white : black);
+                    Renderer::DrawTriangle(strip[i-2], strip[i-1], strip[i], uv_, useWhite ? white : black);
                 }
 
 //                if(i != 2 && i % 2 == 0)

@@ -69,6 +69,7 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
     g_RenderAPI->SetBool("uEnableLight", true);
+    g_RenderAPI->SetBool("sampler2D", 0);
     g_RenderAPI->UnbindShader();
 
     g_RenderAPI->BindMeshShader();
@@ -177,23 +178,26 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
-void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const glm::vec4 &color)
+void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const std::vector<glm::vec2> &uv, const glm::vec4 &color)
 {
     std::array<Vertex, 3> vertices;
 
     Vertex v;
     v.pos = {p0, 1.f};
     v.color = color;
+    v.uv = uv[0];
     vertices[0] = v;
 
     v = {};
     v.pos = {p1, 1.f};
     v.color = color;
+    v.uv = uv[1];
     vertices[1] = v;
 
     v = {};
     v.pos = {p2, 1.f};
     v.color = color;
+    v.uv = uv[2];
     vertices[2] = v;
 
     g_RenderAPI->PushTriangle(vertices);
