@@ -5,7 +5,7 @@
 //#include "Utils.h"
 #include "shader.hpp"
 
-#include "stb_image.h"
+#include "Texture.h"
 
 #include <glm/gtc/type_ptr.hpp>
 #include <array>
@@ -403,20 +403,16 @@ void RendererAPI::InitTriangleRenderer()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    int width, height, z=0, nrChannels;
-    stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-    // The FileSystem::getPath(...) is part of the GitHub repository, so we can find files on any IDE/platform; replace it with your own image path.
-    unsigned char *data = stbi_load("assets/texture/1.jpeg", &width, &height, &nrChannels, 0);
-    if (data)
+    Ref<Image> texture = Image::Load("assets/texture/1.jpeg");
+    if(texture)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, texture->Width(), texture->Height(), 0, GL_RGB, GL_UNSIGNED_BYTE, texture->Data());
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
     {
-        INFO("{}", "Failed to load texture");
+        ERROR("Failed to load texture");
     }
-    stbi_image_free(data);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);

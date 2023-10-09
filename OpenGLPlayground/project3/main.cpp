@@ -36,7 +36,7 @@ using namespace glm;
 #include "Utils.h"
 #include "Entity.h"
 #include "PNTriangle.h"
-
+#include "Texture.h"
 
 const int window_width = 1024, window_height = 768;
 
