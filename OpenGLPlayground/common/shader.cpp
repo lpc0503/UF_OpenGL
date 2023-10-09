@@ -106,12 +106,18 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 
 GLuint LoadTessShaders(const char *tess_vert_file_path, const char *tess_ctrl_file_path, const char *tess_eval_file_path, const char *tess_frag_file_path)
 {
+#if defined(__APPLE__)
+    std::string glsl_version = "#version 330 core\n";
+#elif defined(_WIN32)
+    std::string glsl_version = "#version 460 core\n";
+#endif
+
     GLuint tessVertShaderID = glCreateShader(GL_VERTEX_SHADER);
     GLuint tessCtrlShaderID = glCreateShader(GL_TESS_CONTROL_SHADER);
     GLuint tessEvalShaderID = glCreateShader(GL_TESS_EVALUATION_SHADER);
     GLuint tessFragShaderID = glCreateShader(GL_FRAGMENT_SHADER);
 
-    std::string tessVertexShaderCode;
+    std::string tessVertexShaderCode = glsl_version;
     std::ifstream tessVertexShaderStream(tess_vert_file_path, std::ios::in);
     if(tessVertexShaderStream.is_open())
     {
@@ -128,7 +134,7 @@ GLuint LoadTessShaders(const char *tess_vert_file_path, const char *tess_ctrl_fi
         exit(1);
     }
 
-    std::string tessCtrlShaderCode;
+    std::string tessCtrlShaderCode = glsl_version;
     std::ifstream tessCtrlShaderStream(tess_ctrl_file_path, std::ios::in);
     if(tessCtrlShaderStream.is_open())
     {
@@ -146,7 +152,7 @@ GLuint LoadTessShaders(const char *tess_vert_file_path, const char *tess_ctrl_fi
         exit(1);
     }
 
-    std::string tessEvalShaderCode;
+    std::string tessEvalShaderCode = glsl_version;
     std::ifstream tessEvalShaderStream(tess_eval_file_path, std::ios::in);
     if(tessEvalShaderStream.is_open())
     {
@@ -164,7 +170,7 @@ GLuint LoadTessShaders(const char *tess_vert_file_path, const char *tess_ctrl_fi
         exit(1);
     }
 
-    std::string tessFragShaderCode;
+    std::string tessFragShaderCode = glsl_version;
     std::ifstream tessFragShaderStream(tess_frag_file_path, std::ios::in);
     if(tessFragShaderStream.is_open())
     {

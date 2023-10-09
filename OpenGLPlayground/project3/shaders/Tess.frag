@@ -1,5 +1,3 @@
-#version 330 core
-
 struct T2F
 {
     vec3 position;

@@ -1,5 +1,3 @@
-#version 330 core
-
 struct V2T
 {
     vec3 position;

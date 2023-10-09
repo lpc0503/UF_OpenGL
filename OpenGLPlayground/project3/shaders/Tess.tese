@@ -1,5 +1,3 @@
-#version 330 core
-
 struct TC2E
 {
     vec3 position;
