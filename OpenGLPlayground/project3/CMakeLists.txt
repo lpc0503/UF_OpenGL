@@ -23,9 +23,12 @@ add_executable(${PROJECT_NAME}
         Model.h
         Vertex.h
         debugbreak.h
-        stb_image.h
         Entity.cpp
-        Entity.h PNTriangle.cpp PNTriangle.h Texture.cpp Texture.h)
+        Entity.h
+        PNTriangle.cpp
+        PNTriangle.h
+        Texture.cpp
+        Texture.h)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}
@@ -36,6 +39,7 @@ target_link_libraries(${PROJECT_NAME}
     fmt::fmt
     glm::glm
     tinyobjloader
+    stb::image
     common::common
 )
 
