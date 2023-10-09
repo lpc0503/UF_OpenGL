@@ -37,7 +37,6 @@ using namespace glm;
 #include "Entity.h"
 #include "PNTriangle.h"
 
-static int SHADERMODE;
 
 const int window_width = 1024, window_height = 768;
 
@@ -59,9 +58,9 @@ GLuint gPickedIndex = -1;
 #define STANDARD 0
 #define TESSELATION 1
 #define GEOMETRY 2
+static int g_ShaderMode;
 
 Ref<Model> g_Model;
-
 Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
@@ -256,7 +255,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
-    SHADERMODE = TESSELATION;
+    g_ShaderMode = TESSELATION;
 //    points = {
 //            {-8.0, 1.0, -8.0, 0.f, 0.f, 0.f},
 //            {-4.0, 1.0, -8.0, 1.f, 0.f, 0.f},
@@ -489,11 +488,11 @@ void OnUpdateScene(float dt)
     Renderer::SetTessInnerLevel(TessInner);
     Renderer::SetTessOuterLevel(TessOuter);
 
-//    if(SHADERMODE == STANDARD) {
+//    if(g_ShaderMode == STANDARD) {
 //
 //        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
 //    }
-//    else if(SHADERMODE == TESSELATION) {
+//    else if(g_ShaderMode == TESSELATION) {
 //
 //        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
 //    }
@@ -543,26 +542,27 @@ void OnImGuiUpdate()
 //    ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
 
+    ImGui::Text("Options");
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
     // ShaderMode
-    if(ImGui::RadioButton("Standard shader", &SHADERMODE, STANDARD)) {
+    if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD)) {
 
-        SHADERMODE = STANDARD;
+        g_ShaderMode = STANDARD;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
     } ImGui::SameLine();
 
-    if(ImGui::RadioButton("Tessellation shader", &SHADERMODE, TESSELATION)) {
+    if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION)) {
 
-        SHADERMODE = TESSELATION;
+        g_ShaderMode = TESSELATION;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
     }
 
-    if(ImGui::RadioButton("Geometry shader", &SHADERMODE, GEOMETRY)) {
+    if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY)) {
 
-        SHADERMODE = GEOMETRY;
+        g_ShaderMode = GEOMETRY;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 
@@ -583,6 +583,7 @@ void OnImGuiUpdate()
 
     ImGui::Separator();
 
+    ImGui::Text("Curve options");
     ImGui::DragFloat3("Move to origin", &tOffset);
     ImGui::RadioButton("de Casteljau's", &bezierSurfaceMethod, BezierSurfaceMethod::DeCasteljau);
     ImGui::RadioButton("formula of Bezier curve", &bezierSurfaceMethod, BezierSurfaceMethod::Formula);
