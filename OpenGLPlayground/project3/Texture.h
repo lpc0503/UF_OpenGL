@@ -27,7 +27,7 @@ public:
 protected:
     int m_Width;
     int m_Height;
-    int m_Channels;
+    int m_Channels; // in file
     unsigned char* m_Data = nullptr;
 };
 

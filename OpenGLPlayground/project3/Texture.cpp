@@ -32,6 +32,13 @@ Ref<Image> Image::Load(const std::string &path)
 
 Ref<Image> Image::Clone()
 {
-    // TODO: impl
-    return nullptr;
+    Ref<Image> image = MakeRef<Image>();
+    image->m_Width = m_Width;
+    image->m_Height = m_Height;
+    image->m_Channels = m_Channels;
+
+    image->m_Data = new unsigned char[m_Width * m_Height];
+    memcpy(image->m_Data, m_Data, m_Width * m_Height);
+
+    return image;
 }
