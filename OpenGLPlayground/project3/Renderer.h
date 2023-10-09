@@ -63,11 +63,10 @@ public:
     };
 
     static void SetShaderMode(ShaderMode mode);
-
     static ShaderMode GetShaderMode();
 
-    static int TessInner;
-    static glm::vec3 TessOuter;
+    static void SetTessInnerLevel(const float tessInner);
+    static void SetTessOuterLevel(const glm::vec3& tessOuter);
 
 private:
 

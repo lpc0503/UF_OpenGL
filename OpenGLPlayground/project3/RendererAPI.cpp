@@ -48,6 +48,17 @@ void RendererAPI::Shutdown()
     glDeleteProgram(m_MeshShader);
 }
 
+void RendererAPI::BindShader()
+{
+    glUseProgram(m_CurrentShader);
+
+    if(GetShaderMode() == ShaderMode::TESSELATION)
+    {
+        SetFloat("tessellationLevelInner", GetTessInnerLevel());
+        SetFloat3("tessellationLevelOuter", GetTessOuterLevel());
+    }
+}
+
 void RendererAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
 {
     auto id = GetUniformID(name);
@@ -456,7 +467,7 @@ void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode)
     }
 }
 
-RendererAPI::ShaderMode RendererAPI::GetShaderMode()
+RendererAPI::ShaderMode RendererAPI::GetShaderMode() const
 {
     return m_ShaderMode;
 }

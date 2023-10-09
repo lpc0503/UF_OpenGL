@@ -21,7 +21,7 @@ public:
     void Init();
     void Shutdown();
 
-    void BindShader() const { glUseProgram(m_CurrentShader); }
+    void BindShader();
     void UnbindShader() { glUseProgram(0); m_CurrentShader = -1; } // TODO: remove
     void ClearRendererState();
 
@@ -147,7 +147,7 @@ public:
         GEOMETRY
     };
     void SetShaderMode(ShaderMode mode);
-    ShaderMode GetShaderMode();
+    ShaderMode GetShaderMode() const;
 private:
     ShaderMode m_ShaderMode;
 
@@ -155,6 +155,15 @@ private:
 public:
     void ClearViewport();
     void SetClearColor(const glm::vec4 &color);
+
+public:
+    void SetTessInnerLevel(const float tessInner) { m_TessInnerLevel = tessInner; }
+    float GetTessInnerLevel() const { return m_TessInnerLevel; }
+    void SetTessOuterLevel(const glm::vec3& tessOuter) { m_TessOuterLevel = tessOuter; }
+    glm::vec3 GetTessOuterLevel() const { return m_TessOuterLevel; }
+private:
+    int m_TessInnerLevel;
+    glm::vec3 m_TessOuterLevel;
 
     // ======================================================================================
     // Texture

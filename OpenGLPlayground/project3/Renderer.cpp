@@ -14,9 +14,6 @@ bool g_IsRendering = false;
 // TODO: pimpl
 Ref<Camera> g_CurrentCamera;
 
-int Renderer::TessInner = 4;
-glm::vec3 Renderer::TessOuter = {1.f, 1.f, 1.f};
-
 struct RendererData
 {
     float CurrentPointSize = 3.f;
@@ -33,9 +30,8 @@ void Renderer::Init()
 
     m_ShaderMode = ShaderMode::TESSELATION;
     m_RenderData = MakeUniq<RendererData>();
-    TessInner = 4;
-    TessOuter = {1.f, 1.f, 1.f};
-
+    g_RenderAPI->SetTessInnerLevel(4);
+    g_RenderAPI->SetTessOuterLevel({1.f, 1.f, 1.f});
 }
 
 void Renderer::Shutdown()
@@ -76,11 +72,6 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->SetMatrix("V", camera->GetView());
     g_RenderAPI->SetMatrix("P", camera->GetProjection());
     g_RenderAPI->SetMatrix("M", camera->GetView());
-    if(g_RenderAPI->GetShaderMode() == RendererAPI::ShaderMode::TESSELATION)
-    {
-        g_RenderAPI->SetFloat("tessellationLevelInner", TessInner);
-        g_RenderAPI->SetFloat3("tessellationLevelOuter", {TessOuter[0],TessOuter[1],TessOuter[2]});
-    }
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();
 }
@@ -256,4 +247,14 @@ Renderer::ShaderMode Renderer::GetShaderMode()
 void Renderer::SetClearColor(const glm::vec4 &color)
 {
     g_RenderAPI->SetClearColor(color);
+}
+
+void Renderer::SetTessInnerLevel(const float tessInner)
+{
+    g_RenderAPI->SetTessInnerLevel(tessInner);
+}
+
+void Renderer::SetTessOuterLevel(const glm::vec3 &tessOuter)
+{
+    g_RenderAPI->SetTessOuterLevel(tessOuter);
 }

@@ -486,8 +486,8 @@ void OnUpdateScene(float dt)
         g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
     }
 
-    Renderer::TessInner = TessInner;
-    Renderer::TessOuter = TessOuter;
+    Renderer::SetTessInnerLevel(TessInner);
+    Renderer::SetTessOuterLevel(TessOuter);
 
 //    if(SHADERMODE == STANDARD) {
 //
