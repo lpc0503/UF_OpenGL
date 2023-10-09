@@ -31,7 +31,7 @@ void Renderer::Init()
     g_RenderAPI = new RendererAPI();
     g_RenderAPI->Init();
 
-    m_ShaderMode = ShaderMode::STANDARD;
+    m_ShaderMode = ShaderMode::TESSELATION;
     m_RenderData = MakeUniq<RendererData>();
     TessInner = 4;
     TessOuter = {1.f, 1.f, 1.f};
@@ -95,11 +95,13 @@ void Renderer::EndScene()
 
     g_RenderAPI->BindLineShader();
     g_RenderAPI->SendLineData();
+//    g_RenderAPI->SetBool("uEnableLight", false);
     g_RenderAPI->DrawLines();
     g_RenderAPI->UnbindShader();
 
     g_RenderAPI->BindTriangleShader();
     g_RenderAPI->SendTriangleData();
+//    g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->DrawTriangles();
     g_RenderAPI->UnbindShader();
 

@@ -256,7 +256,7 @@ void OnInitScene()
     g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
-    SHADERMODE = STANDARD;
+    SHADERMODE = TESSELATION;
 //    points = {
 //            {-8.0, 1.0, -8.0, 0.f, 0.f, 0.f},
 //            {-4.0, 1.0, -8.0, 1.f, 0.f, 0.f},
@@ -489,6 +489,16 @@ void OnUpdateScene(float dt)
     Renderer::TessInner = TessInner;
     Renderer::TessOuter = TessOuter;
 
+//    if(SHADERMODE == STANDARD) {
+//
+//        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
+//    }
+//    else if(SHADERMODE == TESSELATION) {
+//
+//        Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
+//    }
+
+
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     static float sinceStart = 0.f;
     static const float DEG2RAD = 3.14159265f / 180.f;
@@ -539,14 +549,20 @@ void OnImGuiUpdate()
 
     // ShaderMode
     if(ImGui::RadioButton("Standard shader", &SHADERMODE, STANDARD)) {
+
+        SHADERMODE = STANDARD;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
     } ImGui::SameLine();
 
     if(ImGui::RadioButton("Tessellation shader", &SHADERMODE, TESSELATION)) {
+
+        SHADERMODE = TESSELATION;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
     }
 
     if(ImGui::RadioButton("Geometry shader", &SHADERMODE, GEOMETRY)) {
+
+        SHADERMODE = GEOMETRY;
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 

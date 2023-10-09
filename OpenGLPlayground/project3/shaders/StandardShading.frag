@@ -9,8 +9,8 @@ in vec3 LightDirection_cameraspace;
 in vec2 UV;
 
 // Ouput data
-out vec4 color;
-out vec4 FragColor;
+out vec3 color;
+//out vec4 FragColor;
 
 // Values that stay constant for the whole mesh.
 uniform mat4 MV;
@@ -81,14 +81,14 @@ void main() {
 
 	if(uEnableLight)
 	{
-		FragColor = vec4(texture(tex, UV));
-		color = texture(tex, UV);
+//		FragColor = vec4(texture(tex, UV));
+		color = vs_vertexColor.xyz;
 //		color = materialAmbientColor
 //		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
 //		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 	}
 	else
 	{
-		color = vs_vertexColor;
+		color = vs_vertexColor.xyz;
 	}
 }

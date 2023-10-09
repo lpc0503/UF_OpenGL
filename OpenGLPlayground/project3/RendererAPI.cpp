@@ -30,7 +30,8 @@ void RendererAPI::Init()
     InitTriangleRenderer();
     InitMeshRenderer();
 
-    m_ShaderMode = ShaderMode::STANDARD;
+    m_ShaderMode = ShaderMode::TESSELATION;
+    SetShaderMode(m_ShaderMode);
     m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag"); // TODO: make InitPickingXXX?
 }
 
@@ -172,7 +173,6 @@ void RendererAPI::SendTriangleData()
 void RendererAPI::DrawTriangles()
 {
     // TODO Texture
-    glBindTexture(GL_TEXTURE_2D, m_Texture);
     glDrawArrays(GL_TRIANGLES, 0, m_TriangleVertices.size());
 }
 
@@ -412,7 +412,7 @@ void RendererAPI::InitTriangleRenderer()
     glEnableVertexAttribArray(2);
     glEnableVertexAttribArray(3);
     glBindVertexArray(0);
-    m_TriangleShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+    m_TriangleShader = LoadShaders("shaders/texture.vert", "shaders/texture.frag");
 }
 
 void RendererAPI::InitMeshRenderer()
