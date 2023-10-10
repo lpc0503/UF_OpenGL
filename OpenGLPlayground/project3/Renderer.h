@@ -28,7 +28,7 @@ public:
     static void DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize);
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
 
-    static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
+    static void DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f}, const bool &quad=false);
     static void DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale);
 
     static void DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const std::vector<glm::vec2> &uv, const glm::vec4 &color = {1.f, 1.f, 1.f, 1.f});

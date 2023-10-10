@@ -81,12 +81,15 @@ private:
 public:
     void InitMeshRenderer();
     void BindMeshShader() { assert(m_MeshShader); m_CurrentShader = m_MeshShader; BindShader(); }
-    void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f});
+    void BindQuadMeshShader() { assert(m_QuadMeshShader); m_CurrentShader = m_QuadMeshShader; BindShader(); }
+    void PushMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint = {1.f, 1.f, 1.f, 1.f}, const bool &quad=false);
     void SendMeshData();
     void DrawMeshes();
+    bool Quad = false;
 
 private:
     GLuint m_MeshShader;
+    GLuint m_QuadMeshShader;
     GLuint m_MeshVAO, m_MeshVBO, m_MeshIBO;
     struct MeshData {
         Ref<Mesh> mesh;
@@ -94,6 +97,7 @@ private:
         glm::vec3 rotate;
         glm::vec3 scale;
         glm::vec4 tint;
+        bool quad;
     };
     std::vector<MeshData> m_Meshes;
 

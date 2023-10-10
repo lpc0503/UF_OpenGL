@@ -62,7 +62,6 @@ static int g_ShaderMode;
 
 Ref<Model> g_Model;
 Ref<Model> sail;
-
 Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
@@ -76,12 +75,11 @@ double PrevMouseX, PrevMouseY;
 glm::vec3 g_ModelPos = glm::vec3{2.f};
 glm::vec3 g_ModelScale = glm::vec3{.3f};
 float pointSize = 3.f;
-int TessInner = 4;
-glm::vec3 TessOuter = {1.f, 1.f, 1.f};
 glm::vec3 BunnyPos = glm::vec3{0.f};
 glm::vec3 BunnyScale = glm::vec3{.05f};
 glm::vec3 SailPos = glm::vec3{0.f};
 glm::vec3 SailScale = glm::vec3{1.f};
+
 
 glm::vec3 tOffset = glm::vec3{2.4f, 0.f, 1.5f};
 
@@ -136,7 +134,7 @@ std::vector<WaveProperity> waves = {
     {135.f, 0.75f, 225.f, 90.f},
 };
 
-bool g_DrawPNTriangle = false;
+bool g_DrawPNTriangle = true;
 
 // ===============================================================
 
@@ -887,13 +885,13 @@ void OnRenderScene()
         }
     }
 
-    if(g_DrawPNTriangle)
-    {
-        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
-    }
+//    if(g_DrawPNTriangle)
+//    {
+//        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
+//    }
 
 //    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale);
+    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
 

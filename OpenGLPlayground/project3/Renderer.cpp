@@ -30,8 +30,13 @@ void Renderer::Init()
 
     m_ShaderMode = ShaderMode::TESSELATION;
     m_RenderData = MakeUniq<RendererData>();
+
     g_RenderAPI->SetTessInnerLevel(4);
     g_RenderAPI->SetTessOuterLevel({1.f, 1.f, 1.f});
+//
+//    TessInner = 12;
+//    TessOuter = {12.f, 12.f, 12.f};
+
 }
 
 void Renderer::Shutdown()
@@ -196,9 +201,9 @@ void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm:
     g_RenderAPI->PushTriangle(vertices);
 }
 
-void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
+void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, const bool &quad)
 {
-    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint);
+    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint, quad);
 }
 
 void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
