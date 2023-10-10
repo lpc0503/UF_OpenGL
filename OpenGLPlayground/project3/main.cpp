@@ -888,13 +888,13 @@ void OnRenderScene()
         }
     }
 
-    if(g_DrawPNTriangle)
-    {
-        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
-    }
+//    if(g_DrawPNTriangle)
+//    {
+//        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
+//    }
 
 //    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-//    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
+    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
 //    auto sunDir = glm::normalize(g_Camera->GetDir());
 //    Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
 

@@ -1,134 +1,195 @@
-layout(quads, equal_spacing, ccw) in;
-
-// Uniforms
-uniform mat4 M;
-uniform mat4 V;
-uniform mat4 P;
-
-struct QuadCP_FragData
+struct TC2E
 {
-    vec3 pos;
+    vec3 position;
     vec3 normal;
     vec4 color;
 };
 
-struct Output_QuadPatch
+struct T2F
 {
-    // Four input control point
-    vec3 CP_Pos_b0;
-    vec3 CP_Pos_b1;
-    vec3 CP_Pos_b2;
-    vec3 CP_Pos_b3;
-//    vec4 CP_Color_b0;
-//    vec4 CP_Color_b1;
-//    vec4 CP_Color_b2;
-//    vec4 CP_Color_b3;
-
-    // Boundary control points
-    vec3 CP_Pos_b01;
-    vec3 CP_Pos_b10;
-    vec3 CP_Pos_b12;
-    vec3 CP_Pos_b21;
-    vec3 CP_Pos_b23;
-    vec3 CP_Pos_b32;
-    vec3 CP_Pos_b03;
-    vec3 CP_Pos_b30;
-//    vec4 CP_Color_b01;
-//    vec4 CP_Color_b10;
-//    vec4 CP_Color_b12;
-//    vec4 CP_Color_b21;
-//    vec4 CP_Color_b23;
-//    vec4 CP_Color_b32;
-//    vec4 CP_Color_b03;
-//    vec4 CP_Color_b30;
-
-
-    // Inner control points
-    vec3 CP_Pos_b02;
-    vec3 CP_Pos_b20;
-    vec3 CP_Pos_b13;
-    vec3 CP_Pos_b31;
-//    vec3 CP_Color_b02;
-//    vec3 CP_Color_b20;
-//    vec3 CP_Color_b13;
-//    vec3 CP_Color_b31;
-
-    // Normals
-    vec3 Normal_N0;
-    vec3 Normal_N1;
-    vec3 Normal_N2;
-    vec3 Normal_N3;
-
-    vec3 Normal_N01;
-    vec3 Normal_N12;
-    vec3 Normal_N23;
-    vec3 Normal_N03;
-
-    vec3 Normal_N0123;
+    vec3 position;
+    vec3 normal;
+    vec4 color;
 };
 
-// attributes of input patch control points
-patch in Output_QuadPatch oPatch;
+struct TesOut
+{
+    vec3 position_world;
+    vec3 normal_world;
+    vec3 diffuse_color;
+};
 
-// attributes of output patch control points
-out QuadCP_FragData fragdata;
+//< specify domain, spacing policy for Tessellator
+/*
+    ## input layout qualifiers
+    - specify options that control the particular form of tessellation
+    - equal_spacing            : clamp to [1, max], rounded up to the nearest integer
+    - fractional_even_spacing  : clamp to [2, max], rounded up to the nearest even integer
+    - fractional_odd_spacing   : clamp to [1, max - 1], rounded up to the nearest odd integer
+
+    - If all of the effective outer levels (as computed above) levels are exactly 1.0, and the effective inner level is also 1.0,
+      then nothing is tessellated, and the TES will get 3 vertices and one triangle.
+*/
+layout(quads, equal_spacing, ccw) in;
+
+//<per-vertex inputs from the TCS are arrays indexed by index implicitly
+in TC2E tcdata[];
+
+//< per-patch outputs from the TCS as inputs in the TES using the patch keyword
+//patch in vec4 data;
+
+out TesOut tes_out;
+
+out T2F tedata;
 out vec3 position_worldspace;
 out vec3 normal_cameraspace;
 out vec3 eyeDirection_cameraspace;
 out vec3 lightDirection_cameraspace;
 
-vec3 Worldspace_LightPos;
+uniform mat4 M;
+uniform mat4 V;
+uniform mat4 P;
+vec3 lightPosition_worldspace;
+
+patch in vec3 b0;
+patch in vec3 b1;
+patch in vec3 b2;
+patch in vec3 b3;
+patch in vec3 b01;
+patch in vec3 b10;
+patch in vec3 b12;
+patch in vec3 b21;
+patch in vec3 b23;
+patch in vec3 b32;
+patch in vec3 b30;
+patch in vec3 b03;
+patch in vec3 n0;
+patch in vec3 n1;
+patch in vec3 n2;
+patch in vec3 n3;
+patch in vec3 n01;
+patch in vec3 n12;
+patch in vec3 n23;
+patch in vec3 n30;
 
 
+vec3 evaluatePosistion(in vec3 tessCoord)
+{
+    float u =tessCoord.x;
+    float v =tessCoord.y;
+
+    vec3 q = b01 + b10 + b12 + b21 + b23 + b32 + b30 + b03;
+
+    vec3 e0 = (2.*(b01 + b03 + q) - (b21 + b23)) / 18.;
+    vec3 v0 = (4.*b0 + 2.*(b3 + b1) + b2) / 9.;
+    vec3 b02 = e0 + (e0 - v0) / 2.;
+
+    vec3 e1 = (2.*(b12 + b10 + q) - (b32 + b30)) / 18.;
+    vec3 v1 = (4.*b1 + 2.*(b0 + b2) + b3) / 9.;
+    vec3 b13 = e1 + (e1 - v1) / 2.;
+
+    vec3 e2 = (2.*(b23 + b21 + q) - (b03 + b01)) / 18.;
+    vec3 v2 = (4.*b2 + 2.*(b1 + b3) + b0) / 9.;
+    vec3 b20 = e2 + (e2 - v2) / 2.;
+
+    vec3 e3 = (2.*(b30 + b32 + q) - (b10 + b12)) / 18.;
+    vec3 v3 = (4.*b3 + 2.*(b2 + b0) + b1) / 9.;
+    vec3 b31 = e3 + (e3 - v3) / 2.;
+
+    float bu0 = (1.-u) * (1.-u) * (1.-u);
+    float bu1 = 3. * u * (1.-u) * (1.-u);
+    float bu2 = 3. * u * u * (1.-u);
+    float bu3 = u * u * u;
+
+    float bv0 = (1.-v) * (1.-v) * (1.-v);
+    float bv1 = 3. * v * (1.-v) * (1.-v);
+    float bv2 = 3. * v * v * (1.-v);
+    float bv3 = v * v * v;
+
+    vec3 pos = bu0*(bv0*b0 + bv1*b01 + bv2*b10 + bv3*b1)
+    + bu1*(bv0*b03 + bv1*b02 + bv2*b13 + bv3*b12)
+    + bu2*(bv0*b30 + bv1*b31 + bv2*b20 + bv3*b21)
+    + bu3*(bv0*b3 + bv1*b32 + bv2*b23 + bv3*b2);
+
+    return pos;
+}
+
+vec3 evaluateNormal(in vec3 tessCoord)
+{
+    float u =tessCoord.x;
+    float v =tessCoord.y;
+
+    vec3 n0123 = ((2.*(n01 + n12 + n23 + n30)) + (n0 + n1 + n2 + n3)) / 12.;
+
+    float nu0 = (1.-u) * (1.-u);
+    float nu1 = 2. * u * (1.-u);
+    float nu2 = u * u;
+
+    float nv0 = (1.-v) * (1.-v);
+    float nv1 = 2. * v * (1.-v);
+    float nv2 = v * v;
+
+    vec3 normal = nu0*(nv0*n0 + nv1*n01 + nv2*n1)
+    + nu1*(nv0*n30 + nv1*n0123 + nv2*n12)
+    + nu2*(nv0*n3 + nv1*n23 + nv2*n2);
+
+    return normal;
+}
+
+//<
+//< evaluate surface for given UV coordinate
+//< interpolate attributes of vertex
+//< maybe displacement here
+//<
+/*
+    - reference : https://www.khronos.org/opengl/wiki/Tessellation_Evaluation_Shader
+    - The inputs for the TES are : per-vertex & per-patch
+    - built-in variables
+      - in vec3 gl_TessCoord      : Barycentric coordinates of generated primitive
+      - in int gl_PatchVerticesIn : the vertex count for the patch being processed
+      - in int gl_PrimitiveID     : the index of the current patch in the series of patches being processed for this draw call
+
+      - buit-in input
+          in gl_PerVertex
+            {
+              vec4 gl_Position;
+              float gl_PointSize;
+              float gl_ClipDistance[];
+            } gl_in[gl_MaxPatchVertices];
+
+      - buit-in output
+          out gl_PerVertex
+          {
+          vec4 gl_Position;   //< the clip-space output position of the current vertex.
+          float gl_PointSize; //< the pixel width/height of the point being rasterized. valid for point primitives
+          float gl_ClipDistance[]; //< allows shader to set the distance from the vertex to each User-Defined Clip Plane
+          };
+*/
 void main()
 {
-    // Set fixed world space light source position
-    vec3 lightPosition_worldspace = vec3(5.f, 0.f, 0.f);
+    lightPosition_worldspace = vec3(5.f, 0.f, 0.f);
 
-    // Use gl_TessCoord to evaluate position and normal
-    float u = gl_TessCoord.x;
-    float v = gl_TessCoord.y;
+    //    pos = b300 * w3 + b030 * u3 + b003 * v3;
+    vec3 pos = evaluatePosistion(gl_TessCoord);
+    //    tedata.position = pos;
 
-    float B_0u = pow(1.0 - u, 3.f);					// C03 * pow(1-u, 3) * pow(u, 0)
-    float B_1u = 3.0 * pow(1.0 - u, 2.f) * u;			// C13 * pow(1-u, 2) * pow(u, 1)
-    float B_2u = 3.0 * (1.0 - u) * pow(u, 2.f);		// C23 * pow(1-u, 1) * pow(u, 2)
-    float B_3u = pow(u, 3.f);							// C33 * pow(1-u, 0) * pow(u, 3)
+    vec3 normal = evaluateNormal(gl_TessCoord);
+    //    tedata.normal = normal;
 
-    float B_0v = pow(1.0 - v, 3.f);					// C03 * pow(1-v, 3) * pow(v, 0)
-    float B_1v = 3.0 * pow(1.0 - v, 2.f) * v;			// C13 * pow(1-v, 2) * pow(v, 1)
-    float B_2v = 3.0 * (1.0 - v) * pow(v, 2.f);		// C23 * pow(1-v, 1) * pow(v, 2)
-    float B_3v = pow(v, 3.f);							// C33 * pow(1-v, 0) * pow(v, 3)
-
-    float N_u0 = pow(1.0 - u, 2.f);
-    float N_u1 = 2.0 * u * (1.0 - u);
-    float N_u2 = pow(u, 2.f);
-
-    float N_v0 = pow(1.0 - v, 2.f);
-    float N_v1 = 2.0 * v * (1.0 - v);
-    float N_v2 = pow(v, 2.f);
-
-    vec3 pos =	  B_0u * (B_0v * oPatch.CP_Pos_b0   + B_1v * oPatch.CP_Pos_b01 + B_2v * oPatch.CP_Pos_b10 + B_3v * oPatch.CP_Pos_b1 )
-    + B_1u * (B_0v * oPatch.CP_Pos_b03	+ B_1v * oPatch.CP_Pos_b02 + B_2v * oPatch.CP_Pos_b13 + B_3v * oPatch.CP_Pos_b12)
-    + B_2u * (B_0v * oPatch.CP_Pos_b30	+ B_1v * oPatch.CP_Pos_b31 + B_2v * oPatch.CP_Pos_b20 + B_3v * oPatch.CP_Pos_b21)
-    + B_3u * (B_0v * oPatch.CP_Pos_b3	+ B_1v * oPatch.CP_Pos_b32 + B_2v * oPatch.CP_Pos_b23 + B_3v * oPatch.CP_Pos_b2);
-
-    //vec3 color =  B_0u * (B_0v * oPatch.CP_Color_b0		+ B_1v * oPatch.CP_Color_b01 + B_2v * oPatch.CP_Color_b10 + B_3v * oPatch.CP_Color_b1 )
-    //			+ B_1u * (B_0v * oPatch.CP_Color_b03	+ B_1v * oPatch.CP_Color_b02 + B_2v * oPatch.CP_Color_b13 + B_3v * oPatch.CP_Color_b12)
-    //			+ B_2u * (B_0v * oPatch.CP_Color_b30	+ B_1v * oPatch.CP_Color_b31 + B_2v * oPatch.CP_Color_b20 + B_3v * oPatch.CP_Color_b21)
-    //			+ B_3u * (B_0v * oPatch.CP_Color_b3		+ B_1v * oPatch.CP_Color_b32 + B_2v * oPatch.CP_Color_b23 + B_3v * oPatch.CP_Color_b2);
-
-    vec3 normal = N_u0 * (N_v0 * oPatch.Normal_N0  + N_v1 * oPatch.Normal_N01   + N_v2 * oPatch.Normal_N1)
-    + N_u1 * (N_v0 * oPatch.Normal_N03 + N_v1 * oPatch.Normal_N0123 + N_v2 * oPatch.Normal_N12)
-    + N_u2 * (N_v0 * oPatch.Normal_N3  + N_v1 * oPatch.Normal_N23   + N_v2 * oPatch.Normal_N2);
-
-    fragdata.pos = pos;
-    fragdata.normal	= normal;
-    fragdata.color	= vec4(1.f, 0.4f, 0.3f, 1);
+    //    tedata.color = vec4(tedata.normal.x, tedata.normal.y, tedata.normal.z, 1.0);
+    tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
+    tedata.normal = normal;
+    tedata.color = vec4(1.f, 0.4f, 0.3f, 1);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
-    position_worldspace = vec3((M * vec4(pos, 1.0)).xyz);
-    normal_cameraspace	= vec3((V * M * vec4(normal, 1.0)).xyz);
-    eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vec3((V * M * vec4(pos, 1.0)).xyz);
-    vec3 lightPosition_cameraspace = (V * vec4(lightPosition_worldspace, 1.f)).xyz;
+
+    //    position_worldspace = vec3((M * vec4(pos, 1.0)).xyz);
+
+    vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 1.0)).xyz;
+    eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;
+
+    vec3 lightPosition_cameraspace = (V * vec4(lightPosition_worldspace, 1.0)).xyz;
     lightDirection_cameraspace = lightPosition_cameraspace + eyeDirection_cameraspace;
+
+    normal_cameraspace = vec3((V * M * vec4(tedata.normal, 0)).xyz);
 }

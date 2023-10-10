@@ -217,16 +217,12 @@ void RendererAPI::DrawMeshes()
         SetMatrix("M", m);
         SetFloat4("Color", tint);
     };
-    auto DrawMesh = [&](Ref<Mesh> mesh)
+    auto DrawMesh = [&](Ref<Mesh> mesh, bool quad = false)
     {
         glBindVertexArray(m_MeshVAO);
         glBindBuffer(GL_ARRAY_BUFFER, m_MeshVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * mesh->m_Vertices.size(), glm::value_ptr(mesh->m_Vertices[0].pos), GL_STATIC_DRAW);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO);
-//        for(auto x : mesh->m_Vertices) {
-//
-//            INFO("{} {} {}", x.normal.x, x.normal.y, x.normal.z);
-//        }
 
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint32_t) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW);
         if(GetShaderMode() == ShaderMode::STANDARD) {
@@ -236,7 +232,13 @@ void RendererAPI::DrawMeshes()
             glDrawElements(GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
         else if(GetShaderMode() == ShaderMode::TESSELATION) {
-            glPatchParameteri(GL_PATCH_VERTICES, 3);
+            if(!quad)
+                glPatchParameteri(GL_PATCH_VERTICES, 3);
+            else{
+                INFO("DrawQuad");
+                glPatchParameteri(GL_PATCH_VERTICES, 4);
+            }
+
             glDrawElements(GL_PATCHES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0);
         }
     };
@@ -250,7 +252,10 @@ void RendererAPI::DrawMeshes()
             BindQuadMeshShader();
         SendLightData();
         SendModelMatrix(md.pos, md.rotate, md.scale, md.tint);
-        DrawMesh(md.mesh);
+        if(!md.quad)
+            DrawMesh(md.mesh);
+        else
+            DrawMesh(md.mesh, true);
     }
     UnbindShader();
 }
@@ -444,6 +449,7 @@ void RendererAPI::InitMeshRenderer()
     glEnableVertexAttribArray(3);
     glBindVertexArray(0);
     m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+    m_QuadMeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
 void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode)

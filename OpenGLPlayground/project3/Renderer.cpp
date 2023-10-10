@@ -79,6 +79,13 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_RenderAPI->SetMatrix("M", camera->GetView());
     g_RenderAPI->SetBool("uEnableLight", true);
     g_RenderAPI->UnbindShader();
+
+    g_RenderAPI->BindQuadMeshShader();
+    g_RenderAPI->SetMatrix("V", camera->GetView());
+    g_RenderAPI->SetMatrix("P", camera->GetProjection());
+    g_RenderAPI->SetMatrix("M", camera->GetView());
+    g_RenderAPI->SetBool("uEnableLight", true);
+    g_RenderAPI->UnbindShader();
 }
 
 void Renderer::EndScene()
