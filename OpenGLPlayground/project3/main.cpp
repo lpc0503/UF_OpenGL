@@ -346,7 +346,7 @@ void OnInitScene()
     // u*v = 4*4
 
     g_Model = Model::LoadModel("assets/model/boat.obj", glm::vec3(1, 0.5, 3));
-    sail = Model::LoadModel("assets/model/quad_.obj", glm::vec3(0.5, 0.3, 0.1));
+    sail = Model::LoadQuadModel("assets/model/quad.obj", glm::vec4(0.5, 0.3, 0.1, 1.f));
 
 //    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5,1.0));
 //
