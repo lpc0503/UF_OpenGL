@@ -96,12 +96,26 @@ struct WaveMethod {
         Count
     };
 };
-int g_WaveMethod = WaveMethod::Sine;
+int g_WaveMethod = WaveMethod::MultipleSineWithDir;
 
-bool g_StartSimulateWave = false;
+bool g_StartSimulateWave = true;
 
 struct WaveProperity
 {
+    WaveProperity()
+    {
+    }
+    ~WaveProperity()
+    {
+    }
+    WaveProperity(float degree, float A, float omega, float phase)
+        : waveDirDegree(degree),
+          A(A),
+          omega(omega),
+          phase(phase)
+    {
+    }
+
     bool enable = true;
     glm::vec2 waveDir = {1.f, 0.f};
     float waveDirDegree = 0.f;
@@ -111,7 +125,10 @@ struct WaveProperity
     float omega = 180.f; // degree
     float phase = 90.f;  // degree
 };
-std::vector<WaveProperity> waves(1);
+std::vector<WaveProperity> waves = {
+    {0.f, 0.25f, 180.f, 90.f},
+    {135.f, 0.75f, 225.f, 90.f},
+};
 
 bool g_DrawPNTriangle = false;
 
