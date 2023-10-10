@@ -636,8 +636,8 @@ void OnImGuiUpdate()
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 
-    ImGui::DragFloat3("Pos", &BunnyPos, 0.05);
-    ImGui::DragFloat3("Scale", &BunnyScale, 0.05, 0.f);
+//    ImGui::DragFloat3("Pos", &BunnyPos, 0.05);
+//    ImGui::DragFloat3("Scale", &BunnyScale, 0.05, 0.f);
 
     ImGui::DragFloat3("SailPos", &SailPos, 0.05);
     ImGui::DragFloat3("SailScale", &SailScale, 0.05, 0.f);
@@ -645,8 +645,8 @@ void OnImGuiUpdate()
 //    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
 //    ImGui::DragFloat3("Pos", &CameraPos);
 //    ImGui::DragFloat3("Rotation", &CameraRotate);
-//    ImGui::DragFloat3("Pos", &g_ModelPos);
-//    ImGui::DragFloat3("Scale", &g_ModelScale);
+    ImGui::DragFloat3("Pos", &g_ModelPos, 0.05);
+    ImGui::DragFloat3("Scale", &g_ModelScale, 0.05);
 
 //    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
@@ -888,15 +888,15 @@ void OnRenderScene()
         }
     }
 
-//    if(g_DrawPNTriangle)
-//    {
-//        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
-//    }
+    if(g_DrawPNTriangle)
+    {
+        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
+    }
 
 //    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
-    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
-    auto sunDir = glm::normalize(g_Camera->GetDir());
-    Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+//    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
+//    auto sunDir = glm::normalize(g_Camera->GetDir());
+//    Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
 
     Renderer::EndScene();
 
