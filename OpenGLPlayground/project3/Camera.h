@@ -12,7 +12,9 @@ public:
 
 public:
     void LookAt(float x, float y, float z);
+    void LookAt(const glm::vec3& lookAt) { LookAt(lookAt.x, lookAt.y, lookAt.z); }
     void Move(float x, float y, float z);
+    void Move(const glm::vec3& move) { Move(move.x, move.y, move.z); }
 
 public:
     const glm::mat4& GetProjection()       { return m_Projection; }
