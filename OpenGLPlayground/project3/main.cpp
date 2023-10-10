@@ -734,6 +734,7 @@ void OnImGuiUpdate()
             if(ImGui::Button("Delete"))
             {
                 waves.erase(waves.begin()+i);
+                ImGui::PopID();
                 break;
             }
             ImGui::Text("Wave %d", i++);
