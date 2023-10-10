@@ -68,8 +68,11 @@ float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
 
 float CameraMoveSpeed = 5.f;
-glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
+glm::vec3 CameraTrans = {0.f, 0.f, 0.f};
+//glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
+glm::vec3 CameraRotate = {0.f, 0.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
+glm::vec3 CameraLookAt = {0.f, 0.f, 0.f};
 double PrevMouseX, PrevMouseY;
 glm::vec3 g_ModelPos = glm::vec3{2.f};
 glm::vec3 g_ModelScale = glm::vec3{.3f};
@@ -277,8 +280,7 @@ void PickObject() {
 void OnInitScene()
 {
     g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
-    g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
-    g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
+//    g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
 
     g_ShaderMode = TESSELATION;
 //    points = {
@@ -467,10 +469,26 @@ void OnUpdateScene(float dt)
             offX = x - PrevMouseX;
             offY = y - PrevMouseY;
 
-            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+            if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT))
             {
-                CameraRotate.x += static_cast<float>(-offY) * 5.f * dt;
-                CameraRotate.y += static_cast<float>(offX) * 5.f * dt;
+                float xDiff = static_cast<float>(offX) * 5.f * dt;
+                float yDiff = static_cast<float>(offY) * 5.f * dt;
+
+                glm::mat4 mat{1.f};
+                // The order of rotation have to be x -> y or we have to deal with the gimbal lock
+                mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
+                mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
+                auto tmp = mat * glm::vec4{CameraTrans, 1.f};
+
+                CameraTrans.x += xDiff;
+                CameraTrans.z += -yDiff;
+
+                CameraTrans = glm::inverse(mat) * glm::vec4{CameraTrans, 1.f};
+            }
+            else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT))
+            {
+                CameraRotate.x += static_cast<float>(offY) * 5.f * dt;
+                CameraRotate.y += static_cast<float>(-offX) * 5.f * dt;
 
                 if(CameraRotate.x >= 90.f)
                     CameraRotate.x = 89.9f;
@@ -506,8 +524,10 @@ void OnUpdateScene(float dt)
         mat = glm::rotate(mat, glm::radians(CameraRotate.x), glm::vec3{1.f, 0.f, 0.f});
         mat = glm::rotate(mat, glm::radians(CameraRotate.y), glm::vec3{0.f, 1.f, 0.f});
 
-        auto tmp = glm::vec4{CameraPos, 1.f} * mat;
-        g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
+        auto tmp = mat * glm::vec4{CameraPos, 1.f};
+
+        g_Camera->SetPosition(CameraTrans + glm::vec3(tmp.x, tmp.y, tmp.z));
+        g_Camera->LookAt(CameraTrans);
     }
 
     Renderer::SetTessInnerLevel(TessInner);
@@ -525,7 +545,7 @@ void OnUpdateScene(float dt)
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////
     static float sinceStart = 0.f;
-    static const float DEG2RAD = 3.14159265f / 180.f;
+    static const float DEG2RAD = 3.14159265f / 180.f; // TODO: remove
 
     if(g_WaveMethod == WaveMethod::Sine)
     {
@@ -600,7 +620,7 @@ void OnUpdateScene(float dt)
 int qwe = 0;
 void OnImGuiUpdate()
 {
-    ImGui::ShowDemoWindow();
+//    ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
 
     ImGui::Text("Options");
@@ -609,21 +629,18 @@ void OnImGuiUpdate()
     ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
     // ShaderMode
-    if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD)) {
-
-        g_ShaderMode = STANDARD;
+    if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD))
+    {
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
-    } ImGui::SameLine();
-
-    if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION)) {
-
-        g_ShaderMode = TESSELATION;
+    }
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION))
+    {
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
     }
-
-    if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY)) {
-
-        g_ShaderMode = GEOMETRY;
+    ImGui::SameLine();
+    if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY))
+    {
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 
@@ -786,10 +803,12 @@ void OnRenderScene()
 //    glm::vec3 c = {-2.0, 1.0, 3.0};
 //    Renderer::DrawTriangle(a, b, c);
 
+    Renderer::DrawPoint(CameraTrans, {1.f, 0.f, 0.f, 1.f}, 5.f);
+
     for(const auto& wave : waves)
     {
         const auto& waveDir = wave.waveDir;
-        Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
+//        Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
     }
 
     int u = 4, v = 4;
@@ -804,7 +823,7 @@ void OnRenderScene()
 //            p.z -= tOffset.z;
 
             controlPoints[m][n] = p;
-            Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, pointSize);
+//            Renderer::DrawPoint(controlPoints[m][n], {1.f, 0.f, 0.f, 1.f}, pointSize);
 //            printf("[%d][%d] = [%d]\n", m, n, m*(v+1)+n);
         }
     }
@@ -815,7 +834,7 @@ void OnRenderScene()
     {
         for(int j = 0; j <= precision; j++)
         {
-            Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, pointSize);
+//            Renderer::DrawPoint(curve[i][j], {0.f, 1.f, 0.f, 1.f}, pointSize);
         }
     }
 
@@ -853,11 +872,11 @@ void OnRenderScene()
 
                 if(i % 2 != 0)
                 {
-                    Renderer::DrawTriangle(strip[i-1], strip[i-2], strip[i], uv_,useWhite ? white : black);
+//                    Renderer::DrawTriangle(strip[i-1], strip[i-2], strip[i], uv_,useWhite ? white : black);
                 }
                 else
                 {
-                    Renderer::DrawTriangle(strip[i-2], strip[i-1], strip[i], uv_, useWhite ? white : black);
+//                    Renderer::DrawTriangle(strip[i-2], strip[i-1], strip[i], uv_, useWhite ? white : black);
                 }
 
 //                if(i != 2 && i % 2 == 0)
