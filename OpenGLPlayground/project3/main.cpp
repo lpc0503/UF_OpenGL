@@ -71,8 +71,8 @@ float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
-glm::vec3 BunnyPos = glm::vec3{2.f};
-glm::vec3 BunnyScale = glm::vec3{.3f};
+glm::vec3 g_ModelPos = glm::vec3{2.f};
+glm::vec3 g_ModelScale = glm::vec3{.3f};
 float pointSize = 3.f;
 int TessInner = 4;
 glm::vec3 TessOuter = {1.f, 1.f, 1.f};
@@ -102,6 +102,7 @@ bool g_StartSimulateWave = false;
 
 struct WaveProperity
 {
+    bool enable = true;
     glm::vec2 waveDir = {1.f, 0.f};
     float waveDirDegree = 0.f;
 
@@ -110,8 +111,9 @@ struct WaveProperity
     float omega = 180.f; // degree
     float phase = 90.f;  // degree
 };
-
 std::vector<WaveProperity> waves(1);
+
+bool g_DrawPNTriangle = false;
 
 // ===============================================================
 
@@ -553,6 +555,10 @@ void OnUpdateScene(float dt)
             const auto& omega = wave.omega;
             const auto& phase = wave.phase;
             const auto& A = wave.A;
+            const auto enable = wave.enable;
+
+            if(!enable)
+                continue;
 
             for(int i = 0; i < 5; i++)
             {
@@ -577,7 +583,7 @@ void OnUpdateScene(float dt)
 int qwe = 0;
 void OnImGuiUpdate()
 {
-//    ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
 
     ImGui::Text("Options");
@@ -607,8 +613,8 @@ void OnImGuiUpdate()
 //    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
 //    ImGui::DragFloat3("Pos", &CameraPos);
 //    ImGui::DragFloat3("Rotation", &CameraRotate);
-//    ImGui::DragFloat3("Pos", &BunnyPos);
-//    ImGui::DragFloat3("Scale", &BunnyScale);
+//    ImGui::DragFloat3("Pos", &g_ModelPos);
+//    ImGui::DragFloat3("Scale", &g_ModelScale);
 
     ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
@@ -620,6 +626,9 @@ void OnImGuiUpdate()
 //    ImGui::DragInt("Point Range", &pointRange,1, 0, 2);
 
     ImGui::Separator();
+
+    ImGui::Text("PN");
+    ImGui::Checkbox("PN Triangle", &g_DrawPNTriangle);
 
     ImGui::Text("Curve options");
     ImGui::DragFloat3("Move to origin", &tOffset);
@@ -673,9 +682,30 @@ void OnImGuiUpdate()
             waves.push_back({});
         }
 
+        static char buf[10];
+        if(ImGui::InputText("View Only", buf, 10, ImGuiInputTextFlags_CharsDecimal | ImGuiInputTextFlags_AutoSelectAll))
+        {
+            int viewIdx = std::strtol(buf, nullptr, 10);
+            if(viewIdx >= 0 && viewIdx < waves.size())
+            {
+                for(int i = 0; i < waves.size(); i++)
+                {
+                    if(i == viewIdx)
+                        waves[i].enable = true;
+                    else
+                        waves[i].enable = false;
+                }
+            }
+            else
+            {
+                buf[0] = '\0';
+            }
+        }
+
         int i = 0;
         for(auto& wave : waves)
         {
+            auto& enable = wave.enable;
             auto& waveDir = wave.waveDir;
             auto& waveDirDegree = wave.waveDirDegree;
             auto& omega = wave.omega;
@@ -683,6 +713,12 @@ void OnImGuiUpdate()
             auto& A = wave.A;
 
             ImGui::PushID(i);
+            ImGui::Checkbox("Enable", &enable); ImGui::SameLine();
+            if(ImGui::Button("Delete"))
+            {
+                waves.erase(waves.begin()+i);
+                break;
+            }
             ImGui::Text("Wave %d", i++);
             ImGui::DragFloat("A", &A);
             ImGui::DragFloat("omega", &omega);
@@ -702,7 +738,6 @@ bool DrawMeshLine = true;
 bool TmpFlag = false;
 void OnRenderScene()
 {
-
     Renderer::BeginScene(g_Camera);
     Renderer::DrawGrid(5, 5);
 
@@ -815,9 +850,14 @@ void OnRenderScene()
         }
     }
 
-    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+    if(g_DrawPNTriangle)
+    {
+        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
+    }
+
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
+
     Renderer::EndScene();
 
     // Test
