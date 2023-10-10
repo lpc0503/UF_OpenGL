@@ -1,6 +1,6 @@
 struct QuadCP_FragData
 {
-    vec3 position;
+    vec3 pos;
     vec3 normal;
     vec4 color;
 };
@@ -33,14 +33,14 @@ void main() {
     vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
     vec3 materialSpecularColor = vec3(0.5, 0.5, 0.5)* materialDiffuseColor;
 
-    float distance = length(dirLight.dir - fragdata.position);
+    float distance = length(dirLight.dir - fragdata.pos);
 
     vec3 n = normalize(fragdata.normal);
-    vec3 l = normalize(lightDirection_cameraspace - fragdata.position);
+    vec3 l = normalize(lightDirection_cameraspace - fragdata.pos);
 
     float cosTheta = clamp(dot(n, l), 0.f, 1.f);
 
-    vec3 e = normalize(eyeDirection_cameraspace - fragdata.position);
+    vec3 e = normalize(eyeDirection_cameraspace - fragdata.pos);
     vec3 r = reflect(-l, n);
 
     float cosAlpha = clamp(dot(e,r), 0.f, 1.f);

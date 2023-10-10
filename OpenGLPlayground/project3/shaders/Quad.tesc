@@ -18,10 +18,10 @@ struct Output_QuadPatch
     vec3 CP_Pos_b1;
     vec3 CP_Pos_b2;
     vec3 CP_Pos_b3;
-    vec4 CP_Color_b0;
-    vec4 CP_Color_b1;
-    vec4 CP_Color_b2;
-    vec4 CP_Color_b3;
+//    vec4 CP_Color_b0;
+//    vec4 CP_Color_b1;
+//    vec4 CP_Color_b2;
+//    vec4 CP_Color_b3;
 
     // Boundary control points
     vec3 CP_Pos_b01;
@@ -32,14 +32,14 @@ struct Output_QuadPatch
     vec3 CP_Pos_b32;
     vec3 CP_Pos_b03;
     vec3 CP_Pos_b30;
-    vec4 CP_Color_b01;
-    vec4 CP_Color_b10;
-    vec4 CP_Color_b12;
-    vec4 CP_Color_b21;
-    vec4 CP_Color_b23;
-    vec4 CP_Color_b32;
-    vec4 CP_Color_b03;
-    vec4 CP_Color_b30;
+//    vec4 CP_Color_b01;
+//    vec4 CP_Color_b10;
+//    vec4 CP_Color_b12;
+//    vec4 CP_Color_b21;
+//    vec4 CP_Color_b23;
+//    vec4 CP_Color_b32;
+//    vec4 CP_Color_b03;
+//    vec4 CP_Color_b30;
 
 
     // Inner control points
@@ -47,10 +47,10 @@ struct Output_QuadPatch
     vec3 CP_Pos_b20;
     vec3 CP_Pos_b13;
     vec3 CP_Pos_b31;
-    vec3 CP_Color_b02;
-    vec3 CP_Color_b20;
-    vec3 CP_Color_b13;
-    vec3 CP_Color_b31;
+//    vec3 CP_Color_b02;
+//    vec3 CP_Color_b20;
+//    vec3 CP_Color_b13;
+//    vec3 CP_Color_b31;
 
     // Normals
     vec3 Normal_N0;
@@ -84,21 +84,21 @@ void CalcInterpolation()
 {
     // Init
     oPatch.CP_Pos_b0 = Quad_Position_CS_in[0];
-    oPatch.CP_Color_b0 = Quad_Color_CS_in[0];
     oPatch.Normal_N0 = Quad_Normal_CS_in[0];
 
     oPatch.CP_Pos_b1 = Quad_Position_CS_in[1];
-    oPatch.CP_Color_b1 = Quad_Color_CS_in[1];
     oPatch.Normal_N1 = Quad_Normal_CS_in[1];
 
     oPatch.CP_Pos_b2 = Quad_Position_CS_in[2];
-    oPatch.CP_Color_b2 = Quad_Color_CS_in[2];
     oPatch.Normal_N2 = Quad_Normal_CS_in[2];
 
     oPatch.CP_Pos_b3 = Quad_Position_CS_in[3];
-    oPatch.CP_Color_b3 = Quad_Color_CS_in[3];
     oPatch.Normal_N3 = Quad_Normal_CS_in[3];
 
+//    oPatch.CP_Color_b0 = Quad_Color_CS_in[0];
+//    oPatch.CP_Color_b1 = Quad_Color_CS_in[1];
+//    oPatch.CP_Color_b2 = Quad_Color_CS_in[2];
+//    oPatch.CP_Color_b3 = Quad_Color_CS_in[3];
 
 
     // Edge Control Points
@@ -160,5 +160,5 @@ void main()
     gl_TessLevelOuter[3] = tessellationLevelOuter.x;
 
     gl_TessLevelInner[0] = tessellationLevelInner;
-    gl_TessLevelInner[1] = tessellationLevelInner;
+
 }
