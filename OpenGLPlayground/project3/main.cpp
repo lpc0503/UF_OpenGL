@@ -64,6 +64,9 @@ Ref<Model> g_Model;
 Ref<Model> sail;
 Ref<Camera> g_Camera;
 
+int TessInner = 4;
+glm::vec3 TessOuter = glm::vec3(1.f, 1.f, 1.f);
+
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
 glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
