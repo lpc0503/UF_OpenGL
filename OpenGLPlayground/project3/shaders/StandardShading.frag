@@ -82,10 +82,10 @@ void main() {
 	if(uEnableLight)
 	{
 //		FragColor = vec4(texture(tex, UV));
-		color = vs_vertexColor.xyz;
-//		color = materialAmbientColor
-//		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-//		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+//		color = vs_vertexColor.xyz;
+		color = materialAmbientColor
+		+ materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+		+ materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 	}
 	else
 	{

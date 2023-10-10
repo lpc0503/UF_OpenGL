@@ -26,7 +26,7 @@ uniform vec3 lightPosition_worldspace;
 void main()
 {
     vec3 lightColor = vec3(1, 1, 0.5);
-    float lightPower = 600.f;
+    float lightPower = 30.f;
 
     vec3 materialDiffuseColor = tedata.color.rgb;
     vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
@@ -35,7 +35,7 @@ void main()
     float distance = length(dirLight.dir - tedata.position);
 
     vec3 n = normalize(tedata.normal);
-    vec3 l = normalize(lightDirection_cameraspace - tedata.position);
+    vec3 l = normalize(dirLight.dir - tedata.position);
 
     float cosTheta = clamp(dot(n, l), 0.f, 1.f);
 
@@ -44,8 +44,12 @@ void main()
 
     float cosAlpha = clamp(dot(e,r), 0.f, 1.f);
 
-    color = tedata.color.rgb;
-    //    color = materialAmbientColor
-    //    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-    //    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+//    vec3 mylightDir = normalize(vec3(0.1, 0.1, 0) - pos.xyz);
+//    vec4 Nr = gl_ModelViewMatrixInverseTranspose * vec4(tedata.normal.xyz, 1);
+//    vec3 myN = normalize(Nr.xyz);
+
+//    color = tedata.color.rgb;
+        color = materialAmbientColor
+        + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+        + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 }

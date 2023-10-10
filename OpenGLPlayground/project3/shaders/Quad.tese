@@ -179,7 +179,8 @@ void main()
     //    tedata.color = vec4(tedata.normal.x, tedata.normal.y, tedata.normal.z, 1.0);
     tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
     tedata.normal = normal;
-    tedata.color = vec4(1.f, 0.4f, 0.3f, 1);
+
+    tedata.color = vec4(1.f, 0.f, 0.f, 1.f);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
 

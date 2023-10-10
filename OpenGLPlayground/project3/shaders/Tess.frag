@@ -25,8 +25,8 @@ uniform vec3 lightPosition_worldspace;
 
 void main()
 {
-    vec3 lightColor = vec3(1, 1, 0.5);
-    float lightPower = 600.f;
+    vec3 lightColor = vec3(1, 0.8, 0.5);
+    float lightPower = 30.f;
 
     vec3 materialDiffuseColor = tedata.color.rgb;
     vec3 materialAmbientColor = vec3(0.3, 0.3, 0.3) * materialDiffuseColor;
@@ -44,8 +44,8 @@ void main()
 
     float cosAlpha = clamp(dot(e,r), 0.f, 1.f);
 
-    color = tedata.color.rgb;
-//    color = materialAmbientColor
-//    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
-//    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
+//    color = tedata.color.rgb;
+    color = materialAmbientColor
+    + materialDiffuseColor * lightColor * lightPower * cosTheta / (distance * distance)
+    + materialSpecularColor * lightColor * lightPower * pow(cosAlpha, 5.f) / (distance * distance);
 }

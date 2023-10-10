@@ -68,6 +68,10 @@ patch in vec3 n110;
 patch in vec3 n011;
 patch in vec3 n101;
 
+patch in vec4 c100;
+patch in vec4 c010;
+patch in vec4 c001;
+
 
 vec3 evaluatePosistion(in vec3 tessCoord)
 {
@@ -108,6 +112,20 @@ vec3 evaluateNormal(in vec3 tessCoord)
     normal = vec3(n1 * w + n2 * u + n3 * v);
     #endif
     return normal;
+}
+
+vec4 evaluateColor(in vec3 tessCoord) {
+
+    vec4 c1 = c100;
+    vec4 c2 = c010;
+    vec4 c3 = c001;
+
+    float u =tessCoord.x;
+    float v =tessCoord.y;
+    float w =tessCoord.z;
+
+
+    return vec4(c1 * w + c2 * u + c3 * v);
 }
 
 //<
@@ -151,14 +169,14 @@ void main()
     vec3 normal = evaluateNormal(gl_TessCoord);
 //    tedata.normal = normal;
 
-//    tedata.color = vec4(tedata.normal.x, tedata.normal.y, tedata.normal.z, 1.0);
+    tedata.color = evaluateColor(gl_TessCoord);
     tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
+//    tedata.position = pos;
     tedata.normal = normal;
-    tedata.color = vec4(1.f, 0.4f, 0.3f, 1);
+//    tedata.color = vec4(1.f, 0.4f, 0.3f, 1);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
-
-//    position_worldspace = vec3((M * vec4(pos, 1.0)).xyz);
+//    gl_Position = P * V * M * vec4(pos, 1.0);
 
     vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 1.0)).xyz;
     eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;

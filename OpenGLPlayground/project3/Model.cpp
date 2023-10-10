@@ -272,6 +272,7 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec3 color) {
                                 attrib.vertices[3 * index.vertex_index + 2],
                                 1.0f
                         };
+                vert.color = glm::vec4(color, 1.f);
                 pmin = glm::min(glm::vec3(vert.pos), pmin);
                 pmax = glm::max(glm::vec3(vert.pos), pmax);
                 if (~index.normal_index) //< -1 == 0xFFFFFFFF, it is equal to if (index.normal_index != -1)
@@ -427,11 +428,11 @@ Ref<Model> Model::LoadQuadModel(const std::string &path, glm::vec4 color) {
         }
     }
 
-    INFO("{} {}", temp_vertices.size(), mesh->m_Indices.size());
-    for(auto i : mesh->m_Indices) {
-
-        INFO("{}", i);
-    }
+//    INFO("{} {}", temp_vertices.size(), mesh->m_Indices.size());
+//    for(auto i : mesh->m_Indices) {
+//
+//        INFO("{}", i);
+//    }
 
 
     mesh->m_Vertices.resize(maxindice);
@@ -458,16 +459,6 @@ Ref<Model> Model::LoadQuadModel(const std::string &path, glm::vec4 color) {
         }
     }
     model->m_Meshes.push_back(mesh);
-
-    for(auto e : model->m_Meshes.back()->m_Vertices) {
-
-        INFO("{} {} {}", e.pos.x, e.pos.y, e.pos.z);
-    }
-
-    for(auto e : model->m_Meshes.back()->m_Indices) {
-
-        INFO("{}", e);
-    }
 
     return model;
 }

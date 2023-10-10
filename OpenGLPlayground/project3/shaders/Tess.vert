@@ -17,8 +17,5 @@ void main()
     vdata.position = vec3((vertexPosition_modelspace).xyz);
     vdata.normal = vertexNormal_modelspace;
 //    vdata.color = vec4(vertexNormal_modelspace, 1.0);
-    if(vertexNormal_modelspace == vec3(0.0, 0.0, 0.0))
-        vdata.color = vec4((0.0, 0.0, 0.0, 1.0));
-    else
-        vdata.color = vertexColor;
+    vdata.color = vertexColor;
 }

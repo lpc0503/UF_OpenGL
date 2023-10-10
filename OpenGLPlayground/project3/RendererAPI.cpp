@@ -135,6 +135,10 @@ void RendererAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::
 
 void RendererAPI::DrawLines()
 {
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_ALWAYS);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glDrawArrays(GL_LINES, 0, m_LineVertices.size());
 }
 
@@ -161,6 +165,8 @@ void RendererAPI::SendPointData() {
 void RendererAPI::DrawPoints() {
 
     glEnable(GL_PROGRAM_POINT_SIZE);
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_ALWAYS);
     glDrawArrays(GL_POINTS, 0, m_PointVertices.size());
     glDisable(GL_PROGRAM_POINT_SIZE);
 }
@@ -184,6 +190,8 @@ void RendererAPI::SendTriangleData()
 void RendererAPI::DrawTriangles()
 {
     // TODO Texture
+//    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_ALWAYS);
     glDrawArrays(GL_TRIANGLES, 0, m_TriangleVertices.size());
 }
 
@@ -206,6 +214,8 @@ void RendererAPI::SendMeshData()
 void RendererAPI::DrawMeshes()
 {
     // TODO: extract
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
     {
         glm::mat4 m{1.f};
@@ -235,7 +245,6 @@ void RendererAPI::DrawMeshes()
             if(!quad)
                 glPatchParameteri(GL_PATCH_VERTICES, 3);
             else{
-                INFO("DrawQuad");
                 glPatchParameteri(GL_PATCH_VERTICES, 4);
             }
 

@@ -64,23 +64,23 @@ Ref<Model> g_Model;
 Ref<Model> sail;
 Ref<Camera> g_Camera;
 
-int TessInner = 4;
-glm::vec3 TessOuter = glm::vec3(1.f, 1.f, 1.f);
+int TessInner = 12;
+glm::vec3 TessOuter = glm::vec3(12.f, 12.f, 12.f);
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
 float g_MouseWheelFactor = 0.2;
-glm::vec3 g_SunLight = {28.2f, -8.f, -3.6f};
+glm::vec3 g_SunLight = {5.f, 5.f, 0.f};
 
 float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
-glm::vec3 g_ModelPos = glm::vec3{2.f};
-glm::vec3 g_ModelScale = glm::vec3{.3f};
+glm::vec3 g_ModelPos = glm::vec3{0.f};
+glm::vec3 g_ModelScale = glm::vec3{0.08f, 0.05f, 0.05f};
 float pointSize = 3.f;
 glm::vec3 BunnyPos = glm::vec3{0.f};
 glm::vec3 BunnyScale = glm::vec3{.05f};
-glm::vec3 SailPos = glm::vec3{0.f};
+glm::vec3 SailPos = glm::vec3{-0.2f, 2.0f, 0.f};
 glm::vec3 SailScale = glm::vec3{1.f};
 
 
@@ -288,33 +288,6 @@ void OnInitScene()
     g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
     g_ShaderMode = TESSELATION;
-//    points = {
-//            {-8.0, 1.0, -8.0, 0.f, 0.f, 0.f},
-//            {-4.0, 1.0, -8.0, 1.f, 0.f, 0.f},
-//            {0.0, 1.0, -8.0, 0.f, 1.f, 0.f},
-//            {4.0, 1.0, -8.0, 0.f, 0.f, 1.f},
-//            {8.0, 1.0, -8.0, 1.f, 1.f, 0.f},
-//            {-8.0, -1.0, -4.0, 0.f, 0.f, 0.f},
-//            {-4.0, -1.0, -4.0, 1.f, 0.f, 0.f},
-//            {0.0, -1.0, -4.0, 0.f, 1.f, 0.f},
-//            {4.0, -1.0, -4.0, 0.f, 0.f, 1.f},
-//            {8.0, -1.0, -4.0, 1.f, 1.f, 0.f},
-//            {-8.0, 4.0, 0.0, 0.f, 0.f, 0.f},
-//            {-4.0, 4.0, 0.0, 1.f, 0.f, 0.f},
-//            {0.0, 4.0, 0.0, 0.f, 1.f, 0.f},
-//            {4.0, 4.0, 0.0, 0.f, 0.f, 1.f},
-//            {8.0, 4.0, 0.0, 1.f, 1.f, 0.f},
-//            {-8.0, -1.0, 4.0, 0.f, 0.f, 0.f},
-//            {-4.0, -1.0, 4.0, 1.f, 0.f, 0.f},
-//            {0.0, -1.0, 4.0, 0.f, 1.f, 0.f},
-//            {4.0, -1.0, 4.0, 0.f, 0.f, 1.f},
-//            {8.0, -1.0, 4.0, 1.f, 1.f, 0.f},
-//            {-8.0, 1.0, 8.0, 0.f, 0.f, 0.f},
-//            {-4.0, 1.0, 8.0, 1.f, 0.f, 0.f},
-//            {0.0, 1.0, 8.0, 0.f, 1.f, 0.f},
-//            {4.0, 1.0, 8.0, 0.f, 0.f, 1.f},
-//            {8.0, 1.0, 8.0, 1.f, 1.f, 0.f},
-//    };
     points = {
         {-8.0, 1.0, -8.0},
         {-4.0, 1.0, -8.0},
@@ -345,8 +318,8 @@ void OnInitScene()
 
     // u*v = 4*4
 
-    g_Model = Model::LoadModel("assets/model/boat.obj", glm::vec3(1, 0.5, 3));
-    sail = Model::LoadQuadModel("assets/model/quad.obj", glm::vec4(0.5, 0.3, 0.1, 1.f));
+    g_Model = Model::LoadModel("assets/model/boat.obj", glm::vec3(0, 0.95, 1.f));
+    sail = Model::LoadQuadModel("assets/model/quad.obj", glm::vec4(1.f, 0.f, 1.f, 1.f));
 
 //    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5,1.0));
 //
@@ -519,6 +492,8 @@ void OnUpdateScene(float dt)
         g_Camera->SetPosition(glm::vec3(tmp.x, tmp.y, tmp.z)); // TODO: 需要理解????
     }
 
+//    g_SunLight = g_Camera->GetDir();
+
     Renderer::SetTessInnerLevel(TessInner);
     Renderer::SetTessOuterLevel(TessOuter);
 
@@ -612,6 +587,10 @@ void OnImGuiUpdate()
     ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
 
+    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
+    ImGui::DragFloat3("Pos", &CameraPos);
+    ImGui::DragFloat3("Rotation", &CameraRotate);
+
     ImGui::Text("Options");
     ImGui::DragFloat("Mouse Wheel", &g_MouseWheelFactor, 0.1f);
 
@@ -642,13 +621,10 @@ void OnImGuiUpdate()
     ImGui::DragFloat3("SailPos", &SailPos, 0.05);
     ImGui::DragFloat3("SailScale", &SailScale, 0.05, 0.f);
 
-//    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
-//    ImGui::DragFloat3("Pos", &CameraPos);
-//    ImGui::DragFloat3("Rotation", &CameraRotate);
     ImGui::DragFloat3("Pos", &g_ModelPos, 0.05);
     ImGui::DragFloat3("Scale", &g_ModelScale, 0.05);
 
-//    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
+    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
     ImGui::DragInt("TessInner", &TessInner, 1);
     ImGui::DragFloat3("TessOuter", &TessOuter, 1);
@@ -806,10 +782,12 @@ void OnRenderScene()
         const auto& waveDir = wave.waveDir;
         Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
     }
-    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[0].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[4].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[6].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[2].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+
+    Renderer::DrawPoint(g_SunLight, {0.f, 0.f, 0.f, 1.f}, 50);
+//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[0].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[4].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[6].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[2].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
 //    Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
 
     int u = 4, v = 4;
@@ -888,10 +866,10 @@ void OnRenderScene()
         }
     }
 
-//    if(g_DrawPNTriangle)
-//    {
-//        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
-//    }
+    if(g_DrawPNTriangle)
+    {
+        Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
+    }
 
 //    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
     Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale, {1.f, 1.f, 1.f, 1.f}, true);
