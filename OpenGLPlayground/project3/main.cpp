@@ -92,6 +92,7 @@ struct WaveMethod {
     enum {
         Sine = 0,
         SineWithDir = 1,
+        MultipleSineWithDir = 2,
         Count
     };
 };
@@ -99,13 +100,18 @@ int g_WaveMethod = WaveMethod::Sine;
 
 bool g_StartSimulateWave = false;
 
-glm::vec2 waveDir = {1.f, 0.f};
-float waveDirDegree = 0.f;
+struct WaveProperity
+{
+    glm::vec2 waveDir = {1.f, 0.f};
+    float waveDirDegree = 0.f;
 
-// y = A * sin(omega * t + phase)
-float A = 2.f;
-float omega = 180.f; // degree
-float phase = 90.f;  // degree
+    // y = A * sin(omega * t + phase)
+    float A = 2.f;
+    float omega = 180.f; // degree
+    float phase = 90.f;  // degree
+};
+
+std::vector<WaveProperity> waves(1);
 
 // ===============================================================
 
@@ -504,6 +510,10 @@ void OnUpdateScene(float dt)
 
     if(g_WaveMethod == WaveMethod::Sine)
     {
+        const auto& omega = waves[0].omega;
+        const auto& phase = waves[0].phase;
+        const auto& A = waves[0].A;
+
         for (int i = 0; i < 5; i++)
         {
             u1[i] = A * sin(omega * DEG2RAD * sinceStart + phase * i * DEG2RAD);
@@ -520,6 +530,11 @@ void OnUpdateScene(float dt)
     }
     else if(g_WaveMethod == WaveMethod::SineWithDir)
     {
+        const auto& waveDir = waves[0].waveDir;
+        const auto& omega = waves[0].omega;
+        const auto& phase = waves[0].phase;
+        const auto& A = waves[0].A;
+
         for(int i = 0; i < 5; i++)
         {
             for(int j = 0; j < 5; j++)
@@ -528,6 +543,29 @@ void OnUpdateScene(float dt)
                 points[index].y =  A * sin( glm::dot(waveDir, glm::vec2{points[index].x, points[index].z}) * (omega * DEG2RAD)  + (phase * DEG2RAD)* sinceStart );
             }
         }
+    }
+    else if(g_WaveMethod == WaveMethod::MultipleSineWithDir)
+    {
+        std::array<std::array<float, 5>, 5> w{};
+        for(const auto& wave : waves)
+        {
+            const auto& waveDir = wave.waveDir;
+            const auto& omega = wave.omega;
+            const auto& phase = wave.phase;
+            const auto& A = wave.A;
+
+            for(int i = 0; i < 5; i++)
+            {
+                for(int j = 0; j < 5; j++)
+                {
+                    int index = 5*i + j;
+                    w[i][j] += A * sin( glm::dot(waveDir, glm::vec2{points[index].x, points[index].z}) * (omega * DEG2RAD)  + (phase * DEG2RAD)* sinceStart );
+                }
+            }
+        }
+        for(int i = 0; i < 5; i++)
+            for(int j = 0; j < 5; j++)
+                points[5*i + j].y = w[i][j];
     }
 
     if(g_StartSimulateWave)
@@ -601,21 +639,60 @@ void OnImGuiUpdate()
     ImGui::Text("Wave Method");
     ImGui::RadioButton("Simple Sine", &g_WaveMethod, WaveMethod::Sine);
     ImGui::RadioButton("Sine With Direction", &g_WaveMethod, WaveMethod::SineWithDir);
+    ImGui::RadioButton("Multiple Sine With Direction", &g_WaveMethod, WaveMethod::MultipleSineWithDir);
     if(g_WaveMethod == WaveMethod::Sine)
     {
+        auto& omega = waves[0].omega;
+        auto& phase = waves[0].phase;
+        auto& A = waves[0].A;
+
         ImGui::DragFloat("A", &A);
         ImGui::DragFloat("omega", &omega);
         ImGui::DragFloat("phase", &phase);
     }
     else if(g_WaveMethod == WaveMethod::SineWithDir)
     {
+        auto& waveDir = waves[0].waveDir;
+        auto& waveDirDegree = waves[0].waveDirDegree;
+        auto& omega = waves[0].omega;
+        auto& phase = waves[0].phase;
+        auto& A = waves[0].A;
+
         ImGui::DragFloat("A", &A);
         ImGui::DragFloat("omega", &omega);
         ImGui::DragFloat("phase", &phase);
         ImGui::DragFloat("dir (degree)", &waveDirDegree, 0.1f, 0.f, 360.f);
-        waveDir.y = sin(waveDirDegree * 0.0174532925);
-        waveDir.x = cos(waveDirDegree * 0.0174532925);
+        waveDir.y = sin(glm::radians(waveDirDegree));
+        waveDir.x = cos(glm::radians(waveDirDegree));
         ImGui::Text("dir = %.2f %.2f", waveDir.x, waveDir.y);
+    }
+    else if(g_WaveMethod == WaveMethod::MultipleSineWithDir)
+    {
+        if(ImGui::Button("Add wave"))
+        {
+            waves.push_back({});
+        }
+
+        int i = 0;
+        for(auto& wave : waves)
+        {
+            auto& waveDir = wave.waveDir;
+            auto& waveDirDegree = wave.waveDirDegree;
+            auto& omega = wave.omega;
+            auto& phase = wave.phase;
+            auto& A = wave.A;
+
+            ImGui::PushID(i);
+            ImGui::Text("Wave %d", i++);
+            ImGui::DragFloat("A", &A);
+            ImGui::DragFloat("omega", &omega);
+            ImGui::DragFloat("phase", &phase);
+            ImGui::DragFloat("dir (degree)", &waveDirDegree, 0.1f, 0.f, 360.f);
+            waveDir.y = sin(glm::radians(waveDirDegree));
+            waveDir.x = cos(glm::radians(waveDirDegree));
+            ImGui::Text("dir = %.2f %.2f", waveDir.x, waveDir.y);
+            ImGui::PopID();
+        }
     }
 
     ImGui::End();
@@ -656,7 +733,11 @@ void OnRenderScene()
 //    glm::vec3 c = {-2.0, 1.0, 3.0};
 //    Renderer::DrawTriangle(a, b, c);
 
-    Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
+    for(const auto& wave : waves)
+    {
+        const auto& waveDir = wave.waveDir;
+        Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
+    }
 
     int u = 4, v = 4;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
