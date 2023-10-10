@@ -326,15 +326,7 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec3 color) {
             }
         }
     }
-    for(auto e : model->m_Meshes) {
 
-        for(int i = 0 ; i < e->m_Vertices.size() ; i++) {
-
-            INFO("X:{} Y:{} Z:{}", (int)e->m_Vertices[i].pos.x, (int)e->m_Vertices[i].pos.y, (int)e->m_Vertices[i].pos.z);
-//            INFO("{} {} {}", e->m_Vertices[i].normal.x, e->m_Vertices[i].normal.y, e->m_Vertices[i].normal.z);
-//            INFO("{}", e->m_Indices[i]);
-        }
-    }
 //    Mesh silhou;
 //    silhou.vertices = silh_vertices;
 //    silh.push_back(silhou);
@@ -366,6 +358,116 @@ Ref<Model> Model::LoadModel(const std::string &path, glm::vec3 color) {
 
 //    return aabb;
 
+
+    return model;
+}
+
+Ref<Model> Model::LoadQuadModel(const std::string &path, glm::vec4 color) {
+
+    Ref<Model> model = MakeRef<Model>();
+    Ref<Mesh> mesh = MakeRef<Mesh>();
+
+    std::vector<unsigned int> vertexIndices, normalIndices;
+    std::vector<Vertex> tmp_vertices;
+    std::vector<glm::vec3> temp_vertices;
+    std::vector<glm::vec3> temp_normals;
+
+    std::map<int, std::vector<glm::vec3>> vertex_to_normals;
+    unsigned int maxindice = 0;
+
+    FILE * file = fopen(path.c_str(), "r");
+    if( file == NULL ){
+        printf("Impossible to open the file ! Are you in the right path ? See Tutorial 1 for details\n");
+        getchar();
+        return nullptr;
+    }
+
+    while(1){
+
+        char lineHeader[128];
+        // read the first word of the line
+        int res = fscanf(file, "%s", lineHeader);
+//        INFO("{}", lineHeader);
+        if (res == EOF)
+            break; // EOF = End Of File. Quit the loop.
+
+        // else : parse lineHeader
+
+        if ( strcmp( lineHeader, "v" ) == 0 ){
+            glm::vec3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+            temp_vertices.push_back(vertex);
+        }else if ( strcmp( lineHeader, "vn" ) == 0 ){
+            glm::vec3 normal;
+            fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+            temp_normals.push_back(normal);
+        }else if ( strcmp( lineHeader, "f" ) == 0 ){
+            std::string vertex1, vertex2, vertex3, vertex4;
+            unsigned int vertexIndex[4], normalIndex[4];
+            char test='a', test2;
+            int matches = fscanf(file, "%d//%d %d//%d %d//%d %d//%d\n", &vertexIndex[0], &normalIndex[0], &vertexIndex[1], &normalIndex[1], &vertexIndex[2], &normalIndex[2], &vertexIndex[3], &normalIndex[3] );
+//            INFO("{}//{} {}//{} {}//{} {}//{}", vertexIndex[0], normalIndex[0], vertexIndex[1], normalIndex[1], vertexIndex[2], normalIndex[2], vertexIndex[3], normalIndex[3]);
+            if (matches != 8){
+                printf("ERROR: NO NORMALS PRESENT IN FILE! YOU NEED NORMALS FOR LIGHTING CALCULATIONS!\n");
+                printf("File can't be read by our simple parser :-( Try exporting with other options. See the definition of the loadOBJ fuction.\n");
+                return nullptr;
+            }
+            // Store normals for each vertex
+            for (int i = 0; i < 4; ++i) {
+                vertex_to_normals[vertexIndex[i] - 1].push_back(temp_normals[normalIndex[i] - 1]);
+                vertexIndices.push_back(vertexIndex[i]);
+                mesh->m_Indices.push_back(vertexIndex[i]-1);
+                maxindice = std::max(vertexIndex[i], maxindice);
+            }
+
+        }else{
+            // Probably a comment, eat up the rest of the line
+            char stupidBuffer[1000];
+            fgets(stupidBuffer, 1000, file);
+        }
+    }
+
+    INFO("{} {}", temp_vertices.size(), mesh->m_Indices.size());
+    for(auto i : mesh->m_Indices) {
+
+        INFO("{}", i);
+    }
+
+
+    mesh->m_Vertices.resize(maxindice);
+    for (const auto& [vertexIndex, vertexNormals] : vertex_to_normals) {
+
+        Vertex vert;
+//        INFO("{}", vertexIndex);
+//        INFO("{} {} {}", temp_vertices[vertexIndex-1].x, temp_vertices[vertexIndex-1].y, temp_vertices[vertexIndex-1].z);
+        vert.pos = glm::vec4(temp_vertices[vertexIndex].x, temp_vertices[vertexIndex].y, temp_vertices[vertexIndex].z, 1);
+
+        mesh->m_Vertices[vertexIndex].pos = vert.pos;
+
+        glm::vec3 sum(0.0f);
+        for (const glm::vec3& normal : vertexNormals) {
+            sum += glm::normalize(normal);
+        }
+        glm::vec3 averagedNormal = glm::normalize(sum / static_cast<float>(vertexNormals.size()));
+
+        // Update all vertices with this index
+        for (auto& vertexIndex_ : vertexIndices) {
+            if (vertexIndex_ == vertexIndex) {
+                mesh->m_Vertices[vertexIndex].normal = averagedNormal;
+            }
+        }
+    }
+    model->m_Meshes.push_back(mesh);
+
+    for(auto e : model->m_Meshes.back()->m_Vertices) {
+
+        INFO("{} {} {}", e.pos.x, e.pos.y, e.pos.z);
+    }
+
+    for(auto e : model->m_Meshes.back()->m_Indices) {
+
+        INFO("{}", e);
+    }
 
     return model;
 }

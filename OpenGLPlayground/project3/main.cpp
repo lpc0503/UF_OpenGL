@@ -61,6 +61,8 @@ GLuint gPickedIndex = -1;
 static int g_ShaderMode;
 
 Ref<Model> g_Model;
+Ref<Model> sail;
+
 Ref<Camera> g_Camera;
 
 glm::vec4 g_ClearColor = {0.0f, 0.0f, 0.2f, 0.0f};
@@ -76,6 +78,10 @@ glm::vec3 g_ModelScale = glm::vec3{.3f};
 float pointSize = 3.f;
 int TessInner = 4;
 glm::vec3 TessOuter = {1.f, 1.f, 1.f};
+glm::vec3 BunnyPos = glm::vec3{0.f};
+glm::vec3 BunnyScale = glm::vec3{.05f};
+glm::vec3 SailPos = glm::vec3{0.f};
+glm::vec3 SailScale = glm::vec3{1.f};
 
 glm::vec3 tOffset = glm::vec3{2.4f, 0.f, 1.5f};
 
@@ -339,6 +345,8 @@ void OnInitScene()
     // u*v = 4*4
 
     g_Model = Model::LoadModel("assets/model/boat.obj", glm::vec3(1, 0.5, 3));
+    sail = Model::LoadModel("assets/model/quad_.obj", glm::vec3(0.5, 0.3, 0.1));
+
 //    HeadModel = Model::LoadModel("../asset/bunny.obj", glm::vec4(1.0, 0.5, 0.5,1.0));
 //
 //    struct normalcnt {
@@ -627,13 +635,19 @@ void OnImGuiUpdate()
         Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
     }
 
+    ImGui::DragFloat3("Pos", &BunnyPos, 0.05);
+    ImGui::DragFloat3("Scale", &BunnyScale, 0.05, 0.f);
+
+    ImGui::DragFloat3("SailPos", &SailPos, 0.05);
+    ImGui::DragFloat3("SailScale", &SailScale, 0.05, 0.f);
+
 //    ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
 //    ImGui::DragFloat3("Pos", &CameraPos);
 //    ImGui::DragFloat3("Rotation", &CameraRotate);
 //    ImGui::DragFloat3("Pos", &g_ModelPos);
 //    ImGui::DragFloat3("Scale", &g_ModelScale);
 
-    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
+//    ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
     ImGui::DragInt("TessInner", &TessInner, 1);
     ImGui::DragFloat3("TessOuter", &TessOuter, 1);
@@ -791,6 +805,11 @@ void OnRenderScene()
         const auto& waveDir = wave.waveDir;
         Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
     }
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[0].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[4].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[6].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[2].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+//    Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
 
     int u = 4, v = 4;
     std::vector<std::vector<glm::vec3>> controlPoints(u+1, std::vector<glm::vec3>(v+1));
@@ -873,6 +892,8 @@ void OnRenderScene()
         Renderer::DrawMesh(g_Model->GetMeshes().front(), g_ModelPos, {0.f, 0.f, 0.f}, g_ModelScale);
     }
 
+//    Renderer::DrawMesh(g_Model->GetMeshes().front(), BunnyPos, {0.f, 0.f, 0.f}, BunnyScale);
+    Renderer::DrawMesh(sail->GetMeshes().back(), SailPos, {0.f, 0.f, 0.f}, SailScale);
     auto sunDir = glm::normalize(g_Camera->GetDir());
     Renderer::DrawLine(g_SunLight, g_SunLight + sunDir * 0.5f, {1.f, 1.f, 0.f, 1.f});
 
