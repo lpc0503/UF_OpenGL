@@ -75,7 +75,7 @@ float CameraMoveSpeed = 5.f;
 glm::vec3 CameraRotate = {18.320f, -44.f, 0.f};
 glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
-glm::vec3 g_ModelPos = glm::vec3{0.f};
+glm::vec3 g_ModelPos = glm::vec3{0.f, 0.f, 0.f};
 glm::vec3 g_ModelScale = glm::vec3{0.08f, 0.05f, 0.05f};
 float pointSize = 3.f;
 glm::vec3 BunnyPos = glm::vec3{0.f};
@@ -236,11 +236,11 @@ int InitWindow() {
 
 void InitOpenGL() {
 	// Enable depth test
-	glEnable(GL_DEPTH_TEST);
-	// Accept fragment if it closer to the camera than the former one
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
 	glDepthFunc(GL_LESS);
 	// Cull triangles which normal is not towards the camera
-	glEnable(GL_CULL_FACE);
+//	glEnable(GL_CULL_FACE);
 }
 
 void PickObject() {
@@ -757,26 +757,6 @@ void OnRenderScene()
     glm::vec3 start = {-1.f, 1.f, -1.f};
     glm::vec3 end = {1.f, 1.f, 1.f};
 
-//    std::vector<std::vector<glm::vec3>> p;
-//    int num = 2;
-//    float stepX = fabs(end.x-start.x)/num;
-//    float stepZ = fabs(end.z-start.z)/num;
-//    for(float x = start.x; x <= end.x; x += stepX)
-//    {
-//        std::vector<glm::vec3> tmp;
-//        for(float z = start.z; z <= end.z; z += stepZ)
-//        {
-//            Renderer::DrawPoint({x, 1.f, z}, {1.f, 0.f, 0.f, 1.f}, 10.f);
-//            tmp.emplace_back(x, 1.f, z);
-//        }
-//        p.emplace_back(tmp);
-//    }
-
-//    glm::vec3 a = {3.0, 1.0, 0.0};
-//    glm::vec3 b = {-2.0, 1.0, -3.0};
-//    glm::vec3 c = {-2.0, 1.0, 3.0};
-//    Renderer::DrawTriangle(a, b, c);
-
     for(const auto& wave : waves)
     {
         const auto& waveDir = wave.waveDir;
@@ -784,10 +764,10 @@ void OnRenderScene()
     }
 
     Renderer::DrawPoint(g_SunLight, {0.f, 0.f, 0.f, 1.f}, 50);
-//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[0].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[4].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[6].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
-//    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[2].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[sail->GetMeshes().back()->m_Indices[20]].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[sail->GetMeshes().back()->m_Indices[21]].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[sail->GetMeshes().back()->m_Indices[22]].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
+    Renderer::DrawPoint(sail->GetMeshes().back()->m_Vertices[sail->GetMeshes().back()->m_Indices[23]].pos, {1.f, 1.f, 0.f, 1.f}, pointSize);
 //    Renderer::DrawLine({0.f, 5.f, 0.f}, {waveDir.x, 5.f, waveDir.y}, {1.f, 0.f, 0.f, 1.f});
 
     int u = 4, v = 4;

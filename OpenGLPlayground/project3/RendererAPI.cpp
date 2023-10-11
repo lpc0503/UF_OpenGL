@@ -25,7 +25,9 @@ void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
 
-    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_CULL_FACE);
+//    glDisable(GL_CULL_FACE);
 //    glDepthFunc(GL_ALWAYS);
     InitPointRenderer();
     InitLineRenderer();

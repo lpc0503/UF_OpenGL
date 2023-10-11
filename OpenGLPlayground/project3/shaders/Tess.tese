@@ -164,10 +164,8 @@ void main()
 
 //    pos = b300 * w3 + b030 * u3 + b003 * v3;
     vec3 pos = evaluatePosistion(gl_TessCoord);
-//    tedata.position = pos;
 
     vec3 normal = evaluateNormal(gl_TessCoord);
-//    tedata.normal = normal;
 
     tedata.color = evaluateColor(gl_TessCoord);
     tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
