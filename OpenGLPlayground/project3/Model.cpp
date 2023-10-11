@@ -442,8 +442,10 @@ Ref<Model> Model::LoadQuadModel(const std::string &path, glm::vec4 color) {
 //        INFO("{}", vertexIndex);
 //        INFO("{} {} {}", temp_vertices[vertexIndex-1].x, temp_vertices[vertexIndex-1].y, temp_vertices[vertexIndex-1].z);
         vert.pos = glm::vec4(temp_vertices[vertexIndex].x, temp_vertices[vertexIndex].y, temp_vertices[vertexIndex].z, 1);
+        vert.color = color;
 
         mesh->m_Vertices[vertexIndex].pos = vert.pos;
+        mesh->m_Vertices[vertexIndex].color = vert.color;
 
         glm::vec3 sum(0.0f);
         for (const glm::vec3& normal : vertexNormals) {

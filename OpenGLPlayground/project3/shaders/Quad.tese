@@ -72,6 +72,11 @@ patch in vec3 n12;
 patch in vec3 n23;
 patch in vec3 n30;
 
+patch in vec4 c0;
+patch in vec4 c1;
+patch in vec4 c2;
+patch in vec4 c3;
+
 
 vec3 evaluatePosistion(in vec3 tessCoord)
 {
@@ -136,6 +141,15 @@ vec3 evaluateNormal(in vec3 tessCoord)
     return normal;
 }
 
+vec4 evaluateColor(in vec3 tessCoord) {
+
+    float u = gl_TessCoord.x;
+    float v = gl_TessCoord.y;
+    float w = gl_TessCoord.z;
+
+    return vec4(c0 * w + c1 * u + c2 * v + c3);
+}
+
 //<
 //< evaluate surface for given UV coordinate
 //< interpolate attributes of vertex
@@ -174,19 +188,14 @@ void main()
     //    tedata.position = pos;
 
     vec3 normal = evaluateNormal(gl_TessCoord);
-    //    tedata.normal = normal;
-
-    //    tedata.color = vec4(tedata.normal.x, tedata.normal.y, tedata.normal.z, 1.0);
     tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
     tedata.normal = normal;
 
-    tedata.color = vec4(1.f, 0.f, 0.f, 1.f);
+    tedata.color = evaluateColor(gl_TessCoord);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
 
-    //    position_worldspace = vec3((M * vec4(pos, 1.0)).xyz);
-
-    vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 1.0)).xyz;
+    vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 0.5)).xyz;
     eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;
 
     vec3 lightPosition_cameraspace = (V * vec4(lightPosition_worldspace, 1.0)).xyz;

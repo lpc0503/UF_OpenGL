@@ -143,6 +143,12 @@ void evaluateTesLevel()
     } gl_in[gl_MaxPatchVertices];
 */
 //<
+
+patch out vec4 c0;
+patch out vec4 c1;
+patch out vec4 c2;
+patch out vec4 c3;
+
 void main()
 {
     #define ID gl_InvocationID //< once per vertex(CP)
@@ -161,6 +167,11 @@ void main()
         vec3 n2 = vdata[1].normal;
         vec3 n3 = vdata[2].normal;
         vec3 n4 = vdata[3].normal;
+
+        c0 = vdata[0].color;
+        c1 = vdata[1].color;
+        c2 = vdata[2].color;
+        c3 = vdata[3].color;
 
         evaluateControlPoints(p1, p2, p3, p4, n1, n2, n3, n4);
         evaluateNormalControlPoints(p1, p2, p3,p4, n1, n2, n3, n4);

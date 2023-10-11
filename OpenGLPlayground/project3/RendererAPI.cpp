@@ -25,6 +25,8 @@ void RendererAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
 
+    glEnable(GL_DEPTH_TEST);
+//    glDepthFunc(GL_ALWAYS);
     InitPointRenderer();
     InitLineRenderer();
     InitTriangleRenderer();
@@ -214,8 +216,7 @@ void RendererAPI::SendMeshData()
 void RendererAPI::DrawMeshes()
 {
     // TODO: extract
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
+//    glDepthFunc(GL_ALWAYS);
     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint)
     {
         glm::mat4 m{1.f};

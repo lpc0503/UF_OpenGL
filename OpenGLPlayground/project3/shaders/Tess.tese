@@ -95,9 +95,9 @@ vec3 evaluatePosistion(in vec3 tessCoord)
 
 vec3 evaluateNormal(in vec3 tessCoord)
 {
-    float u =tessCoord.x;
-    float v =tessCoord.y;
-    float w =tessCoord.z;
+    float u = tessCoord.x;
+    float v = tessCoord.y;
+    float w = tessCoord.z;
 
     float u2 = u * u;
     float v2 = v * v;
@@ -171,12 +171,9 @@ void main()
 
     tedata.color = evaluateColor(gl_TessCoord);
     tedata.position = vec3((M * vec4(pos, 1.0)).xyz);
-//    tedata.position = pos;
     tedata.normal = normal;
-//    tedata.color = vec4(1.f, 0.4f, 0.3f, 1);
 
     gl_Position = P * V * M * vec4(pos, 1.0);
-//    gl_Position = P * V * M * vec4(pos, 1.0);
 
     vec3 vertexPosition_cameraspace = (V * M * vec4(pos, 1.0)).xyz;
     eyeDirection_cameraspace = vec3(0.0f, 0.0f, 0.0f) - vertexPosition_cameraspace;

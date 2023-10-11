@@ -14,7 +14,7 @@ out V2T vdata;
 
 void main()
 {
-    vdata.position = vec3((vertexPosition_modelspace).xyz);
+    vdata.position = vec3(vertexPosition_modelspace.xyz);
     vdata.normal = vertexNormal_modelspace;
     //    vdata.color = vec4(vertexNormal_modelspace, 1.0);
     vdata.color = vertexColor;
