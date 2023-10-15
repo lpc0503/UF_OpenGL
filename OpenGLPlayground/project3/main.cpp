@@ -139,6 +139,8 @@ std::vector<WaveProperity> waves = {
 
 bool g_DrawPNTriangle = true;
 
+float g_FrameTime;
+int g_FrameCount = 0;
 // ===============================================================
 
 int InitWindow() {
@@ -581,11 +583,14 @@ void OnUpdateScene(float dt)
     }
 }
 
-int qwe = 0;
 void OnImGuiUpdate()
 {
     ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
+
+    ImGui::Text("FPS: %.2f, frame time: %.2f ms", 1000.f / g_FrameTime, g_FrameTime);
+
+    ImGui::Separator();
 
     ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
     ImGui::DragFloat3("Pos", &CameraPos);
@@ -953,14 +958,14 @@ int main() {
 
 	// For speed computation
 	double lastTime = glfwGetTime(), preTime = lastTime;
-	int nbFrames = 0;
 	do {
 		// Measure speed
 		double currentTime = glfwGetTime();
-		nbFrames++;
-		if (currentTime - lastTime >= 1.0){ // If last prinf() was more than 1sec ago
-//			printf("%f ms/frame\n", 1000.0 / double(nbFrames));
-			nbFrames = 0;
+		g_FrameCount++;
+		if (currentTime - lastTime >= 1.0)
+        {
+            g_FrameTime = 1000.f / g_FrameCount;
+			g_FrameCount = 0;
 			lastTime += 1.0;
 		}
 
