@@ -68,6 +68,7 @@ void Log::ErrorTag(const std::string &tag, const std::string &fmt, Args&&... arg
 #define INFO_TAG_STR(tag, str) Log::InfoTag((tag), "{}", (str))
 #define ERROR_TAG_STR(tag, str) Log::ErrorTag((tag), "{}", (str))
 
+#define TAG_APP "Application"
 #define TAG_OPENGL "OpenGL"
 
 #endif //OPENGLPLAYGROUND_LOG_H

@@ -28,7 +28,11 @@ add_executable(${PROJECT_NAME}
         PNTriangle.cpp
         PNTriangle.h
         Texture.cpp
-        Texture.h)
+        Texture.h
+        Application.h
+        Application.cpp
+        OpenGLApplication.h
+        OpenGLApplication.cpp)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

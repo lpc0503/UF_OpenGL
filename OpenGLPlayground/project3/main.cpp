@@ -38,6 +38,8 @@ using namespace glm;
 #include "PNTriangle.h"
 #include "Texture.h"
 
+#include "OpenGLApplication.h"
+
 const int window_width = 1024, window_height = 768;
 
 int InitWindow();
@@ -142,6 +144,49 @@ bool g_DrawPNTriangle = true;
 float g_FrameTime;
 int g_FrameCount = 0;
 // ===============================================================
+
+class MyApp : public OpenGLApplication
+{
+public:
+    MyApp(int argc, char **argv)
+        : OpenGLApplication(argc, argv)
+    {
+    }
+
+    ~MyApp() override
+    {
+    }
+
+    bool OnInit() override
+    {
+        g_Camera = std::make_shared<Camera>(glm::perspective(45.0f, window_width / (float)window_height, 0.1f, 100.0f));
+        g_Camera->SetPosition(10.0f, 10.0f, 10.0f);
+        g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
+        return true;
+    }
+
+    void OnShutdown() override
+    {
+    }
+
+    void OnProcessInput() override
+    {
+
+    }
+
+    void OnUpdate(float dt) override
+    {
+
+    }
+
+    void OnRender() override
+    {
+        Renderer::BeginScene(g_Camera);
+        Renderer::DrawGrid(5, 5);
+        Renderer::EndScene();
+    }
+};
+
 
 int InitWindow() {
     if (!glfwInit()) {
@@ -938,7 +983,7 @@ void MouseCallback(GLFWwindow* window, int button, int action, int mods) {
 	}
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     // disable buffer
     setvbuf(stdout, NULL, _IONBF, 0);
 
@@ -946,6 +991,10 @@ int main() {
     INFO("Attach RenderDoc...");
     getchar();
 #endif
+
+    MyApp app(argc, argv);
+    app.SetWindowSize(window_width, window_height);
+    app.Run();
 
 	// Initialize window
 	int errorCode = InitWindow();
