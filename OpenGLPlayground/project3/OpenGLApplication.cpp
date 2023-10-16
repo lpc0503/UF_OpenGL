@@ -35,19 +35,8 @@ bool OpenGLApplication::Init()
     if(!InitGlfwWindow())
         return false;
 
-#if defined(WIN32)
-    int flags;
-    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
-    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
-    {
-        INFO_TAG(TAG_OPENGL, "Enable DEBUG_OUTPUT");
-        glEnable(GL_DEBUG_OUTPUT);
-        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-        glDebugMessageCallback(glDebugOutput, nullptr); // TODO: move glDebugOutput to here
-        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
-        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
-    }
-#endif
+    if(!InitOpenGL())
+        return false;
 
     if(!InitImGui())
         return false;
@@ -61,7 +50,15 @@ bool OpenGLApplication::Init()
 
 void OpenGLApplication::Shutdown()
 {
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    Renderer::Shutdown();
+
     Application::Shutdown();
+
+    glfwTerminate();
 }
 
 void OpenGLApplication::ProcessInput()
@@ -158,13 +155,35 @@ bool OpenGLApplication::InitGlfwWindow()
     glfwSwapInterval(1);
 
     // TODO
-//    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_FALSE);
-//    glfwSetCursorPos(window, static_cast<float>(window_width) / 2, static_cast<float>(window_height) / 2);
+    glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GL_FALSE);
+    glfwSetCursorPos(m_Window, GetWidth() / 2.f, GetHeight() / 2.f);
 //    glfwSetMouseButtonCallback(window, MouseCallback);
 //    glfwSetKeyCallback(window, KeyCallback);
 //    glfwSetScrollCallback(window, MouseWheelCallback);
     GLFWCallbackWrapper::SetApplication(this);
     glfwSetFramebufferSizeCallback(m_Window, GLFWCallbackWrapper::OnFrameBufferResize);
+    return true;
+}
+
+bool OpenGLApplication::InitOpenGL()
+{
+#if defined(WIN32)
+    int flags;
+    glGetIntegerv(GL_CONTEXT_FLAGS, &flags);
+    if (flags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        INFO_TAG(TAG_OPENGL, "Enable DEBUG_OUTPUT");
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glDebugOutput, nullptr); // TODO: move glDebugOutput to here
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+        glDebugMessageControl(GL_DEBUG_SOURCE_API, GL_DEBUG_TYPE_ERROR, GL_DONT_CARE, 0, NULL, GL_TRUE);
+    }
+#endif
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+//    glEnable(GL_CULL_FACE);
     return true;
 }
 
@@ -205,6 +224,11 @@ Application* OpenGLApplication::GLFWCallbackWrapper::s_App = nullptr;
 void OpenGLApplication::GLFWCallbackWrapper::SetApplication(Application *app)
 {
     s_App = app;
+}
+
+OpenGLApplication* OpenGLApplication::GLFWCallbackWrapper::GetApp()
+{
+    return dynamic_cast<OpenGLApplication*>(s_App);
 }
 
 void OpenGLApplication::GLFWCallbackWrapper::OnFrameBufferResize(GLFWwindow *window, int width, int height)
