@@ -76,6 +76,11 @@ void OpenGLApplication::Update(float dt)
     OnUpdate(dt);
 }
 
+void OpenGLApplication::ImGuiUpdate()
+{
+    OnImGuiUpdate();
+}
+
 void OpenGLApplication::Render()
 {
     Renderer::SetClearColor({0.0f, 0.0f, 0.2f, 0.0f}); // TODO: expose
@@ -84,6 +89,8 @@ void OpenGLApplication::Render()
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+
+    ImGuiUpdate();
 
     OnRender();
 
@@ -105,6 +112,8 @@ void OpenGLApplication::Render()
 
 bool OpenGLApplication::IsWindowRunning()
 {
+    auto title = GetWindowTitle() + fmt::format("[FPS: {:.2f}, {:.2f} ms/frame]", GetFps(), GetFrameTime());
+    glfwSetWindowTitle(m_Window, title.c_str());
     return !glfwWindowShouldClose(m_Window);;
 }
 
@@ -131,7 +140,7 @@ bool OpenGLApplication::InitGlfwWindow()
 #endif
 
     // Init Window
-    m_Window = glfwCreateWindow(m_Width, m_Height, "Po_Chuan,Liang(7336-5707)", nullptr, nullptr);
+    m_Window = glfwCreateWindow(GetWidth(), GetHeight(), GetWindowTitle().c_str(), nullptr, nullptr);
     if(!m_Window)
     {
         GLFW_ERROR("Failed to open GLFW window");

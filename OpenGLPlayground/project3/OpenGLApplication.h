@@ -16,6 +16,7 @@ public:
     void Shutdown() override;
     void ProcessInput() override;
     void Update(float dt) override;
+    void ImGuiUpdate() override;
     void Render() override;
 
     bool IsWindowRunning() override;

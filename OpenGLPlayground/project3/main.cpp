@@ -151,6 +151,8 @@ public:
     MyApp(int argc, char **argv)
         : OpenGLApplication(argc, argv)
     {
+        SetWindowTitle("Po_Chuan,Liang(7336-5707)");
+        SetWindowSize(window_width, window_height);
     }
 
     ~MyApp() override
@@ -171,12 +173,17 @@ public:
 
     void OnProcessInput() override
     {
-
     }
 
     void OnUpdate(float dt) override
     {
 
+    }
+
+    void OnImGuiUpdate() override
+    {
+        ImGui::Begin("Test");
+        ImGui::End();
     }
 
     void OnRender() override
@@ -633,7 +640,7 @@ void OnImGuiUpdate()
     ImGui::ShowDemoWindow();
     ImGui::Begin("Settings");
 
-    ImGui::Text("FPS: %.2f, frame time: %.2f ms", 1000.f / g_FrameTime, g_FrameTime);
+    ImGui::Text("FPS: %.2f, %.2f ms/frame", 1000.f / g_FrameTime, g_FrameTime);
 
     ImGui::Separator();
 
@@ -993,7 +1000,6 @@ int main(int argc, char* argv[]) {
 #endif
 
     MyApp app(argc, argv);
-    app.SetWindowSize(window_width, window_height);
     app.Run();
 
 	// Initialize window
