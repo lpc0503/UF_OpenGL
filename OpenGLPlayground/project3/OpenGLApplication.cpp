@@ -233,5 +233,8 @@ OpenGLApplication* OpenGLApplication::GLFWCallbackWrapper::GetApp()
 
 void OpenGLApplication::GLFWCallbackWrapper::OnFrameBufferResize(GLFWwindow *window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+    auto app = GetApp();
+    app->m_Width = width;
+    app->m_Height = height;
+    Renderer::SetViewportSize(0, 0, width, height);
 }

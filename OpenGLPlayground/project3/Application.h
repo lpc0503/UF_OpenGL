@@ -48,7 +48,6 @@ protected:
     const std::string& GetWindowTitle() const { return m_WindowTitle; }
     void SetWindowTitle(const std::string& title) { m_WindowTitle = title; }
 
-private:
     float m_LastTime = 0.f;
     float m_FrameTime;
     int m_FrameCount = 0;

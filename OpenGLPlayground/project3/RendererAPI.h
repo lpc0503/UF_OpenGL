@@ -158,6 +158,7 @@ private:
     // ======================================================================================
 public:
     void ClearViewport();
+    void SetViewportSize(int x, int y, int w, int h);
     void SetClearColor(const glm::vec4 &color);
 
 public:

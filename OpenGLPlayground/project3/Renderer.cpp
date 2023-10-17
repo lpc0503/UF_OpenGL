@@ -245,6 +245,11 @@ void Renderer::ClearViewport()
     g_RenderAPI->ClearViewport();
 }
 
+void Renderer::SetViewportSize(int x, int y, int w, int h)
+{
+    g_RenderAPI->SetViewportSize(x, y, w, h);
+}
+
 void Renderer::SetShaderMode(Renderer::ShaderMode mode)
 {
     m_ShaderMode = mode;

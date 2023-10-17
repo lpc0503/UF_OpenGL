@@ -498,3 +498,8 @@ void RendererAPI::SetClearColor(const glm::vec4 &color)
 {
     glClearColor(color.x, color.y, color.z, color.w);
 }
+
+void RendererAPI::SetViewportSize(int x, int y, int w, int h)
+{
+    glViewport(x, y, w, h);
+}
