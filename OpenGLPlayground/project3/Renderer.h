@@ -49,7 +49,7 @@ public:
     static void TestPickingEntity(Ref<Entity> entity);
 
     static void BeginPickingScene(Ref<Camera> camera);
-    static void EndPickingScene();
+    static void EndPickingScene(uint32_t &pickIndex);
 
     // Mode
     enum class RendererMode : uint8_t {

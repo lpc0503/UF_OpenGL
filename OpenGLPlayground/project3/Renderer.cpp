@@ -132,11 +132,38 @@ void Renderer::BeginPickingScene(Ref<Camera> camera)
     g_CurrentCamera = camera;
 }
 
-void Renderer::EndPickingScene()
+void Renderer::EndPickingScene(uint32_t &pickIndex)
 {
     s_RenderAPI->BindPickingShader();
     s_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);
     s_RenderAPI->UnbindShader();
+
+    // Wait until all the pending drawing commands are really done.
+    // Ultra-mega-over slow !
+    // There are usually a long time between glDrawElements() and
+    // all the fragments completely rasterized.
+    Renderer::FlushBuffers();
+    Renderer::WaitForGPUCompletion();
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    // Read the pixel at the center of the screen.
+    // You can also use glfwGetMousePos().
+    // Ultra-mega-over slow too, even for 1 pixel,
+    // because the framebuffer is on the GPU.
+    auto pos = s_App->GetCursorPos();
+    float xpos = pos.x, ypos = pos.y;
+
+    auto winSize = s_App->GetWindowSize();
+    auto fSize = s_App->GetFrameBufferSize();
+
+    unsigned char data[4];
+    glReadPixels(xpos * (fSize.x/winSize.x), (winSize.y - pos.y) * (fSize.y/winSize.y), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    // OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
+
+    pickIndex = int(data[0]);
+
+    Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
 
     g_IsRendering = false;
 }

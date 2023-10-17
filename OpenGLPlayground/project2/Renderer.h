@@ -39,7 +39,7 @@ public:
     static void TestPickingEntity(Ref<Entity> entity);
 
     static void BeginPickingScene(Ref<Camera> camera);
-    static void EndPickingScene();
+    static void EndPickingScene(uint32_t &pickIndex);
 };
 
 #endif //OPENGLPLAYGROUND_RENDERER_H

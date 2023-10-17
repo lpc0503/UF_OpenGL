@@ -221,6 +221,20 @@ float OpenGLApplication::GetCurrentTime()
     return (float)glfwGetTime();
 }
 
+glm::vec2 OpenGLApplication::GetCursorPos()
+{
+    double x, y;
+    glfwGetCursorPos(m_Window, &x, &y);
+    return glm::vec2{x, y};
+}
+
+glm::vec2 OpenGLApplication::GetWindowSize()
+{
+    int x, y;
+    glfwGetWindowSize(m_Window, &x, &y);
+    return glm::vec2{x, y};
+}
+
 //
 Application* OpenGLApplication::GLFWCallbackWrapper::s_App = nullptr;
 

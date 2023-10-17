@@ -3,6 +3,7 @@
 #define OPENGLPLAYGROUND_APPLICATION_H
 
 #include <string>
+#include "glm/vec2.hpp"
 
 class Application
 {
@@ -30,18 +31,7 @@ public:
     virtual void OnUpdate(float dt) = 0;
     virtual void OnImGuiUpdate() = 0;
     virtual void OnRender() = 0;
-
-    enum Type : uint8_t
-    {
-        OpenGL,
-        Count,
-        Invalid = 0xFF,
-    };
-    Type m_ApType = Invalid;
-
-protected:
-    int m_Argc;
-    char **m_Argv;
+    //
 
     virtual float GetCurrentTime() = 0;
     float GetElapsedTime();
@@ -55,6 +45,22 @@ protected:
 
     const std::string& GetWindowTitle() const { return m_WindowTitle; }
     void SetWindowTitle(const std::string& title) { m_WindowTitle = title; }
+
+    virtual glm::vec2 GetCursorPos() = 0;
+    virtual glm::vec2 GetWindowSize() = 0;
+    glm::vec2 GetFrameBufferSize() { return {m_Width, m_Height}; }
+
+protected:
+    enum Type : uint8_t
+    {
+        OpenGL,
+        Count,
+        Invalid = 0xFF,
+    };
+    Type m_ApType = Invalid;
+
+    int m_Argc;
+    char **m_Argv;
 
     float m_LastTime = 0.f;
     float m_FrameTime;

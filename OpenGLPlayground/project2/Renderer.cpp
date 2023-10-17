@@ -72,7 +72,7 @@ void Renderer::BeginPickingScene(Ref<Camera> camera)
     g_CurrentCamera = camera;
 }
 
-void Renderer::EndPickingScene()
+void Renderer::EndPickingScene(uint32_t &pickIndex)
 {
     g_RenderAPI->BindPickingShader();
     g_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);

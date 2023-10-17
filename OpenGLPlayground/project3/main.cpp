@@ -56,7 +56,7 @@ void MouseCallback(GLFWwindow*, int, int, int);
 // GLOBAL VARIABLES
 GLFWwindow* window;
 
-GLuint gPickedIndex = -1;
+uint32_t gPickedIndex = -1;
 
 #define STANDARD 0
 #define TESSELATION 1
@@ -311,38 +311,8 @@ void PickObject() {
 
     Renderer::BeginPickingScene(g_Camera);
 
-    Renderer::EndPickingScene();
-
-	// Wait until all the pending drawing commands are really done.
-	// Ultra-mega-over slow ! 
-	// There are usually a long time between glDrawElements() and
-	// all the fragments completely rasterized.
-    Renderer::FlushBuffers();
-    Renderer::WaitForGPUCompletion();
-
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-	// Read the pixel at the center of the screen.
-	// You can also use glfwGetMousePos().
-	// Ultra-mega-over slow too, even for 1 pixel, 
-	// because the framebuffer is on the GPU.
-	double xpos, ypos;
-	glfwGetCursorPos(window, &xpos, &ypos);
-	unsigned char data[4];
-
-    int winX, winY;
-    int fx, fy;
-    glfwGetWindowSize(window, &winX, &winY);
-    glfwGetFramebufferSize(window, &fx, &fy);
-
-    glReadPixels(xpos * (fx/winX), (window_height - ypos) * (fy/winY), 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, data);
-    // OpenGL renders with (0,0) on bottom, mouse reports with (0,0) on top
-
-	// Convert the color back to an integer ID
-	gPickedIndex = int(data[0]);
-    INFO("pick {}", gPickedIndex);
-
-    Renderer::ClearViewport(); // TODO: Draw this to a framebuffer don't draw it on screen = =
+    Renderer::EndPickingScene(gPickedIndex);
+    INFO("Picking {}", gPickedIndex);
 }
 
 void OnInitScene()

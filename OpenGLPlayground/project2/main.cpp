@@ -242,7 +242,7 @@ void PickObject() {
     Renderer::TestPickingEntity(arm2);
     Renderer::TestPickingEntity(pen);
     Renderer::TestPickingEntity(bottom);
-    Renderer::EndPickingScene();
+    Renderer::EndPickingScene(<#initializer#>);
 
 	// Wait until all the pending drawing commands are really done.
 	// Ultra-mega-over slow ! 

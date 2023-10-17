@@ -36,8 +36,10 @@ public:
         static Application* s_App;
     };
 
-protected:
+
     float GetCurrentTime() override;
+    glm::vec2 GetCursorPos() override;
+    glm::vec2 GetWindowSize() override;
 
 private:
     bool InitGlfwWindow();
