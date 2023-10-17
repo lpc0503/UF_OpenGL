@@ -12,8 +12,8 @@ add_executable(${PROJECT_NAME}
         Camera.h
         Log.cpp
         Log.h
-        RendererAPI.cpp
-        RendererAPI.h
+        OpenGLRenderAPI.cpp
+        OpenGLRenderAPI.h
         Core.h
         Utils.cpp
         Utils.h
@@ -32,7 +32,8 @@ add_executable(${PROJECT_NAME}
         Application.h
         Application.cpp
         OpenGLApplication.h
-        OpenGLApplication.cpp)
+        OpenGLApplication.cpp
+        RenderAPI.cpp)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

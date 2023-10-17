@@ -39,6 +39,7 @@ using namespace glm;
 #include "Texture.h"
 
 #include "OpenGLApplication.h"
+#include "OpenGLRenderAPI.h"
 
 const int window_width = 1024, window_height = 768;
 
@@ -155,6 +156,13 @@ public:
         SetWindowSize(window_width, window_height);
     }
 
+    MyApp()
+        : OpenGLApplication(0, nullptr)
+    {
+        SetWindowTitle("Po_Chuan,Liang(7336-5707)");
+        SetWindowSize(window_width, window_height);
+    }
+
     ~MyApp() override
     {
     }
@@ -194,6 +202,7 @@ public:
     }
 };
 
+MyApp app;
 
 int InitWindow() {
     if (!glfwInit()) {
@@ -283,7 +292,8 @@ int InitWindow() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
 
-    Renderer::Init();
+    auto api = new OpenGLRenderAPI();
+    Renderer::Init(&app, api);
 
     return 0;
 }
@@ -307,8 +317,8 @@ void PickObject() {
 	// Ultra-mega-over slow ! 
 	// There are usually a long time between glDrawElements() and
 	// all the fragments completely rasterized.
-	glFlush();
-	glFinish();
+    Renderer::FlushBuffers();
+    Renderer::WaitForGPUCompletion();
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
@@ -999,7 +1009,7 @@ int main(int argc, char* argv[]) {
     getchar();
 #endif
 
-    MyApp app(argc, argv);
+
     app.Run();
 
 	// Initialize window

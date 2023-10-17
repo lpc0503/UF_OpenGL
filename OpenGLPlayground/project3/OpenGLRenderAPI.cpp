@@ -1,4 +1,4 @@
-#include "RendererAPI.h"
+#include "OpenGLRenderAPI.h"
 #include "Entity.h"
 #include "Camera.h"
 
@@ -21,14 +21,20 @@ bool CheckOpenGLError()
     return true;
 }
 
-void RendererAPI::Init()
+OpenGLRenderAPI::OpenGLRenderAPI()
+{
+
+}
+
+OpenGLRenderAPI::~OpenGLRenderAPI()
+{
+
+}
+
+void OpenGLRenderAPI::Init()
 {
     INFO_TAG("Renderer/Data", "Init");
 
-//    glEnable(GL_DEPTH_TEST);
-//    glEnable(GL_CULL_FACE);
-//    glDisable(GL_CULL_FACE);
-//    glDepthFunc(GL_ALWAYS);
     InitPointRenderer();
     InitLineRenderer();
     InitTriangleRenderer();
@@ -39,7 +45,7 @@ void RendererAPI::Init()
     m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag"); // TODO: make InitPickingXXX?
 }
 
-void RendererAPI::Shutdown()
+void OpenGLRenderAPI::Shutdown()
 {
     INFO_TAG("Renderer/Data", "Shutdown");
     glDeleteBuffers(1, &m_LineVBO); // TODO: delete IBO?
@@ -52,7 +58,7 @@ void RendererAPI::Shutdown()
     glDeleteProgram(m_MeshShader);
 }
 
-void RendererAPI::BindShader()
+void OpenGLRenderAPI::BindShader()
 {
     glUseProgram(m_CurrentShader);
 
@@ -63,37 +69,37 @@ void RendererAPI::BindShader()
     }
 }
 
-void RendererAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
+void OpenGLRenderAPI::SetMatrix(const std::string &name, const glm::mat4 &mat)
 {
     auto id = GetUniformID(name);
     glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(mat));
 }
 
-void RendererAPI::SetFloat(const std::string &name, const float f)
+void OpenGLRenderAPI::SetFloat(const std::string &name, const float f)
 {
     auto id = GetUniformID(name);
     glUniform1f(id, f);
 }
 
-void RendererAPI::SetFloat3(const std::string &name, const glm::vec3 &v)
+void OpenGLRenderAPI::SetFloat3(const std::string &name, const glm::vec3 &v)
 {
     auto id = GetUniformID(name);
     glUniform3f(id, v.x, v.y, v.z);
 }
 
-void RendererAPI::SetFloat4(const std::string &name, const glm::vec4 &v)
+void OpenGLRenderAPI::SetFloat4(const std::string &name, const glm::vec4 &v)
 {
     auto id = GetUniformID(name);
     glUniform4f(id, v.x, v.y, v.z, v.w);
 }
 
-void RendererAPI::SetBool(const std::string &name, bool b)
+void OpenGLRenderAPI::SetBool(const std::string &name, bool b)
 {
     auto id = GetUniformID(name);
     glUniform1i(id, b);
 }
 
-GLint RendererAPI::GetUniformID(const std::string &name)
+GLint OpenGLRenderAPI::GetUniformID(const std::string &name)
 {
     auto id = glGetUniformLocation(m_CurrentShader, name.c_str());
     if(!CheckOpenGLError())
@@ -103,7 +109,7 @@ GLint RendererAPI::GetUniformID(const std::string &name)
     return id;
 }
 
-void RendererAPI::ClearRendererState()
+void OpenGLRenderAPI::ClearRendererState()
 {
     UnbindShader();
     m_LineVertices.clear();
@@ -116,14 +122,14 @@ void RendererAPI::ClearRendererState()
 // Line
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::SendLineData()
+void OpenGLRenderAPI::SendLineData()
 {
     glBindVertexArray(m_LineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);
 }
 
-void RendererAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
+void OpenGLRenderAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
 {
     Vertex v0, v1;
     v0.pos = glm::vec4(p0, 1.f);
@@ -137,7 +143,7 @@ void RendererAPI::PushLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::
     m_LineVertices.emplace_back(v1);
 }
 
-void RendererAPI::DrawLines()
+void OpenGLRenderAPI::DrawLines()
 {
 //    glEnable(GL_DEPTH_TEST);
 //    glDepthFunc(GL_ALWAYS);
@@ -150,7 +156,7 @@ void RendererAPI::DrawLines()
 // Point
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushPoint(const glm::vec3 &p0, const glm::vec4 &color) {
+void OpenGLRenderAPI::PushPoint(const glm::vec3 &p0, const glm::vec4 &color) {
 
     Vertex v0;
     v0.pos = glm::vec4(p0, 1.f);
@@ -159,14 +165,14 @@ void RendererAPI::PushPoint(const glm::vec3 &p0, const glm::vec4 &color) {
     m_PointVertices.emplace_back(v0);
 }
 
-void RendererAPI::SendPointData() {
+void OpenGLRenderAPI::SendPointData() {
 
     glBindVertexArray(m_PointVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_PointVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_PointVertices.size(), glm::value_ptr(m_PointVertices[0].pos), GL_STATIC_DRAW);
 }
 
-void RendererAPI::DrawPoints() {
+void OpenGLRenderAPI::DrawPoints() {
 
     glEnable(GL_PROGRAM_POINT_SIZE);
 //    glEnable(GL_DEPTH_TEST);
@@ -179,19 +185,19 @@ void RendererAPI::DrawPoints() {
 // Triangle
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushTriangle(const std::array<Vertex, 3> &t)
+void OpenGLRenderAPI::PushTriangle(const std::array<Vertex, 3> &t)
 {
     m_TriangleVertices.insert(m_TriangleVertices.end(), t.begin(), t.end());
 }
 
-void RendererAPI::SendTriangleData()
+void OpenGLRenderAPI::SendTriangleData()
 {
     glBindVertexArray(m_TriangleVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_TriangleVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_TriangleVertices.size(), glm::value_ptr(m_TriangleVertices[0].pos), GL_STATIC_DRAW);
 }
 
-void RendererAPI::DrawTriangles()
+void OpenGLRenderAPI::DrawTriangles()
 {
     // TODO Texture
 //    glEnable(GL_DEPTH_TEST);
@@ -203,19 +209,19 @@ void RendererAPI::DrawTriangles()
 // Mesh
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, const bool &quad)
+void OpenGLRenderAPI::PushMesh(Ref <Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, const bool &quad)
 {
     m_Meshes.emplace_back(MeshData{mesh, pos, rotate, scale, tint, quad});
 }
 
-void RendererAPI::SendMeshData()
+void OpenGLRenderAPI::SendMeshData()
 {
     /*glBindVertexArray(m_LineVAO);
     glBindBuffer(GL_ARRAY_BUFFER, m_LineVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * m_LineVertices.size(), glm::value_ptr(m_LineVertices[0].pos), GL_STATIC_DRAW);*/
 }
 
-void RendererAPI::DrawMeshes()
+void OpenGLRenderAPI::DrawMeshes()
 {
     // TODO: extract
 //    glDepthFunc(GL_ALWAYS);
@@ -276,13 +282,13 @@ void RendererAPI::DrawMeshes()
 // Light
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
+void OpenGLRenderAPI::PushDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
 {
     m_DirectionalLight.dir = dir;
     m_DirectionalLight.color = color;
 }
 
-void RendererAPI::SendLightData()
+void OpenGLRenderAPI::SendLightData()
 {
     SetFloat3("dirLight.dir", m_DirectionalLight.dir);
     SetFloat3("dirLight.ambient", m_DirectionalLight.color);
@@ -293,7 +299,7 @@ void RendererAPI::SendLightData()
 // Entity
 //////////////////////////////////////////////////////////////////////
 
-void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
+void OpenGLRenderAPI::DrawEntitiesForPicking(Ref<Camera> camera)
 {
     auto SendModelMatrix = [&](const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale)
     {
@@ -326,7 +332,7 @@ void RendererAPI::DrawEntitiesForPicking(Ref<Camera> camera)
     }
 }
 
-void RendererAPI::SetRendererMode(RendererMode mode) {
+void OpenGLRenderAPI::SetRendererMode(RendererMode mode) {
 
     switch(mode)
     {
@@ -345,7 +351,7 @@ void RendererAPI::SetRendererMode(RendererMode mode) {
     }
 }
 
-RendererAPI::RendererMode RendererAPI::GetRendererMode()
+OpenGLRenderAPI::RendererMode OpenGLRenderAPI::GetRendererMode()
 {
     GLint polygonMode;
     glGetIntegerv(GL_POLYGON_MODE, &polygonMode);
@@ -353,23 +359,23 @@ RendererAPI::RendererMode RendererAPI::GetRendererMode()
     switch (polygonMode)
     {
         case GL_LINE:
-            return RendererAPI::RendererMode::Line;
+            return OpenGLRenderAPI::RendererMode::Line;
         case GL_FILL:
-            return RendererAPI::RendererMode::Fill;
+            return OpenGLRenderAPI::RendererMode::Fill;
         case GL_POINTS:
-            return RendererAPI::RendererMode::Point;
+            return OpenGLRenderAPI::RendererMode::Point;
         default:
             ASSERT(0, "Failed");
     }
-    return RendererAPI::RendererMode::Invalid;
+    return OpenGLRenderAPI::RendererMode::Invalid;
 }
 
-void RendererAPI::ClearViewport()
+void OpenGLRenderAPI::ClearViewport()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void RendererAPI::InitPointRenderer()
+void OpenGLRenderAPI::InitPointRenderer()
 {
     glGenVertexArrays(1, &m_PointVAO);
     glBindVertexArray(m_PointVAO);
@@ -387,7 +393,7 @@ void RendererAPI::InitPointRenderer()
     m_PointShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
-void RendererAPI::InitLineRenderer()
+void OpenGLRenderAPI::InitLineRenderer()
 {
     glGenVertexArrays(1, &m_LineVAO);
     glBindVertexArray(m_LineVAO);
@@ -405,7 +411,7 @@ void RendererAPI::InitLineRenderer()
     m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
-void RendererAPI::InitTriangleRenderer()
+void OpenGLRenderAPI::InitTriangleRenderer()
 {
     glGenVertexArrays(1, &m_TriangleVAO);
     glBindVertexArray(m_TriangleVAO);
@@ -443,7 +449,7 @@ void RendererAPI::InitTriangleRenderer()
     m_TriangleShader = LoadShaders("shaders/texture.vert", "shaders/texture.frag");
 }
 
-void RendererAPI::InitMeshRenderer()
+void OpenGLRenderAPI::InitMeshRenderer()
 {
     glGenVertexArrays(1, &m_MeshVAO);
     glBindVertexArray(m_MeshVAO);
@@ -464,7 +470,7 @@ void RendererAPI::InitMeshRenderer()
     m_QuadMeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
 }
 
-void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode)
+void OpenGLRenderAPI::SetShaderMode(OpenGLRenderAPI::ShaderMode mode)
 {
     m_ShaderMode = mode;
 
@@ -489,17 +495,27 @@ void RendererAPI::SetShaderMode(RendererAPI::ShaderMode mode)
     }
 }
 
-RendererAPI::ShaderMode RendererAPI::GetShaderMode() const
+OpenGLRenderAPI::ShaderMode OpenGLRenderAPI::GetShaderMode() const
 {
     return m_ShaderMode;
 }
 
-void RendererAPI::SetClearColor(const glm::vec4 &color)
+void OpenGLRenderAPI::SetClearColor(const glm::vec4 &color)
 {
     glClearColor(color.x, color.y, color.z, color.w);
 }
 
-void RendererAPI::SetViewportSize(int x, int y, int w, int h)
+void OpenGLRenderAPI::SetViewportSize(int x, int y, int w, int h)
 {
     glViewport(x, y, w, h);
+}
+
+void OpenGLRenderAPI::WaitForGPUCompletion()
+{
+    glFinish();
+}
+
+void OpenGLRenderAPI::FlushBuffers()
+{
+    glFlush();
 }

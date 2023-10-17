@@ -35,7 +35,7 @@ you can use mouse to move the camara with pressing right mouse and move. Also, y
         * Store the mesh data.
     * Model
         * Load the `.obj` file and store the data to Mesh.
-    * Renderer/RendererAPI
+    * Renderer/OpenGLRenderAPI
         * Wrapped OpenGL state and method so that help me easier to render objects.
     * Vertex
         * Vertex data structer

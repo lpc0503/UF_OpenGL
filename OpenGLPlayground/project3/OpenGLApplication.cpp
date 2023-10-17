@@ -2,6 +2,7 @@
 #include "Log.h"
 #include "Utils.h"
 #include "Renderer.h"
+#include "OpenGLRenderAPI.h"
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -21,6 +22,7 @@
 OpenGLApplication::OpenGLApplication(int argc, char **argv)
     : Application(argc, argv)
 {
+    m_ApType = OpenGL;
 }
 
 OpenGLApplication::~OpenGLApplication()
@@ -41,7 +43,8 @@ bool OpenGLApplication::Init()
     if(!InitImGui())
         return false;
 
-    Renderer::Init();
+    auto api = new OpenGLRenderAPI();
+    Renderer::Init(this, api);
 
     OnInit();
 

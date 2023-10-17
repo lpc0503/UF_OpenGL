@@ -5,16 +5,19 @@
 #include "Camera.h"
 #include "Core.h"
 #include "Model.h"
+#include "RenderAPI.h"
+#include "OpenGLRenderAPI.h"
 
 #include <glm/glm.hpp>
 
 class Entity;
 struct RendererData;
+class Application;
 
 class Renderer
 {
 public:
-    static void Init();
+    static void Init(Application *app, IRenderAPI *api);
     static void Shutdown();
 
     static void BeginScene(Ref<Camera> camera);
@@ -25,6 +28,8 @@ public:
     static void ClearViewport();
     static void SetViewportSize(int x, int y, int w, int h);
     static void SetClearColor(const glm::vec4 &color);
+    static void WaitForGPUCompletion();
+    static void FlushBuffers();
 
     static void DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize);
     static void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color);
@@ -70,7 +75,8 @@ public:
     static void SetTessOuterLevel(const glm::vec3& tessOuter);
 
 private:
-
+    static Application *s_App;
+    static OpenGLRenderAPI *s_RenderAPI; // TODO: Change OpenGLRenderAPI to IRenderAPI
     static ShaderMode m_ShaderMode;
     static Uniq<RendererData> m_RenderData;
 };

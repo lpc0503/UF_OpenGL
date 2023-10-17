@@ -31,6 +31,14 @@ public:
     virtual void OnImGuiUpdate() = 0;
     virtual void OnRender() = 0;
 
+    enum Type : uint8_t
+    {
+        OpenGL,
+        Count,
+        Invalid = 0xFF,
+    };
+    Type m_ApType = Invalid;
+
 protected:
     int m_Argc;
     char **m_Argv;

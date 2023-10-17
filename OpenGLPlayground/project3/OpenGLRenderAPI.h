@@ -1,6 +1,6 @@
 #pragma once
-#ifndef OPENGLPLAYGROUND_RENDERERAPI_H
-#define OPENGLPLAYGROUND_RENDERERAPI_H
+#ifndef OPENGLPLAYGROUND_OPENGLRENDERAPI_H
+#define OPENGLPLAYGROUND_OPENGLRENDERAPI_H
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -11,13 +11,20 @@
 #include "Vertex.h"
 #include "Mesh.h"
 #include "Core.h"
+#include "RenderAPI.h"
 
 class Camera;
 class Entity;
+class OpenGLApplication;
 
-class RendererAPI
+class OpenGLRenderAPI : public IRenderAPI
 {
+    OpenGLApplication *m_App = nullptr;
+
 public:
+    OpenGLRenderAPI();
+    virtual ~OpenGLRenderAPI() override;
+
     void Init();
     void Shutdown();
 
@@ -161,6 +168,9 @@ public:
     void SetViewportSize(int x, int y, int w, int h);
     void SetClearColor(const glm::vec4 &color);
 
+    void WaitForGPUCompletion();
+    void FlushBuffers();
+
 public:
     void SetTessInnerLevel(const float tessInner) { m_TessInnerLevel = tessInner; }
     float GetTessInnerLevel() const { return m_TessInnerLevel; }
@@ -176,4 +186,4 @@ private:
     GLuint m_Texture;
 };
 
-#endif //OPENGLPLAYGROUND_RENDERERAPI_H
+#endif //OPENGLPLAYGROUND_OPENGLRENDERAPI_H

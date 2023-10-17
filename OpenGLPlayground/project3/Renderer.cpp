@@ -1,14 +1,18 @@
 #include "Renderer.h"
-#include "RendererAPI.h"
+#include "RenderAPI.h"
+#include "OpenGLRenderAPI.h"
 #include "Log.h"
 #include "Entity.h"
-#include <array>
+#include "Application.h"
+#include "OpenGLApplication.h"
 
+#include <array>
 #include <glad/glad.h>
 #include <memory>
 #include <vector>
 
-RendererAPI *g_RenderAPI;
+Application* Renderer::s_App = nullptr;
+OpenGLRenderAPI* Renderer::s_RenderAPI = nullptr;
 bool g_IsRendering = false;
 
 // TODO: pimpl
@@ -22,17 +26,19 @@ struct RendererData
 Uniq<RendererData> Renderer::m_RenderData = nullptr;
 Renderer::ShaderMode Renderer::m_ShaderMode;
 
-void Renderer::Init()
+void Renderer::Init(Application *app, IRenderAPI *api)
 {
     INFO_TAG("Renderer", "Init");
-    g_RenderAPI = new RendererAPI();
-    g_RenderAPI->Init();
+
+    s_App = app;
+    s_RenderAPI = dynamic_cast<OpenGLRenderAPI*>(api); // TODO: Remove dynamic cast in the future *Many WORK*
+    s_RenderAPI->Init();
 
     m_ShaderMode = ShaderMode::TESSELATION;
     m_RenderData = MakeUniq<RendererData>();
 
-    g_RenderAPI->SetTessInnerLevel(4);
-    g_RenderAPI->SetTessOuterLevel({1.f, 1.f, 1.f});
+    s_RenderAPI->SetTessInnerLevel(4);
+    s_RenderAPI->SetTessOuterLevel({1.f, 1.f, 1.f});
 //
 //    TessInner = 12;
 //    TessOuter = {12.f, 12.f, 12.f};
@@ -42,8 +48,8 @@ void Renderer::Init()
 void Renderer::Shutdown()
 {
     INFO_TAG("Renderer", "Shutdown");
-    g_RenderAPI->Shutdown();
-    delete g_RenderAPI;
+    s_RenderAPI->Shutdown();
+    delete s_RenderAPI;
 }
 
 void Renderer::BeginScene(Ref<Camera> camera)
@@ -51,72 +57,72 @@ void Renderer::BeginScene(Ref<Camera> camera)
     g_CurrentCamera = camera;
     g_IsRendering = true;
 
-    g_RenderAPI->BindPointShader();
-    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
-    g_RenderAPI->SetMatrix("V", camera->GetView());
-    g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindPointShader();
+    s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    s_RenderAPI->SetMatrix("V", camera->GetView());
+    s_RenderAPI->SetMatrix("P", camera->GetProjection());
+    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindLineShader();
-    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
-    g_RenderAPI->SetMatrix("V", camera->GetView());
-    g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindLineShader();
+    s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    s_RenderAPI->SetMatrix("V", camera->GetView());
+    s_RenderAPI->SetMatrix("P", camera->GetProjection());
+    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindTriangleShader();
-    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
-    g_RenderAPI->SetMatrix("V", camera->GetView());
-    g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->SetBool("sampler2D", 0);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindTriangleShader();
+    s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    s_RenderAPI->SetMatrix("V", camera->GetView());
+    s_RenderAPI->SetMatrix("P", camera->GetProjection());
+    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->SetBool("sampler2D", 0);
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindMeshShader();
-    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
-    g_RenderAPI->SetMatrix("V", camera->GetView());
-    g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindMeshShader();
+    s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    s_RenderAPI->SetMatrix("V", camera->GetView());
+    s_RenderAPI->SetMatrix("P", camera->GetProjection());
+    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindQuadMeshShader();
-    g_RenderAPI->SetMatrix("V", camera->GetView());
-    g_RenderAPI->SetMatrix("P", camera->GetProjection());
-    g_RenderAPI->SetMatrix("M", glm::mat4(1.f));
-    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindQuadMeshShader();
+    s_RenderAPI->SetMatrix("V", camera->GetView());
+    s_RenderAPI->SetMatrix("P", camera->GetProjection());
+    s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
+    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->UnbindShader();
 }
 
 void Renderer::EndScene()
 {
-    g_RenderAPI->BindPointShader();
-    g_RenderAPI->SetFloat("vertexPointSize", m_RenderData->CurrentPointSize);
-    g_RenderAPI->SendPointData();
-    g_RenderAPI->DrawPoints();
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindPointShader();
+    s_RenderAPI->SetFloat("vertexPointSize", m_RenderData->CurrentPointSize);
+    s_RenderAPI->SendPointData();
+    s_RenderAPI->DrawPoints();
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindLineShader();
-    g_RenderAPI->SendLineData();
-//    g_RenderAPI->SetBool("uEnableLight", false);
-    g_RenderAPI->DrawLines();
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindLineShader();
+    s_RenderAPI->SendLineData();
+//    s_RenderAPI->SetBool("uEnableLight", false);
+    s_RenderAPI->DrawLines();
+    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->BindTriangleShader();
-    g_RenderAPI->SendTriangleData();
-//    g_RenderAPI->SetBool("uEnableLight", true);
-    g_RenderAPI->DrawTriangles();
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindTriangleShader();
+    s_RenderAPI->SendTriangleData();
+//    s_RenderAPI->SetBool("uEnableLight", true);
+    s_RenderAPI->DrawTriangles();
+    s_RenderAPI->UnbindShader();
 
     // TODO: figure out how to batch rendering mesh
-//    g_RenderAPI->BindMeshShader();
-//    g_RenderAPI->SendMeshData();
-//    g_RenderAPI->DrawMeshes();
-//    g_RenderAPI->UnbindShader();
+//    s_RenderAPI->BindMeshShader();
+//    s_RenderAPI->SendMeshData();
+//    s_RenderAPI->DrawMeshes();
+//    s_RenderAPI->UnbindShader();
 
-    g_RenderAPI->DrawMeshes();
+    s_RenderAPI->DrawMeshes();
 
-    g_RenderAPI->ClearRendererState();
+    s_RenderAPI->ClearRendererState();
     g_IsRendering = false;
 }
 
@@ -128,9 +134,9 @@ void Renderer::BeginPickingScene(Ref<Camera> camera)
 
 void Renderer::EndPickingScene()
 {
-    g_RenderAPI->BindPickingShader();
-    g_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);
-    g_RenderAPI->UnbindShader();
+    s_RenderAPI->BindPickingShader();
+    s_RenderAPI->DrawEntitiesForPicking(g_CurrentCamera);
+    s_RenderAPI->UnbindShader();
 
     g_IsRendering = false;
 }
@@ -138,12 +144,12 @@ void Renderer::EndPickingScene()
 void Renderer::DrawPoint(const glm::vec3 &p0, const glm::vec4 &color, const float pointSize)
 {
     m_RenderData->CurrentPointSize = pointSize;
-    g_RenderAPI->PushPoint(p0, color);
+    s_RenderAPI->PushPoint(p0, color);
 }
 
 void Renderer::DrawLine(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec4 &color)
 {
-    g_RenderAPI->PushLine(p0, p1, color);
+    s_RenderAPI->PushLine(p0, p1, color);
 }
 
 void Renderer::DrawPointLight(const glm::vec3 &pos, const glm::vec3 &dir, const glm::vec4 &color, float intensity)
@@ -205,17 +211,17 @@ void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm:
     v.uv = uv[2];
     vertices[2] = v;
 
-    g_RenderAPI->PushTriangle(vertices);
+    s_RenderAPI->PushTriangle(vertices);
 }
 
 void Renderer::DrawMesh(Ref<Mesh> mesh, const glm::vec3 &pos, const glm::vec3 &rotate, const glm::vec3 &scale, const glm::vec4 &tint, const bool &quad)
 {
-    g_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint, quad);
+    s_RenderAPI->PushMesh(mesh, pos, rotate, scale, tint, quad);
 }
 
 void Renderer::DrawDirectionalLight(const glm::vec3 &dir, const glm::vec4 &color)
 {
-    g_RenderAPI->PushDirectionalLight(dir, color);
+    s_RenderAPI->PushDirectionalLight(dir, color);
 }
 
 bool Renderer::IsSceneRendering()
@@ -225,53 +231,63 @@ bool Renderer::IsSceneRendering()
 
 void Renderer::TestPickingEntity(Ref<Entity> entity)
 {
-    g_RenderAPI->PushPickingEntity(entity);
+    s_RenderAPI->PushPickingEntity(entity);
 }
 
 void Renderer::SetRendererMode(RendererMode mode)
 {
-    const auto modeAPI = static_cast<RendererAPI::RendererMode>(mode);
-    g_RenderAPI->SetRendererMode(modeAPI);
+    const auto modeAPI = static_cast<OpenGLRenderAPI::RendererMode>(mode);
+    s_RenderAPI->SetRendererMode(modeAPI);
 }
 
 Renderer::RendererMode Renderer::GetRendererMode()
 {
-    auto mode = g_RenderAPI->GetRendererMode();
+    auto mode = s_RenderAPI->GetRendererMode();
     return static_cast<Renderer::RendererMode>(mode);
 }
 
 void Renderer::ClearViewport()
 {
-    g_RenderAPI->ClearViewport();
+    s_RenderAPI->ClearViewport();
 }
 
 void Renderer::SetViewportSize(int x, int y, int w, int h)
 {
-    g_RenderAPI->SetViewportSize(x, y, w, h);
+    s_RenderAPI->SetViewportSize(x, y, w, h);
 }
 
 void Renderer::SetShaderMode(Renderer::ShaderMode mode)
 {
     m_ShaderMode = mode;
-    g_RenderAPI->SetShaderMode(static_cast<RendererAPI::ShaderMode>(mode));
+    s_RenderAPI->SetShaderMode(static_cast<OpenGLRenderAPI::ShaderMode>(mode));
 }
 
 Renderer::ShaderMode Renderer::GetShaderMode()
 {
-    return static_cast<Renderer::ShaderMode>(g_RenderAPI->GetShaderMode());
+    return static_cast<Renderer::ShaderMode>(s_RenderAPI->GetShaderMode());
 }
 
 void Renderer::SetClearColor(const glm::vec4 &color)
 {
-    g_RenderAPI->SetClearColor(color);
+    s_RenderAPI->SetClearColor(color);
 }
 
 void Renderer::SetTessInnerLevel(const float tessInner)
 {
-    g_RenderAPI->SetTessInnerLevel(tessInner);
+    s_RenderAPI->SetTessInnerLevel(tessInner);
 }
 
 void Renderer::SetTessOuterLevel(const glm::vec3 &tessOuter)
 {
-    g_RenderAPI->SetTessOuterLevel(tessOuter);
+    s_RenderAPI->SetTessOuterLevel(tessOuter);
+}
+
+void Renderer::WaitForGPUCompletion()
+{
+    s_RenderAPI->WaitForGPUCompletion();
+}
+
+void Renderer::FlushBuffers()
+{
+    s_RenderAPI->FlushBuffers();
 }
