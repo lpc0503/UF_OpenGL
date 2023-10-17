@@ -157,13 +157,12 @@ bool OpenGLApplication::InitGlfwWindow()
 
     glfwSwapInterval(1);
 
-    // TODO
     glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GL_FALSE);
     glfwSetCursorPos(m_Window, GetWidth() / 2.f, GetHeight() / 2.f);
-//    glfwSetMouseButtonCallback(window, MouseCallback);
-//    glfwSetKeyCallback(window, KeyCallback);
-//    glfwSetScrollCallback(window, MouseWheelCallback);
     GLFWCallbackWrapper::SetApplication(this);
+    glfwSetMouseButtonCallback(m_Window, GLFWCallbackWrapper::OnMouseEvent);
+    glfwSetKeyCallback(m_Window, GLFWCallbackWrapper::OnKeyboardEvent);
+    glfwSetScrollCallback(m_Window, GLFWCallbackWrapper::OnMouseWheelEvent);
     glfwSetFramebufferSizeCallback(m_Window, GLFWCallbackWrapper::OnFrameBufferResize);
     return true;
 }
@@ -235,7 +234,8 @@ glm::vec2 OpenGLApplication::GetWindowSize()
     return glm::vec2{x, y};
 }
 
-//
+/////////////////////////////////////////////////////////////////////////////////
+
 Application* OpenGLApplication::GLFWCallbackWrapper::s_App = nullptr;
 
 void OpenGLApplication::GLFWCallbackWrapper::SetApplication(Application *app)
@@ -254,4 +254,19 @@ void OpenGLApplication::GLFWCallbackWrapper::OnFrameBufferResize(GLFWwindow *win
     app->m_Width = width;
     app->m_Height = height;
     Renderer::SetViewportSize(0, 0, width, height);
+}
+
+void OpenGLApplication::GLFWCallbackWrapper::OnMouseEvent(GLFWwindow *window, int button, int action, int mods)
+{
+    INFO("Mouse {}", button);
+}
+
+void OpenGLApplication::GLFWCallbackWrapper::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+    INFO("Key {}", key);
+}
+
+void OpenGLApplication::GLFWCallbackWrapper::OnMouseWheelEvent(GLFWwindow *window, double xoffset, double yoffset)
+{
+    INFO("MWheel {} {}", xoffset, yoffset);
 }

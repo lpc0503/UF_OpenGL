@@ -156,6 +156,7 @@ public:
         SetWindowSize(window_width, window_height);
     }
 
+    // TODO: Remove
     MyApp()
         : OpenGLApplication(0, nullptr)
     {

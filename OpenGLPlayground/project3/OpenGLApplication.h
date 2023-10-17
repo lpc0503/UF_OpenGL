@@ -31,6 +31,9 @@ public:
 
         static void SetApplication(Application *app);
         static void OnFrameBufferResize(GLFWwindow* window, int width, int height);
+        static void OnMouseEvent(GLFWwindow* window, int button, int action, int mods);
+        static void OnKeyboardEvent(GLFWwindow* window, int key, int scancode, int action, int mods);
+        static void OnMouseWheelEvent(GLFWwindow* window, double xoffset, double yoffset);
     private:
         static OpenGLApplication* GetApp();
         static Application* s_App;
