@@ -81,11 +81,8 @@ double PrevMouseX, PrevMouseY;
 glm::vec3 g_ModelPos = glm::vec3{0.f, 0.f, 0.f};
 glm::vec3 g_ModelScale = glm::vec3{0.08f, 0.05f, 0.05f};
 float pointSize = 3.f;
-glm::vec3 BunnyPos = glm::vec3{0.f};
-glm::vec3 BunnyScale = glm::vec3{.05f};
 glm::vec3 SailPos = glm::vec3{-0.2f, 2.0f, 0.f};
 glm::vec3 SailScale = glm::vec3{1.f};
-
 
 glm::vec3 tOffset = glm::vec3{2.4f, 0.f, 1.5f};
 
@@ -141,11 +138,7 @@ std::vector<WaveProperity> waves = {
 };
 
 bool g_DrawPNTriangle = true;
-
-float g_FrameTime;
-int g_FrameCount = 0;
 // ===============================================================
-
 
 int factorial(int n)
 {
@@ -426,8 +419,6 @@ public:
         //    ImGui::ShowDemoWindow();
         ImGui::Begin("Settings");
 
-        ImGui::Text("FPS: %.2f, %.2f ms/frame", 1000.f / g_FrameTime, g_FrameTime);
-
         ImGui::Separator();
 
         ImGui::SliderFloat("Speed", &CameraMoveSpeed, 1.f, 10.f);
@@ -440,26 +431,23 @@ public:
         ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
         // ShaderMode
-        if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD)) {
-
+        if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD))
+        {
             g_ShaderMode = STANDARD;
             Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
-        } ImGui::SameLine();
-
-        if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION)) {
-
+        }
+        ImGui::SameLine();
+        if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION))
+        {
             g_ShaderMode = TESSELATION;
             Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
         }
-
-        if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY)) {
-
+        ImGui::SameLine();
+        if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY))
+        {
             g_ShaderMode = GEOMETRY;
             Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
         }
-
-//    ImGui::DragFloat3("Pos", &BunnyPos, 0.05);
-//    ImGui::DragFloat3("Scale", &BunnyScale, 0.05, 0.f);
 
         ImGui::DragFloat3("SailPos", &SailPos, 0.05);
         ImGui::DragFloat3("SailScale", &SailScale, 0.05, 0.f);
