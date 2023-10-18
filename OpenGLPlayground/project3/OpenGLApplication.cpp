@@ -234,6 +234,17 @@ glm::vec2 OpenGLApplication::GetWindowSize()
     return glm::vec2{x, y};
 }
 
+bool OpenGLApplication::GetMouseButton(MouseButton btn)
+{
+    int m = static_cast<int>(btn)-static_cast<int>(MouseButton::Left);
+    return glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_LEFT+m);
+}
+
+int OpenGLApplication::GetKey(int key)
+{
+    return glfwGetKey(m_Window, key);
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 
 Application* OpenGLApplication::GLFWCallbackWrapper::s_App = nullptr;
@@ -259,14 +270,17 @@ void OpenGLApplication::GLFWCallbackWrapper::OnFrameBufferResize(GLFWwindow *win
 void OpenGLApplication::GLFWCallbackWrapper::OnMouseEvent(GLFWwindow *window, int button, int action, int mods)
 {
     INFO("Mouse {}", button);
+    s_App->OnMouseEvent(button, action, mods);
 }
 
 void OpenGLApplication::GLFWCallbackWrapper::OnKeyboardEvent(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
-    INFO("Key {}", key);
+//    INFO("Key {}", key);
+    s_App->OnKeyboardEvent(key, scancode, action, mods);
 }
 
 void OpenGLApplication::GLFWCallbackWrapper::OnMouseWheelEvent(GLFWwindow *window, double xoffset, double yoffset)
 {
-    INFO("MWheel {} {}", xoffset, yoffset);
+//    INFO("MWheel {} {}", xoffset, yoffset);
+    s_App->OnMouseWheelEvent(xoffset, yoffset);
 }

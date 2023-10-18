@@ -31,7 +31,11 @@ public:
     virtual void OnUpdate(float dt) = 0;
     virtual void OnImGuiUpdate() = 0;
     virtual void OnRender() = 0;
-    //
+
+    // TODO: remove after impl event class
+    virtual void OnMouseEvent(int button, int action, int mods) {}
+    virtual void OnKeyboardEvent(int key, int scancode, int action, int mods) {}
+    virtual void OnMouseWheelEvent(double xoffset, double yoffset) {}
 
     virtual float GetCurrentTime() = 0;
     float GetElapsedTime();
@@ -47,6 +51,19 @@ public:
     void SetWindowTitle(const std::string& title) { m_WindowTitle = title; }
 
     virtual glm::vec2 GetCursorPos() = 0;
+    enum MouseButton : uint8_t
+    {
+        Left = 1,
+        Right,
+        Middle,
+        Mouse4,
+        Mouse5,
+        Mouse6,
+        Mouse7,
+        Mouse8,
+    };
+    virtual bool GetMouseButton(MouseButton btn) = 0;
+    virtual int GetKey(int key) = 0; // TODO: Make custom keycode
     virtual glm::vec2 GetWindowSize() = 0;
     glm::vec2 GetFrameBufferSize() { return {m_Width, m_Height}; }
 

@@ -39,6 +39,8 @@ public:
         static Application* s_App;
     };
 
+    bool GetMouseButton(MouseButton btn) override;
+    int GetKey(int key) override;
 
     float GetCurrentTime() override;
     glm::vec2 GetCursorPos() override;
