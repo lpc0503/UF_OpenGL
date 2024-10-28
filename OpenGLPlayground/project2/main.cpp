@@ -234,6 +234,7 @@ void InitOpenGL() {
 
 void PickObject() {
 
+    uint32_t pickIndex;
     Renderer::BeginPickingScene(g_Camera);
     Renderer::TestPickingEntity(base);
     Renderer::TestPickingEntity(top);
@@ -242,7 +243,7 @@ void PickObject() {
     Renderer::TestPickingEntity(arm2);
     Renderer::TestPickingEntity(pen);
     Renderer::TestPickingEntity(bottom);
-    Renderer::EndPickingScene(<#initializer#>);
+    Renderer::EndPickingScene(pickIndex);
 
 	// Wait until all the pending drawing commands are really done.
 	// Ultra-mega-over slow ! 
