@@ -39,8 +39,9 @@ void OpenGLRenderAPI::Init()
     InitLineRenderer();
     InitTriangleRenderer();
     InitMeshRenderer();
+    InitWaterRenderer();
 
-    m_ShaderMode = ShaderMode::TESSELATION;
+    m_ShaderMode = ShaderMode::STANDARD;
     SetShaderMode(m_ShaderMode);
     m_PickingShader = LoadShaders("shaders/Picking.vert", "shaders/Picking.frag"); // TODO: make InitPickingXXX?
 }
@@ -116,6 +117,7 @@ void OpenGLRenderAPI::ClearRendererState()
     m_PointVertices.clear();
     m_TriangleVertices.clear();
     m_Meshes.clear();
+    m_WaterMeshes.clear();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -274,6 +276,78 @@ void OpenGLRenderAPI::DrawMeshes()
             DrawMesh(md.mesh);
         else
             DrawMesh(md.mesh, true);
+    }
+    UnbindShader();
+}
+
+//////////////////////////////////////////////////////////////////////
+// Water
+//////////////////////////////////////////////////////////////////////
+
+void OpenGLRenderAPI::InitWaterRenderer()
+{
+    glGenVertexArrays( 1, &m_WaterVAO );
+    glBindVertexArray( m_WaterVAO );
+    glGenBuffers( 1, &m_WaterVBO );
+    glBindBuffer( GL_ARRAY_BUFFER, m_WaterVBO );
+    glGenBuffers( 1, &m_WaterIBO );
+    glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_WaterIBO );
+    glVertexAttribPointer( 0, 4, GL_FLOAT, GL_FALSE, sizeof( Vertex ), 0 );
+    glVertexAttribPointer( 1, 4, GL_FLOAT, GL_FALSE, sizeof( Vertex ), (void*)(sizeof( float ) * 4) );
+    glVertexAttribPointer( 2, 3, GL_FLOAT, GL_FALSE, sizeof( Vertex ), (void*)(sizeof( float ) * 8) );
+    glVertexAttribPointer( 3, 2, GL_FLOAT, GL_FALSE, sizeof( Vertex ), (void*)(sizeof( float ) * 11) );
+    glEnableVertexAttribArray( 0 );
+    glEnableVertexAttribArray( 1 );
+    glEnableVertexAttribArray( 2 );
+    glEnableVertexAttribArray( 3 );
+    glBindVertexArray( 0 );
+    m_WaterShader = LoadShaders( "shaders/Water.vert", "shaders/Water.frag" );
+}
+
+void OpenGLRenderAPI::PushWater( Ref<Mesh> mesh, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+{
+    glm::vec4 tint{ 1.f, 1.f, 1.f, 1.f};
+    bool quad = false;
+    m_WaterMeshes.push_back( MeshData{ mesh, pos, rotate, scale, tint, quad } );
+}
+
+void OpenGLRenderAPI::SendWaterData()
+{
+}
+
+void OpenGLRenderAPI::DrawWater()
+{
+    auto SendModelMatrix = [&]( const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+    {
+        glm::mat4 m{ 1.f };
+        m = glm::translate( m, pos );
+        m = glm::rotate( m, glm::radians( rotate.x ), { 1.f, 0.f, 0.f } );
+        m = glm::rotate( m, glm::radians( rotate.y ), { 0.f, 1.f, 0.f } );
+        m = glm::rotate( m, glm::radians( rotate.z ), { 0.f, 0.f, 1.f } );
+        m = glm::scale( m, scale );
+        SetMatrix( "M", m );
+    };
+
+    auto DrawMesh = [&]( Ref<Mesh> mesh, bool quad = false )
+    {
+        glBindVertexArray( m_MeshVAO );
+        glBindBuffer( GL_ARRAY_BUFFER, m_MeshVBO );
+        glBufferData( GL_ARRAY_BUFFER, sizeof( Vertex ) * mesh->m_Vertices.size(), glm::value_ptr( mesh->m_Vertices[0].pos ), GL_STATIC_DRAW );
+        glBindBuffer( GL_ELEMENT_ARRAY_BUFFER, m_MeshIBO );
+        glBufferData( GL_ELEMENT_ARRAY_BUFFER, sizeof( uint32_t ) * mesh->m_Indices.size(), &mesh->m_Indices[0], GL_STATIC_DRAW );
+        glDrawElements( GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0 );
+    };
+
+    for ( MeshData& md : m_WaterMeshes )
+    {
+        BindWaterShader();
+        
+        // light
+        SetFloat3( "uLightPos", m_DirectionalLight.dir );
+        SetFloat3( "uLightColor", m_DirectionalLight.color );
+
+        SendModelMatrix( md.pos, md.rotate, md.scale );
+        DrawMesh( md.mesh );
     }
     UnbindShader();
 }
@@ -479,6 +553,7 @@ void OpenGLRenderAPI::SetShaderMode(OpenGLRenderAPI::ShaderMode mode)
         m_LineShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
         m_MeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
         m_QuadMeshShader = LoadShaders("shaders/StandardShading.vert", "shaders/StandardShading.frag");
+        m_WaterShader = LoadShaders( "shaders/Water.vert", "shaders/Water.frag" );
     }
 
     if(m_ShaderMode == ShaderMode::TESSELATION) {

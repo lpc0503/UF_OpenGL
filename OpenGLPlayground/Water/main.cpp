@@ -343,7 +343,8 @@ public:
 
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
-        Renderer::DrawMesh( planeMesh->ToMesh(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+        //Renderer::DrawMesh( planeMesh->ToMesh(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
+        Renderer::DrawWater( planeMesh->ToMesh() );
 
         Renderer::EndScene();
     }

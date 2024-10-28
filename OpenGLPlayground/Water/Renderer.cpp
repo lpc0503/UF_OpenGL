@@ -92,6 +92,13 @@ void Renderer::BeginScene(Ref<Camera> camera)
     s_RenderAPI->SetMatrix("M", glm::mat4(1.f));
     s_RenderAPI->SetBool("uEnableLight", true);
     s_RenderAPI->UnbindShader();
+
+    s_RenderAPI->BindWaterShader();
+    s_RenderAPI->SetMatrix( "V", camera->GetView() );
+    s_RenderAPI->SetMatrix( "P", camera->GetProjection() );
+    s_RenderAPI->SetMatrix( "M", glm::mat4( 1.f ) );
+    s_RenderAPI->SetFloat3( "uCameraPos", camera->GetPosition() );
+    s_RenderAPI->UnbindShader();
 }
 
 void Renderer::EndScene()
@@ -132,6 +139,11 @@ void Renderer::EndScene()
     if ( s_RenderAPI->HasMeshData() )
     {
         s_RenderAPI->DrawMeshes();
+    }
+
+    if ( s_RenderAPI->HasWaterData() )
+    {
+        s_RenderAPI->DrawWater();
     }
 
     s_RenderAPI->ClearRendererState();
@@ -226,6 +238,11 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     {
 
     }
+}
+
+void Renderer::DrawWater( Ref<Mesh> mesh, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+{
+    s_RenderAPI->PushWater( mesh, pos, rotate, scale );
 }
 
 void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const std::vector<glm::vec2> &uv, const glm::vec4 &color)
