@@ -4,7 +4,7 @@
 
 #include "Application.h"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 class OpenGLApplication : public Application
 {
