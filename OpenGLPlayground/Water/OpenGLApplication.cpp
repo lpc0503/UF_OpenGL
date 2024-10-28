@@ -215,7 +215,7 @@ bool OpenGLApplication::InitImGui()
     return true;
 }
 
-float OpenGLApplication::GetCurrentTime()
+float OpenGLApplication::GetTime()
 {
     return (float)glfwGetTime();
 }

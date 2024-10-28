@@ -43,7 +43,7 @@ void Application::Run()
 
 float Application::GetElapsedTime()
 {
-    float now = GetCurrentTime();
+    float now = GetTime();
     float elapsed = now - m_LastTime;
     m_LastTime = now;
     return elapsed;

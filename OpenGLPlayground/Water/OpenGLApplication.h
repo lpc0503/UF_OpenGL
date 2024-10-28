@@ -42,7 +42,7 @@ public:
     bool GetMouseButton(MouseButton btn) override;
     int GetKey(int key) override;
 
-    float GetCurrentTime() override;
+    float GetTime() override;
     glm::vec2 GetCursorPos() override;
     glm::vec2 GetWindowSize() override;
 

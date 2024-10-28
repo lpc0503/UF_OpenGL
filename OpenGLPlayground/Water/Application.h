@@ -37,7 +37,7 @@ public:
     virtual void OnKeyboardEvent(int key, int scancode, int action, int mods) {}
     virtual void OnMouseWheelEvent(double xoffset, double yoffset) {}
 
-    virtual float GetCurrentTime() = 0;
+    virtual float GetTime() = 0;
     float GetElapsedTime();
 
     float GetFrameTime() const { return m_FrameTime; }
