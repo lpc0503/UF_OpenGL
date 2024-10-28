@@ -18,6 +18,13 @@ struct Vertex
     glm::vec2 uv {};
 
     Vertex() = default;
+    Vertex( const glm::vec3& pos, const glm::vec4& color, const glm::vec3& normal, const glm::vec2& uv )
+        : pos( pos, 1.f )
+        , color( color )
+        , normal( normal )
+        , uv( uv )
+    {
+    }
     Vertex(const Vertex &v)
     {
         pos = v.pos;

@@ -77,13 +77,117 @@ glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 float pointSize = 3.f;
 
+struct Plane
+{
+    Plane( int planeLength, int quadRes )
+        : planeLength( planeLength )
+        , quadRes( quadRes )
+    {
+    }
+
+    int planeLength;
+    int quadRes;
+
+    std::vector<glm::vec3> vertices;
+    std::vector<glm::vec2> uvs;
+    std::vector<glm::vec3> normals;
+    std::vector<glm::vec4> tangents;
+    std::vector<uint32_t> indices;
+
+    Ref<Mesh> ToMesh() const
+    {
+        int sideVertCount = planeLength * quadRes;
+        int N = sideVertCount + 1;
+
+        // convert to mesh
+        auto plane = MakeRef<Mesh>();
+        plane->m_Indices = indices;
+        for ( int x = 0; x <= sideVertCount; ++x )
+        {
+            for ( int z = 0; z <= sideVertCount; ++z )
+            {
+                plane->m_Vertices.push_back(
+                    Vertex( vertices[x * N + z],
+                            glm::vec4{ 1.f, 1.f, 1.f, 1.f },
+                            normals[x * N + z],
+                            uvs[x * N + z] )
+                );
+            }
+        }
+
+        return plane;
+    }
+};
+Ref<Plane> GeneratePlane( int planeLength, int quadRes )
+{
+    float halfLength = planeLength * 0.5f;
+    int sideVertCount = planeLength * quadRes;
+
+    auto plane = MakeRef<Plane>( planeLength, quadRes );
+    //
+    auto& vertices = plane->vertices;
+    auto& uvs = plane->uvs;
+    auto& normals = plane->normals;
+    auto& tangents = plane->tangents;
+    auto& indices = plane->indices;
+
+    // Generate vertices, UVs, and tangents
+    for ( int x = 0; x <= sideVertCount; ++x )
+    {
+        for ( int z = 0; z <= sideVertCount; ++z )
+        {
+            float nx = ((float)x / sideVertCount * planeLength) - halfLength;
+            float ny = 0.0f;
+            float nz = ((float)z / sideVertCount * planeLength) - halfLength;
+
+            // Vertex position
+            vertices.push_back( glm::vec3( nx, ny, nz ) );
+
+            // UV coordinates
+            uvs.push_back( glm::vec2( static_cast<float>(x) / sideVertCount, static_cast<float>(z) / sideVertCount ) );
+
+            // Tangent (same for all vertices)
+            tangents.push_back( glm::vec4( 1.0f, 0.0f, 0.0f, -1.0f ) );
+
+            // Initialize normal (will be recalculated)
+            normals.push_back( glm::vec3( 0.0f, 1.0f, 0.0f ) );
+        }
+    }
+
+    // Generate indices for the triangles
+    int N = sideVertCount + 1;
+    for ( int x = 0; x < sideVertCount; ++x )
+    {
+        for ( int z = 0; z < sideVertCount; ++z )
+        {
+            int topLeft = x * N + z;
+            int topRight = topLeft + 1;
+
+            int bottomLeft = (x + 1) * N + z;
+            int bottomRight = bottomLeft + 1;
+
+            // Triangle 1
+            indices.push_back( topLeft );
+            indices.push_back( bottomLeft );
+            indices.push_back( topRight );
+
+            // Triangle 2
+            indices.push_back( topRight );
+            indices.push_back( bottomLeft );
+            indices.push_back( bottomRight );
+        }
+    }
+
+    return plane;
+}
+
 class MyApp : public OpenGLApplication
 {
 public:
     MyApp(int argc, char **argv)
         : OpenGLApplication(argc, argv)
     {
-        SetWindowTitle("Po_Chuan,Liang(7336-5707)");
+        SetWindowTitle("Water");
         SetWindowSize(window_width, window_height);
     }
 
@@ -105,6 +209,9 @@ public:
         g_Camera->LookAt(0.f, 0.f, 0.f); // TODO: impl left drag to move target
 
         g_ShaderMode = STANDARD;
+
+        planeMesh = GeneratePlane( 10, 1 );
+
         return true;
     }
 
@@ -117,19 +224,56 @@ public:
         // TODO: not implement
     }
 
-    float u1[5] = {0.f, 0.f, 0.f, 0.f, 0.f};
+    struct Wave
+    {
+        float frequency;
+        float amplitude;
+        float phase;
+        glm::vec2 direction;
+
+        Wave( float wavelength, float amplitude, float speed, float direction_deg )
+            : frequency( 2.0f / wavelength )
+            , amplitude( amplitude )
+            , phase( speed * 2.0f / wavelength )
+            , direction( cos( glm::radians( direction_deg ) ), sin( glm::radians( direction_deg ) ) )
+        {
+        }
+    };
+
+    float speed = 1.0f;
+    float amplitude = 1.0f;
+    float wavelength = 1.0f;
+    float direction = 0.f;
+
+    Ref<Plane> planeMesh;
+
     void OnUpdate(float dt) override
     {
         UpdateCamera(dt);
 
-        //    g_SunLight = g_Camera->GetDir();
+        Wave w( wavelength, amplitude, speed, direction );
 
-        Renderer::SetTessInnerLevel(TessInner);
-        Renderer::SetTessOuterLevel(TessOuter);
+        auto& vertices = planeMesh->vertices;
+        auto& normals = planeMesh->normals;
+        for ( int i = 0; i < vertices.size(); ++i )
+        {
+            auto v = vertices[i];
+            auto n = normals[i];
+            float t = GetTime();
 
+            // Update xyz
+            v.x *= w.direction.x;
+            v.z *= w.direction.y;
+            float h = sin( w.frequency * (v.x + v.z) + t * w.phase ) * w.amplitude;
+            vertices[i].y = h;
 
-
-
+            // Update Normal
+            float dx = w.frequency * w.amplitude * w.direction.x * cos( (v.x + v.z) * w.frequency + t * w.phase );
+            float dy = w.frequency * w.amplitude * w.direction.y * cos( (v.x + v.z) * w.frequency + t * w.phase );
+            n = glm::vec3( -dx, 1, -dy );
+            n = glm::normalize( n );
+            normals[i] = n;
+        }
        
     }
 
@@ -179,6 +323,11 @@ public:
 
         ImGui::Text("Wave"); ImGui::SameLine();
 
+        ImGui::DragFloat( "Speed", &speed, 0.1f );
+        ImGui::DragFloat( "Amplitude", &amplitude, 0.1f );
+        ImGui::DragFloat( "WaveLength", &wavelength, 0.1f );
+        ImGui::DragFloat( "Direction", &direction, 1.0f, 0.f, 360.f );
+
         ImGui::Text("Wave Method");
         
 
@@ -190,13 +339,11 @@ public:
         Renderer::BeginScene(g_Camera);
         Renderer::DrawGrid(5, 5);
 
-        glm::vec4 color = {1.0f, 1.f, 1.f, 1.f};
-
         Renderer::DrawDirectionalLight(g_SunLight, {1.f, 1.f, 1.f, 1.f});
-
 
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
+        Renderer::DrawMesh( planeMesh->ToMesh(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
 
         Renderer::EndScene();
     }
