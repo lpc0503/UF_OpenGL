@@ -249,22 +249,21 @@ public:
         {
             float t = ::GetTime();
 
-            auto dv = v;
-            dv.x *= direction.x;
-            dv.z *= direction.y;
+            glm::vec2 xz = { v.x, v.z };
+            auto DirectionDotxz = glm::dot( direction, xz );
 
-            return sin( frequency * (dv.x + dv.z) + t * phase ) * amplitude;
+            return sin( frequency * DirectionDotxz + t * phase ) * amplitude;
         }
 
         glm::vec2 SineNormal( glm::vec3 v )
         {
             float t = ::GetTime();
 
-            v.x *= direction.x;
-            v.z *= direction.y;
+            glm::vec2 xz = { v.x, v.z };
+            auto DirectionDotxz = glm::dot( direction, xz );
 
-            float dx = frequency * amplitude * direction.x * cos( (v.x + v.z) * frequency + t * phase );
-            float dy = frequency * amplitude * direction.y * cos( (v.x + v.z) * frequency + t * phase );
+            float dx = frequency * amplitude * direction.x * cos( DirectionDotxz * frequency + t * phase );
+            float dy = frequency * amplitude * direction.y * cos( DirectionDotxz * frequency + t * phase );
 
             return glm::vec2 (dx, dy);
         }
