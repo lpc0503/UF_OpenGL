@@ -16,6 +16,7 @@
 class Camera;
 class Entity;
 class OpenGLApplication;
+struct Water;
 
 class OpenGLRenderAPI : public IRenderAPI
 {
@@ -119,7 +120,7 @@ private:
 public:
     void InitWaterRenderer();
     void BindWaterShader() { assert( m_WaterShader ); m_CurrentShader = m_WaterShader; BindShader(); }
-    void PushWater( Ref<Mesh> mesh, const glm::vec3& ambientColor, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale );
+    void PushWater( Ref<Water> water );
     void SendWaterData();
     void DrawWater();
     bool HasWaterData() { return m_WaterMeshes.size(); }
@@ -128,6 +129,8 @@ public:
     {
         MeshData meshData;
         glm::vec3 ambientColor;
+        glm::vec3 diffuseColor;
+        glm::vec3 specularColor;
     };
 private:
     GLuint m_WaterShader;

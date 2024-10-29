@@ -1,6 +1,7 @@
 #include "OpenGLRenderAPI.h"
 #include "Entity.h"
 #include "Camera.h"
+#include "Water.h"
 
 //#include "Utils.h"
 #include "shader.hpp"
@@ -304,14 +305,18 @@ void OpenGLRenderAPI::InitWaterRenderer()
     m_WaterShader = LoadShaders( "shaders/Water.vert", "shaders/Water.frag" );
 }
 
-void OpenGLRenderAPI::PushWater( Ref<Mesh> mesh, const glm::vec3& ambientColor, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+void OpenGLRenderAPI::PushWater( Ref<Water> water )
 {
+    ASSERT( water, "nullptr" );
+
     glm::vec4 tint{ 1.f, 1.f, 1.f, 1.f};
     bool quad = false;
 
     WaterData waterData;
-    waterData.meshData = MeshData{ mesh, pos, rotate, scale, tint, quad };
-    waterData.ambientColor = ambientColor;
+    waterData.meshData = MeshData{ water->mesh, water->pos, water->rotate, water->scale, tint, quad };
+    waterData.ambientColor = water->ambientColor;
+    waterData.diffuseColor = water->diffuseColor;
+    waterData.specularColor = water->specularColor;
 
     m_WaterMeshes.push_back( waterData );
 }
@@ -353,6 +358,8 @@ void OpenGLRenderAPI::DrawWater()
 
         // Material
         SetFloat3( "uAmbientColor", water.ambientColor );
+        SetFloat3( "uDiffuseColor", water.diffuseColor );
+        SetFloat3( "uSpecularColor", water.specularColor );
 
         SendModelMatrix( water.meshData.pos, water.meshData.rotate, water.meshData.scale );
         DrawMesh( water.meshData.mesh );

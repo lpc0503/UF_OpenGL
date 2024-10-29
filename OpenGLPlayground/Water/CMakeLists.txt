@@ -31,7 +31,9 @@ add_executable(${PROJECT_NAME}
         Application.cpp
         OpenGLApplication.h
         OpenGLApplication.cpp
-        RenderAPI.cpp)
+        RenderAPI.cpp
+        Water.cpp
+        Water.h)
 
 find_package(OpenGL REQUIRED)
 target_link_libraries(${PROJECT_NAME}

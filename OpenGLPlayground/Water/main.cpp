@@ -18,6 +18,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/matrix_decompose.hpp>
 #include "stb_image.h"
+#include "Water.h"
 
 using namespace glm;
 
@@ -274,7 +275,9 @@ public:
     float wavelength = 1.0f;
     float direction = 0.f;
 
-    glm::vec3 waterAmbientColor;
+    glm::vec3 waterAmbientColor = {0.115, 0.207, 0.216};
+    glm::vec3 waterDiffuseColor = { 0.312, 0.637, 0.628 };
+    glm::vec3 waterSpecularColor = { 1.0, 1.0, 1.0 };
 
     Ref<Plane> planeMesh;
 
@@ -350,6 +353,8 @@ public:
 
         ImGui::Text( "Water Material" );
         ImGui::ColorEdit3( "Ambient", glm::value_ptr( waterAmbientColor ), ImGuiColorEditFlags_Float );
+        ImGui::ColorEdit3( "Diffuse", glm::value_ptr( waterDiffuseColor ), ImGuiColorEditFlags_Float );
+        ImGui::ColorEdit3( "Specular", glm::value_ptr( waterSpecularColor ), ImGuiColorEditFlags_Float );
 
         ImGui::Text( "Wave" );
         ImGui::DragFloat( "Speed", &speed, 0.1f );
@@ -372,7 +377,13 @@ public:
 
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
-        Renderer::DrawWater( planeMesh->ToMesh(), waterAmbientColor );
+
+        Ref<Water> water = MakeRef<Water>();
+        water->mesh = planeMesh->ToMesh();
+        water->ambientColor = waterAmbientColor;
+        water->diffuseColor = waterDiffuseColor;
+        water->specularColor = waterSpecularColor;
+        Renderer::DrawWater( water );
 
         if ( m_DebugNormal )
         {

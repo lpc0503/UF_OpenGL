@@ -240,9 +240,9 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
-void Renderer::DrawWater( Ref<Mesh> mesh, const glm::vec3& ambientColor, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+void Renderer::DrawWater( Ref<Water> water )
 {
-    s_RenderAPI->PushWater( mesh, ambientColor, pos, rotate, scale );
+    s_RenderAPI->PushWater( water );
 }
 
 void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const std::vector<glm::vec2> &uv, const glm::vec4 &color)

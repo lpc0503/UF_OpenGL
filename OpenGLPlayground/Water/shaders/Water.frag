@@ -13,6 +13,8 @@ uniform vec3 uLightColor;       // Light color
 uniform vec3 uCameraPos;        // World-space position of the camera
 
 uniform vec3 uAmbientColor;
+uniform vec3 uDiffuseColor;
+uniform vec3 uSpecularColor;
 
 #define PI 3.14159265358979323846
 
@@ -29,10 +31,10 @@ void main()
 
     vec3 ambient = uAmbientColor;
 
-    float diffuse_reflectance = 1.0f / PI;
+    vec3 diffuse_reflectance = uDiffuseColor / PI; // 為啥要除 PI?
     vec3 diffuse = uLightColor * ndotl * diffuse_reflectance;
 
-    float specularReflectance = 1.0f;
+    vec3 specularReflectance = uSpecularColor;
     float spec = pow(max(dot(normal, halfwayDir), 0.0), 50.0);
     vec3 specular = uLightColor * ndotl * specularReflectance * spec;
 
