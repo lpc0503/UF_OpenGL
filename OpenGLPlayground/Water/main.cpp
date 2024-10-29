@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <vector>
 #include <array>
+#include <random>
 #include <stack>   
 #include <sstream>
 #include <unordered_map>
@@ -78,11 +79,79 @@ glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 float pointSize = 3.f;
 
+float randomRange(float a, float b)
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<float> dis( a, b );
+    return dis( gen );
+}
+
+struct WaterRandomSetting
+{
+    WaterRandomSetting( int& planeLength, int& waveCount )
+        : planeLength( planeLength ), waveCount( waveCount )
+    {
+    }
+
+    float medianWavelength = 1.0f;
+    float wavelengthRange = 1.0f;
+    float medianDirection = 0.0f;
+    float directionalRange = 30.0f;
+    float medianAmplitude = 1.0f;
+    float medianSpeed = 1.0f;
+    float speedRange = 0.1f;
+    float steepness = 0.0f;
+
+    int& planeLength;
+    int& waveCount;
+};
+
+std::vector<Wave> GenerateWaves(const WaterRandomSetting& setting )
+{
+    auto& medianWavelength = setting.medianWavelength;
+    auto& wavelengthRange = setting.wavelengthRange;
+    auto& medianDirection = setting.medianDirection;
+    auto& directionalRange = setting.directionalRange;
+    auto& medianAmplitude = setting.medianAmplitude;
+    auto& medianSpeed = setting.medianSpeed;
+    auto& speedRange = setting.speedRange;
+    auto& steepness = setting.steepness;
+    auto& planeLength = setting.planeLength;
+    auto& waveCount = setting.waveCount;
+
+    float wavelengthMin = medianWavelength / (1.0f + wavelengthRange);
+    float wavelengthMax = medianWavelength * (1.0f + wavelengthRange);
+    float directionMin = medianDirection - directionalRange;
+    float directionMax = medianDirection + directionalRange;
+    float speedMin = max( 0.01f, medianSpeed - speedRange );
+    float speedMax = medianSpeed + speedRange;
+    float ampOverLen = medianAmplitude / medianWavelength;
+
+    float halfPlaneWidth = planeLength * 0.5f;
+    auto minPoint = glm::vec3( -halfPlaneWidth, 0.0f, -halfPlaneWidth );
+    auto maxPoint = glm::vec3( halfPlaneWidth, 0.0f, halfPlaneWidth );
+
+    std::vector<Wave> ans;
+    for ( int wi = 0; wi < waveCount; ++wi )
+    {
+        float wavelength = randomRange( wavelengthMin, wavelengthMax );
+        float direction = randomRange( directionMin, directionMax );
+        float amplitude = wavelength * ampOverLen;
+        float speed = randomRange( speedMin, speedMax );
+        auto origin = glm::vec2( randomRange( minPoint.x * 2, maxPoint.x * 2 ), randomRange( minPoint.x * 2, maxPoint.x * 2 ) );
+
+        ans.emplace_back( wavelength, amplitude, speed, direction, steepness ); // TODO: waveType, waveFunction
+    }
+    return ans;
+}
+
 class MyApp : public OpenGLApplication
 {
 public:
     MyApp(int argc, char **argv)
         : OpenGLApplication(argc, argv)
+        , m_RandomWaveSetting( m_PlaneLength, m_WaveCount ) // bind var
     {
         SetWindowTitle("Water");
         SetWindowSize(window_width, window_height);
@@ -91,6 +160,20 @@ public:
     ~MyApp() override
     {
     }
+
+    Water m_Water;
+    
+    enum WaterMode
+    {
+        WM_Manual,
+        WM_Generate
+    } m_WaterMode = WM_Manual;
+
+    int m_WaveCount = 4;
+    int m_PlaneLength = 10;
+    int m_QuadRes = 4;
+
+    WaterRandomSetting m_RandomWaveSetting;
 
     bool OnInit() override
     {
@@ -107,14 +190,47 @@ public:
 
         g_ShaderMode = STANDARD;
 
-        water.mesh = Plane::GeneratePlane( 10, 4 );
+        m_Water.mesh = Plane::GeneratePlane( m_PlaneLength, m_QuadRes );
 
-        water.ambientColor = { 0.115, 0.207, 0.216 };
-        water.diffuseColor = { 0.142, 0.309, 0.304 };
-        water.specularColor = { 0.044, 0.044, 0.044 };
+        m_Water.ambientColor = { 0.193, 0.349, 0.321 };
+        m_Water.diffuseColor = { 0.142, 0.309, 0.304 };
+        m_Water.specularColor = { 0.044, 0.044, 0.044 };
 
-        Wave w;
-        water.waves.push_back( w );
+        switch( m_WaterMode )
+        {
+        case WM_Manual:
+        {
+            m_Water.waves.resize( m_WaveCount );
+
+            m_Water.waves[0].direction_deg = 88.f;
+            m_Water.waves[0].amplitude = 0.1f;
+
+            m_Water.waves[1].direction_deg = 303.f;
+            m_Water.waves[1].amplitude = 0.1f;
+
+            m_Water.waves[2].direction_deg = 257.f;
+            m_Water.waves[2].amplitude = 0.1f;
+
+            m_Water.waves[3].direction_deg = 38.f;
+            m_Water.waves[3].amplitude = 0.1f;
+
+            for ( auto& w : m_Water.waves )
+            {
+                w.Init();
+            }
+            break;
+        }
+
+        case WM_Generate:
+        {
+            m_Water.waves = GenerateWaves( m_RandomWaveSetting );
+            break;
+        }
+
+        default:
+            assert( 0 );
+            break;
+        }
 
         return true;
     }
@@ -128,13 +244,11 @@ public:
         // TODO: not implement
     }
 
-    Water water;
-
     void OnUpdate(float dt) override
     {
         UpdateCamera(dt);
 
-        water.OnUpdate();
+        m_Water.OnUpdate();
     }
 
     void OnImGuiUpdate() override
@@ -153,32 +267,54 @@ public:
 
         ImGui::ColorEdit4("Background", glm::value_ptr(g_ClearColor));
 
-        if(ImGui::RadioButton("Standard shader", &g_ShaderMode, STANDARD))
-        {
-            g_ShaderMode = STANDARD;
-            Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(STANDARD));
-        }
-        ImGui::SameLine();
-        if(ImGui::RadioButton("Tessellation shader", &g_ShaderMode, TESSELATION))
-        {
-            g_ShaderMode = TESSELATION;
-            Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(TESSELATION));
-        }
-        ImGui::SameLine();
-        if(ImGui::RadioButton("Geometry shader", &g_ShaderMode, GEOMETRY))
-        {
-            g_ShaderMode = GEOMETRY;
-            Renderer::SetShaderMode(static_cast<Renderer::ShaderMode>(GEOMETRY));
-        }
-
         ImGui::DragFloat3("Light Dir", &g_SunLight, 0.2f);
 
         ImGui::DragFloat("Point Size", &pointSize, 0.1f);
-        
 
         ImGui::Separator();
 
-        water.OnImGuiUpdate();
+        ImGui::Text( "Water Settings" );
+
+        if ( ImGui::RadioButton( "Manual", (int*)&m_WaterMode, WM_Manual ) )
+        {
+            m_Water.waves.clear();
+        }
+        ImGui::SameLine();
+        if ( ImGui::RadioButton( "Generate", (int*)&m_WaterMode, WM_Generate ) )
+        {
+            m_Water.waves.clear();
+        }
+
+        if( m_WaterMode == WM_Manual )
+        {
+            if ( ImGui::SliderInt( "Wave Count", &m_WaveCount, 1, 10 ) )
+            {
+                m_Water.waves.resize( m_WaveCount );
+            }
+        }
+        else if ( m_WaterMode == WM_Generate )
+        {
+            ImGui::DragFloat( "Median Wavelength", &m_RandomWaveSetting.medianWavelength, 0.01f, 0.0f, 3.0f );
+            ImGui::DragFloat( "Wavelength Range", &m_RandomWaveSetting.wavelengthRange, 0.01f, 0.0f, 2.0f );
+            ImGui::DragFloat( "Median Direction", &m_RandomWaveSetting.medianDirection, 0.01f, 0.0f, 360.0f );
+            ImGui::DragFloat( "Directional Range", &m_RandomWaveSetting.directionalRange, 0.01f, 0.0f, 360.0f );
+            ImGui::DragFloat( "Median Amplitude", &m_RandomWaveSetting.medianAmplitude, 0.01f, 0.0f, 3.0f );
+            ImGui::DragFloat( "Median Speed", &m_RandomWaveSetting.medianSpeed, 0.01f, 0.0f, 2.0f );
+            ImGui::DragFloat( "Speed Range", &m_RandomWaveSetting.speedRange, 0.01f, 0.0f, 1.0f );
+            ImGui::DragFloat( "Steepness", &m_RandomWaveSetting.steepness, 0.01f, 10.f ); // TODO: Gerstner limit
+
+            if ( ImGui::Button( "Generate###GenBtn" ) )
+            {
+                m_Water.waves.clear();
+                m_Water.waves = GenerateWaves( m_RandomWaveSetting );
+            }
+        }
+        else
+        {
+            assert( 0 );
+        }
+
+        m_Water.OnImGuiUpdate();
 
         ImGui::End();
     }
@@ -193,7 +329,7 @@ public:
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
 
-        water.OnRender();
+        m_Water.OnRender();
 
         Renderer::EndScene();
     }

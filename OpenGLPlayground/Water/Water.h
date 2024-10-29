@@ -19,6 +19,7 @@ struct Plane
         , quadRes( quadRes )
     {
     }
+    Plane( const Plane& other ) = default;
 
     int planeLength;
     int quadRes;
@@ -68,8 +69,6 @@ struct Wave
     void OnImGuiUpdate();
     void UpdateWater( glm::vec3& vertice, glm::vec3& normal );
 
-private:
-
     float Sine( glm::vec3 v );
     glm::vec2 SineNormal( glm::vec3 v );
 
@@ -81,6 +80,7 @@ private:
 struct Water
 {
     Ref<Plane> mesh;
+    Ref<Plane> displacedMesh;
 
     glm::vec3 ambientColor;
     glm::vec3 diffuseColor;

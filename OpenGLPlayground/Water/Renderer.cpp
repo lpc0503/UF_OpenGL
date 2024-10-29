@@ -247,7 +247,7 @@ void Renderer::DrawWater( Water* water )
     bool quad = false;
 
     OpenGLRenderAPI::WaterData waterData;
-    waterData.meshData = OpenGLRenderAPI::MeshData{ water->mesh->ToMesh(), water->pos, water->rotate, water->scale, tint, quad };
+    waterData.meshData = OpenGLRenderAPI::MeshData{ water->displacedMesh->ToMesh(), water->pos, water->rotate, water->scale, tint, quad };
     waterData.ambientColor = water->ambientColor;
     waterData.diffuseColor = water->diffuseColor;
     waterData.specularColor = water->specularColor;

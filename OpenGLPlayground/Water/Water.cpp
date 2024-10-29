@@ -18,16 +18,85 @@ bool s_DebugWaterNormal = false;
 
 void Water::OnUpdate()
 {
-    auto& vertices = mesh->vertices;
-    auto& normals = mesh->normals;
+    auto vertices = mesh->vertices;
+    auto normals = mesh->normals;
 
-    for ( auto& w : waves )
+    displacedMesh = MakeRef<Plane>( *mesh ); // copy
+    auto& displacedVertices = displacedMesh->vertices;
+    auto& displacedNormals = displacedMesh->normals;
+
+    for ( int i = 0; i < vertices.size(); ++i )
     {
-        for ( int i = 0; i < vertices.size(); ++i )
+        auto v = vertices[ i ]; // copy
+
+        // 更新頂點
+        glm::vec3 newPos{ 0.f };
+        for ( auto& w : waves )
         {
-            w.UpdateWater( vertices[i], normals[i] );
+            switch ( w.type )
+            {
+            case Wave::WT_Sine:
+                newPos.y += w.Sine( v );
+                break;
+
+            case Wave::WT_SteepSine:
+                newPos.y += w.SteepSine( v );
+                break;
+
+            case Wave::WT_Gerstner:
+                assert( 0 );
+                break;
+
+            default:
+                assert( 0 );
+                break;
+            }
         }
+
+        displacedVertices[i] = glm::vec3( v.x + newPos.x, newPos.y, v.z + newPos.z );
+
+        // 更新 normal
+        glm::vec3 newNormal{ 0.f };
+        for ( auto& w : waves )
+        {
+            switch ( w.type )
+            {
+            case Wave::WT_Sine:
+            {
+                auto normal_xz = w.SineNormal( v );
+                newNormal.x += normal_xz.x; // x
+                newNormal.y += normal_xz.y; // z
+                break;
+            }
+
+            case Wave::WT_SteepSine:
+            {
+                auto normal_xz = w.SteepSineNormal( v );
+                newNormal.x += normal_xz.x; // x
+                newNormal.y += normal_xz.y; // z
+                break;
+            }
+
+            case Wave::WT_Gerstner:
+                assert( 0 );
+                break;
+
+            default:
+                assert( 0 );
+                break;
+            }
+        }
+
+        /*if ( waveFunction == WaveFunction.Gerstner ) {
+            displacedNormals[i] = new Vector3( -normal.x, 1.0f - normal.y, -normal.z );
+        }
+        else {*/
+            displacedNormals[i] = glm::vec3( -newNormal.x, 1.0f, -newNormal.y );
+        //}
+
+        displacedNormals[i] = glm::normalize( displacedNormals[i] );
     }
+    
 }
 
 void Water::OnRender()
@@ -36,24 +105,22 @@ void Water::OnRender()
 
     if ( s_DebugWaterNormal )
     {
-        for( int i = 0; i < mesh->vertices.size(); i++ )
+        for( int i = 0; i < displacedMesh->vertices.size(); i++ )
         {
             auto color = glm::vec4{ 1.f, 0.f, 0.f , 1.f };
-            Renderer::DrawPoint( mesh->vertices[i], color, 5.f );
-            Renderer::DrawLine( mesh->vertices[i], mesh->vertices[i] + mesh->normals[i], color );
+            Renderer::DrawPoint( displacedMesh->vertices[i], color, 5.f );
+            Renderer::DrawLine( displacedMesh->vertices[i], displacedMesh->vertices[i] + displacedMesh->normals[i], color );
         }
     }
 }
 
 void Water::OnImGuiUpdate()
 {
-    ImGui::Text( "Water Settings" );
-    ImGui::Checkbox( "Debug Normal", &s_DebugWaterNormal );
-
     ImGui::Text( "Water Material" );
     ImGui::ColorEdit3( "Ambient", glm::value_ptr( ambientColor ), ImGuiColorEditFlags_Float );
     ImGui::ColorEdit3( "Diffuse", glm::value_ptr( diffuseColor ), ImGuiColorEditFlags_Float );
     ImGui::ColorEdit3( "Specular", glm::value_ptr( specularColor ), ImGuiColorEditFlags_Float );
+    ImGui::Checkbox( "Debug Normal", &s_DebugWaterNormal );
 
     for ( int i = 0; i < waves.size(); i++ )
     {
@@ -108,49 +175,7 @@ void Wave::OnImGuiUpdate()
 
 void Wave::UpdateWater( glm::vec3& vertice, glm::vec3& normal )
 {
-    // 更新頂點 y
-    auto v = vertice; // copy
-    switch ( type )
-    {
-    case WT_Sine:
-        vertice.y = Sine( v );
-        break;
-
-    case WT_SteepSine:
-        vertice.y = SteepSine( v );
-        break;
-
-    case WT_Gerstner:
-        assert( 0 );
-        break;
-
-    default:
-        assert( 0 );
-        break;
-    }
-
-    // 更新 normal
-    glm::vec2 normal_xz{ 0.f, 0.f };
-    switch ( type )
-    {
-    case WT_Sine:
-        normal_xz = SineNormal( v );
-        break;
-
-    case WT_SteepSine:
-        normal_xz = SteepSineNormal( v );
-        break;
-
-    case WT_Gerstner:
-        assert( 0 );
-        break;
-
-    default:
-        assert( 0 );
-        break;
-    }
-    auto n = glm::vec3( -normal_xz.x, 1, -normal_xz.y );
-    normal = glm::normalize( n );
+    // TODO: delete
 }
 
 float Wave::Sine( glm::vec3 v )
