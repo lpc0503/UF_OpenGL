@@ -77,6 +77,11 @@ glm::vec3 CameraPos = {0.f, 0.f, 10.f};
 double PrevMouseX, PrevMouseY;
 float pointSize = 3.f;
 
+float GetTime()
+{
+    return (float)glfwGetTime();
+}
+
 struct Plane
 {
     Plane( int planeLength, int quadRes )
@@ -210,7 +215,7 @@ public:
 
         g_ShaderMode = STANDARD;
 
-        planeMesh = GeneratePlane( 10, 1 );
+        planeMesh = GeneratePlane( 50, 2 );
 
         return true;
     }
@@ -237,6 +242,31 @@ public:
             , phase( speed * 2.0f / wavelength )
             , direction( cos( glm::radians( direction_deg ) ), sin( glm::radians( direction_deg ) ) )
         {
+            direction = glm::normalize( direction );
+        }
+
+        float Sine( glm::vec3 v )
+        {
+            float t = ::GetTime();
+
+            auto dv = v;
+            dv.x *= direction.x;
+            dv.z *= direction.y;
+
+            return sin( frequency * (dv.x + dv.z) + t * phase ) * amplitude;
+        }
+
+        glm::vec2 SineNormal( glm::vec3 v )
+        {
+            float t = ::GetTime();
+
+            v.x *= direction.x;
+            v.z *= direction.y;
+
+            float dx = frequency * amplitude * direction.x * cos( (v.x + v.z) * frequency + t * phase );
+            float dy = frequency * amplitude * direction.y * cos( (v.x + v.z) * frequency + t * phase );
+
+            return glm::vec2 (dx, dy);
         }
     };
 
@@ -259,18 +289,11 @@ public:
         {
             auto v = vertices[i];
             auto n = normals[i];
-            float t = GetTime();
 
-            // Update xyz
-            v.x *= w.direction.x;
-            v.z *= w.direction.y;
-            float h = sin( w.frequency * (v.x + v.z) + t * w.phase ) * w.amplitude;
-            vertices[i].y = h;
+            vertices[i].y = w.Sine( v );
 
-            // Update Normal
-            float dx = w.frequency * w.amplitude * w.direction.x * cos( (v.x + v.z) * w.frequency + t * w.phase );
-            float dy = w.frequency * w.amplitude * w.direction.y * cos( (v.x + v.z) * w.frequency + t * w.phase );
-            n = glm::vec3( -dx, 1, -dy );
+            auto nn = w.SineNormal(v);
+            n = glm::vec3( -nn.x, 1, -nn.y );
             n = glm::normalize( n );
             normals[i] = n;
         }
