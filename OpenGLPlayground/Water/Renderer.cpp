@@ -5,6 +5,7 @@
 #include "Entity.h"
 #include "Application.h"
 #include "OpenGLApplication.h"
+#include "Water.h"
 
 #include <array>
 #include <glad/glad.h>
@@ -240,9 +241,18 @@ void Renderer::DrawModel(Ref<Model> model, const glm::vec3 &pos, const glm::vec3
     }
 }
 
-void Renderer::DrawWater( Ref<Water> water )
+void Renderer::DrawWater( Water* water )
 {
-    s_RenderAPI->PushWater( water );
+    glm::vec4 tint{ 1.f, 1.f, 1.f, 1.f };
+    bool quad = false;
+
+    OpenGLRenderAPI::WaterData waterData;
+    waterData.meshData = OpenGLRenderAPI::MeshData{ water->mesh->ToMesh(), water->pos, water->rotate, water->scale, tint, quad };
+    waterData.ambientColor = water->ambientColor;
+    waterData.diffuseColor = water->diffuseColor;
+    waterData.specularColor = water->specularColor;
+
+    s_RenderAPI->PushWater( waterData );
 }
 
 void Renderer::DrawTriangle(const glm::vec3 &p0, const glm::vec3 &p1, const glm::vec3 &p2, const std::vector<glm::vec2> &uv, const glm::vec4 &color)

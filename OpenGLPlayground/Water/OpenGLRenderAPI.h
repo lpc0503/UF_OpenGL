@@ -101,11 +101,8 @@ public:
     bool Quad = false;
     bool HasMeshData() { return m_Meshes.size(); }
 
-private:
-    GLuint m_MeshShader;
-    GLuint m_QuadMeshShader;
-    GLuint m_MeshVAO, m_MeshVBO, m_MeshIBO;
-    struct MeshData {
+    struct MeshData
+    {
         Ref<Mesh> mesh;
         glm::vec3 pos;
         glm::vec3 rotate;
@@ -113,18 +110,16 @@ private:
         glm::vec4 tint;
         bool quad;
     };
+private:
+    GLuint m_MeshShader;
+    GLuint m_QuadMeshShader;
+    GLuint m_MeshVAO, m_MeshVBO, m_MeshIBO;
+    
     std::vector<MeshData> m_Meshes;
 
     // ======================================================================================
     // Water
 public:
-    void InitWaterRenderer();
-    void BindWaterShader() { assert( m_WaterShader ); m_CurrentShader = m_WaterShader; BindShader(); }
-    void PushWater( Ref<Water> water );
-    void SendWaterData();
-    void DrawWater();
-    bool HasWaterData() { return m_WaterMeshes.size(); }
-
     struct WaterData
     {
         MeshData meshData;
@@ -132,6 +127,14 @@ public:
         glm::vec3 diffuseColor;
         glm::vec3 specularColor;
     };
+
+    void InitWaterRenderer();
+    void BindWaterShader() { assert( m_WaterShader ); m_CurrentShader = m_WaterShader; BindShader(); }
+    void PushWater( const WaterData& waterData );
+    void SendWaterData();
+    void DrawWater();
+    bool HasWaterData() { return m_WaterMeshes.size(); }
+
 private:
     GLuint m_WaterShader;
     GLuint m_WaterVAO, m_WaterVBO, m_WaterIBO;

@@ -305,19 +305,8 @@ void OpenGLRenderAPI::InitWaterRenderer()
     m_WaterShader = LoadShaders( "shaders/Water.vert", "shaders/Water.frag" );
 }
 
-void OpenGLRenderAPI::PushWater( Ref<Water> water )
+void OpenGLRenderAPI::PushWater( const WaterData& waterData )
 {
-    ASSERT( water, "nullptr" );
-
-    glm::vec4 tint{ 1.f, 1.f, 1.f, 1.f};
-    bool quad = false;
-
-    WaterData waterData;
-    waterData.meshData = MeshData{ water->mesh, water->pos, water->rotate, water->scale, tint, quad };
-    waterData.ambientColor = water->ambientColor;
-    waterData.diffuseColor = water->diffuseColor;
-    waterData.specularColor = water->specularColor;
-
     m_WaterMeshes.push_back( waterData );
 }
 
