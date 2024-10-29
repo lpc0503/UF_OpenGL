@@ -277,6 +277,8 @@ public:
        
     }
 
+    bool m_DebugNormal = false;
+
     void OnImGuiUpdate() override
     {
         //    ImGui::ShowDemoWindow();
@@ -318,6 +320,7 @@ public:
         ImGui::DragFloat3("TessOuter", &TessOuter, 1);
 
         ImGui::DragFloat("Point Size", &pointSize, 0.1f);
+        ImGui::Checkbox( "Debug Normal", &m_DebugNormal );
 
         ImGui::Separator();
 
@@ -343,8 +346,17 @@ public:
 
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
-        //Renderer::DrawMesh( planeMesh->ToMesh(), {0.f, 0.f, 0.f}, {0.f, 0.f, 0.f}, {1.f, 1.f, 1.f});
         Renderer::DrawWater( planeMesh->ToMesh() );
+
+        if ( m_DebugNormal )
+        {
+            for( int i = 0; i < planeMesh->vertices.size(); i++)
+            {
+                auto color = glm::vec4{ 1.f, 0.f, 0.f , 1.f };
+                Renderer::DrawPoint( planeMesh->vertices[i], color, 5.f );
+                Renderer::DrawLine( planeMesh->vertices[i], planeMesh->vertices[i] + planeMesh->normals[i], color );
+            }
+        }
 
         Renderer::EndScene();
     }
