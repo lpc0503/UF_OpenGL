@@ -44,8 +44,14 @@ void Water::OnUpdate()
                 break;
 
             case Wave::WT_Gerstner:
-                assert( 0 );
+            {
+                glm::vec3 g = w.Gerstner( v );
+
+                newPos.x += g.x;
+                newPos.z += g.z;
+                newPos.y += g.y;
                 break;
+            }
 
             default:
                 assert( 0 );
@@ -78,8 +84,13 @@ void Water::OnUpdate()
             }
 
             case Wave::WT_Gerstner:
-                assert( 0 );
+            {
+                auto normal = w.GerstnerNormal( displacedVertices[i] );
+                newNormal.x += normal.x;
+                newNormal.y += normal.y;
+                newNormal.z += normal.z;
                 break;
+            }
 
             default:
                 assert( 0 );
@@ -87,12 +98,15 @@ void Water::OnUpdate()
             }
         }
 
-        /*if ( waveFunction == WaveFunction.Gerstner ) {
-            displacedNormals[i] = new Vector3( -normal.x, 1.0f - normal.y, -normal.z );
+        bool hasGerstner = std::any_of( waves.begin(), waves.end(), []( const Wave& w ) { return w.type == Wave::WT_Gerstner; } );
+        if ( hasGerstner )
+        {
+            displacedNormals[i] = glm::vec3( -newNormal.x, 1.0f - newNormal.y, -newNormal.z );
         }
-        else {*/
+        else
+        {
             displacedNormals[i] = glm::vec3( -newNormal.x, 1.0f, -newNormal.y );
-        //}
+        }
 
         displacedNormals[i] = glm::normalize( displacedNormals[i] );
     }
@@ -167,9 +181,20 @@ void Wave::OnImGuiUpdate()
         direction = glm::normalize( glm::vec2{ cos( glm::radians( direction_deg ) ), sin( glm::radians( direction_deg ) ) } );
     }
 
-    if ( type == WT_SteepSine )
+    if ( type != WT_Sine )
     {
-        ImGui::DragFloat( "Steepness", &steepness, 0.1f );
+        if ( type == WT_SteepSine )
+        {
+            ImGui::DragFloat( "Steepness", &steepness, 0.1f, 1.0f, 10.0f );
+        }
+        else if ( type == WT_Gerstner )
+        {
+            ImGui::DragFloat( "Steepness", &steepness, 0.1f, 0.0f, 1.0f );
+        }
+        else
+        {
+            assert( 0 );
+        }
     }
 }
 
@@ -196,9 +221,9 @@ glm::vec2 Wave::SineNormal( glm::vec3 v )
     auto DirectionDotxz = glm::dot( direction, xz );
 
     float dx = frequency * amplitude * direction.x * cos( DirectionDotxz * frequency + t * phase );
-    float dy = frequency * amplitude * direction.y * cos( DirectionDotxz * frequency + t * phase );
+    float dz = frequency * amplitude * direction.y * cos( DirectionDotxz * frequency + t * phase );
 
-    return glm::vec2( dx, dy );
+    return glm::vec2( dx, dz );
 }
 
 float Wave::SteepSine( glm::vec3 v )
@@ -224,6 +249,41 @@ glm::vec2 Wave::SteepSineNormal( glm::vec3 v )
     float dy = steepness * direction.y * frequency * amplitude * h * cos( DirectionDotxz * frequency + t * phase );
 
     return glm::vec2( dx, dy );
+}
+
+glm::vec3 Wave::Gerstner( glm::vec3 v )
+{
+    float t = GetTime();
+
+    glm::vec2 xz = { v.x, v.z };
+    auto DirectionDotxz = glm::dot( direction, xz );
+
+    glm::vec3 g{0.f};
+    g.x = steepness * amplitude * direction.x * cos( frequency * DirectionDotxz + t /** phase*/ );
+    g.z = steepness * amplitude * direction.y * cos( frequency * DirectionDotxz + t /** phase*/ );
+    g.y = amplitude * sin( frequency * DirectionDotxz + GetTime() );
+
+    return g;
+}
+
+glm::vec3 Wave::GerstnerNormal( glm::vec3 v )
+{
+    float t = GetTime();
+
+    glm::vec2 xz = { v.x, v.z };
+    auto DirectionDotxz = glm::dot( direction, xz );
+
+    glm::vec3 n{0.f};
+
+    float wa = frequency * amplitude;
+    float s = sin( frequency * DirectionDotxz + t /** phase*/ );
+    float c = cos( frequency * DirectionDotxz + t /** phase*/ );
+
+    n.x = direction.x * wa * c;
+    n.z = direction.y * wa * c;
+    n.y = steepness * wa * s;
+
+    return n;
 }
 
 Ref<Mesh> Plane::ToMesh() const

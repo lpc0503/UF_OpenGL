@@ -75,6 +75,8 @@ struct Wave
     float SteepSine( glm::vec3 v );
     glm::vec2 SteepSineNormal( glm::vec3 v );
 
+    glm::vec3 Gerstner( glm::vec3 v );
+    glm::vec3 GerstnerNormal( glm::vec3 v );
 };
 
 struct Water

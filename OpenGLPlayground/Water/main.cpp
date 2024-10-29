@@ -94,9 +94,16 @@ struct WaterRandomSetting
     {
     }
 
+    Wave::WaveType type = Wave::WT_Sine;
+
     float medianWavelength = 1.0f;
     float wavelengthRange = 1.0f;
-    float medianDirection = 0.0f;
+
+    bool genMedianDirection = true;
+    float medianDirection = 0.0f; // genMedianDirection == true
+    float directionMin = 0.0f;    // genMedianDirection == false
+    float directionMax = 360.f;   // genMedianDirection == false
+
     float directionalRange = 30.0f;
     float medianAmplitude = 1.0f;
     float medianSpeed = 1.0f;
@@ -109,28 +116,29 @@ struct WaterRandomSetting
 
 std::vector<Wave> GenerateWaves(const WaterRandomSetting& setting )
 {
-    auto& medianWavelength = setting.medianWavelength;
-    auto& wavelengthRange = setting.wavelengthRange;
-    auto& medianDirection = setting.medianDirection;
-    auto& directionalRange = setting.directionalRange;
-    auto& medianAmplitude = setting.medianAmplitude;
-    auto& medianSpeed = setting.medianSpeed;
-    auto& speedRange = setting.speedRange;
-    auto& steepness = setting.steepness;
-    auto& planeLength = setting.planeLength;
-    auto& waveCount = setting.waveCount;
+    const auto& medianWavelength = setting.medianWavelength;
+    const auto& wavelengthRange = setting.wavelengthRange;
+    const auto& medianDirection = setting.medianDirection;
+    const auto& directionalRange = setting.directionalRange;
+    const auto& medianAmplitude = setting.medianAmplitude;
+    const auto& medianSpeed = setting.medianSpeed;
+    const auto& speedRange = setting.speedRange;
+    const auto& steepness = setting.steepness;
+    const auto& planeLength = setting.planeLength;
+    const auto& waveCount = setting.waveCount;
+    const auto& genMedianDirection = setting.genMedianDirection;
 
-    float wavelengthMin = medianWavelength / (1.0f + wavelengthRange);
-    float wavelengthMax = medianWavelength * (1.0f + wavelengthRange);
-    float directionMin = medianDirection - directionalRange;
-    float directionMax = medianDirection + directionalRange;
-    float speedMin = max( 0.01f, medianSpeed - speedRange );
-    float speedMax = medianSpeed + speedRange;
-    float ampOverLen = medianAmplitude / medianWavelength;
+    const float wavelengthMin = medianWavelength / (1.0f + wavelengthRange);
+    const float wavelengthMax = medianWavelength * (1.0f + wavelengthRange);
+    const float directionMin = genMedianDirection ? (medianDirection - directionalRange) : setting.directionMin;
+    const float directionMax = genMedianDirection ? (medianDirection + directionalRange) : setting.directionMax;
+    const float speedMin = max( 0.01f, medianSpeed - speedRange );
+    const float speedMax = medianSpeed + speedRange;
+    const float ampOverLen = medianAmplitude / medianWavelength;
 
-    float halfPlaneWidth = planeLength * 0.5f;
-    auto minPoint = glm::vec3( -halfPlaneWidth, 0.0f, -halfPlaneWidth );
-    auto maxPoint = glm::vec3( halfPlaneWidth, 0.0f, halfPlaneWidth );
+    const float halfPlaneWidth = planeLength * 0.5f;
+    const auto minPoint = glm::vec3( -halfPlaneWidth, 0.0f, -halfPlaneWidth );
+    const auto maxPoint = glm::vec3( halfPlaneWidth, 0.0f, halfPlaneWidth );
 
     std::vector<Wave> ans;
     for ( int wi = 0; wi < waveCount; ++wi )
@@ -139,9 +147,11 @@ std::vector<Wave> GenerateWaves(const WaterRandomSetting& setting )
         float direction = randomRange( directionMin, directionMax );
         float amplitude = wavelength * ampOverLen;
         float speed = randomRange( speedMin, speedMax );
-        auto origin = glm::vec2( randomRange( minPoint.x * 2, maxPoint.x * 2 ), randomRange( minPoint.x * 2, maxPoint.x * 2 ) );
+        //auto origin = glm::vec2( randomRange( minPoint.x * 2, maxPoint.x * 2 ), randomRange( minPoint.x * 2, maxPoint.x * 2 ) );
 
-        ans.emplace_back( wavelength, amplitude, speed, direction, steepness ); // TODO: waveType, waveFunction
+        Wave w( wavelength, amplitude, speed, direction, steepness );
+        w.type = setting.type;
+        ans.emplace_back( w ); // TODO: waveType(circle, line), waveFunction
     }
     return ans;
 }
@@ -283,20 +293,80 @@ public:
         if ( ImGui::RadioButton( "Generate", (int*)&m_WaterMode, WM_Generate ) )
         {
             m_Water.waves.clear();
+
+            m_RandomWaveSetting.medianAmplitude = 0.1f;
         }
 
         if( m_WaterMode == WM_Manual )
         {
+            static Wave::WaveType s_manualWaveType = Wave::WT_Sine;
+            auto SetWaveType = [&]( Wave::WaveType type )
+            {
+                for ( auto& w : m_Water.waves )
+                {
+                    w.type = type;
+                }
+            };
+            if ( ImGui::RadioButton( "Sine", (int *)&s_manualWaveType, Wave::WT_Sine) )
+            {
+                SetWaveType( s_manualWaveType );
+            }
+            ImGui::SameLine();
+            if ( ImGui::RadioButton( "Steep Sine", (int*)&s_manualWaveType, Wave::WT_SteepSine ) )
+            {
+                SetWaveType( s_manualWaveType );
+            }
+            ImGui::SameLine();
+            if ( ImGui::RadioButton( "Gerstner", (int*)&s_manualWaveType, Wave::WT_Gerstner ) )
+            {
+                SetWaveType( s_manualWaveType );
+            }
             if ( ImGui::SliderInt( "Wave Count", &m_WaveCount, 1, 10 ) )
             {
                 m_Water.waves.resize( m_WaveCount );
+                SetWaveType( s_manualWaveType );
             }
         }
         else if ( m_WaterMode == WM_Generate )
         {
+            if ( ImGui::RadioButton( "Sine", (int*)&m_RandomWaveSetting.type, Wave::WT_Sine ) )
+            {
+
+            }
+            ImGui::SameLine();
+            if ( ImGui::RadioButton( "Steep Sine", (int*)&m_RandomWaveSetting.type, Wave::WT_SteepSine ) )
+            {
+                
+            }
+            ImGui::SameLine();
+            if ( ImGui::RadioButton( "Gerstner", (int*)&m_RandomWaveSetting.type, Wave::WT_Gerstner ) )
+            {
+
+            }
+            ImGui::SliderInt( "Wave Count", &m_WaveCount, 1, 10 );
             ImGui::DragFloat( "Median Wavelength", &m_RandomWaveSetting.medianWavelength, 0.01f, 0.0f, 3.0f );
             ImGui::DragFloat( "Wavelength Range", &m_RandomWaveSetting.wavelengthRange, 0.01f, 0.0f, 2.0f );
-            ImGui::DragFloat( "Median Direction", &m_RandomWaveSetting.medianDirection, 0.01f, 0.0f, 360.0f );
+            ImGui::Checkbox( "Use Median Direction", &m_RandomWaveSetting.genMedianDirection );
+            if ( m_RandomWaveSetting.genMedianDirection )
+            {
+                ImGui::DragFloat( "Median Direction", &m_RandomWaveSetting.medianDirection, 0.01f, 0.0f, 360.0f );
+            }
+            else
+            {
+                float val[2] = { m_RandomWaveSetting.directionMin, m_RandomWaveSetting.directionMax };
+                if ( ImGui::DragFloat2( "Min/Max Direction", val, 0.01f, 0.0f, 360.0f ) )
+                {
+                    if ( val[0] < val[1] )
+                    {
+                        m_RandomWaveSetting.directionMin = val[0];
+                        m_RandomWaveSetting.directionMax = val[1];
+                    }
+                    else
+                    {
+                        m_RandomWaveSetting.directionMin = m_RandomWaveSetting.directionMax = val[0] = val[1];
+                    }
+                }
+            }
             ImGui::DragFloat( "Directional Range", &m_RandomWaveSetting.directionalRange, 0.01f, 0.0f, 360.0f );
             ImGui::DragFloat( "Median Amplitude", &m_RandomWaveSetting.medianAmplitude, 0.01f, 0.0f, 3.0f );
             ImGui::DragFloat( "Median Speed", &m_RandomWaveSetting.medianSpeed, 0.01f, 0.0f, 2.0f );
