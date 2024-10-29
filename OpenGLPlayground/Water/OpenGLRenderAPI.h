@@ -119,15 +119,21 @@ private:
 public:
     void InitWaterRenderer();
     void BindWaterShader() { assert( m_WaterShader ); m_CurrentShader = m_WaterShader; BindShader(); }
-    void PushWater( Ref<Mesh> mesh, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale );
+    void PushWater( Ref<Mesh> mesh, const glm::vec3& ambientColor, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale );
     void SendWaterData();
     void DrawWater();
     bool HasWaterData() { return m_WaterMeshes.size(); }
 
+    struct WaterData
+    {
+        MeshData meshData;
+        glm::vec3 ambientColor;
+    };
 private:
     GLuint m_WaterShader;
     GLuint m_WaterVAO, m_WaterVBO, m_WaterIBO;
-    std::vector<MeshData> m_WaterMeshes;
+    
+    std::vector<WaterData> m_WaterMeshes;
 
     // ======================================================================================
     // Light

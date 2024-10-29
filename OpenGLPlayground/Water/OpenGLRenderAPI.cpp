@@ -304,11 +304,16 @@ void OpenGLRenderAPI::InitWaterRenderer()
     m_WaterShader = LoadShaders( "shaders/Water.vert", "shaders/Water.frag" );
 }
 
-void OpenGLRenderAPI::PushWater( Ref<Mesh> mesh, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
+void OpenGLRenderAPI::PushWater( Ref<Mesh> mesh, const glm::vec3& ambientColor, const glm::vec3& pos, const glm::vec3& rotate, const glm::vec3& scale )
 {
     glm::vec4 tint{ 1.f, 1.f, 1.f, 1.f};
     bool quad = false;
-    m_WaterMeshes.push_back( MeshData{ mesh, pos, rotate, scale, tint, quad } );
+
+    WaterData waterData;
+    waterData.meshData = MeshData{ mesh, pos, rotate, scale, tint, quad };
+    waterData.ambientColor = ambientColor;
+
+    m_WaterMeshes.push_back( waterData );
 }
 
 void OpenGLRenderAPI::SendWaterData()
@@ -338,7 +343,7 @@ void OpenGLRenderAPI::DrawWater()
         glDrawElements( GL_TRIANGLES, mesh->m_Indices.size(), GL_UNSIGNED_INT, 0 );
     };
 
-    for ( MeshData& md : m_WaterMeshes )
+    for ( auto& water : m_WaterMeshes )
     {
         BindWaterShader();
         
@@ -346,8 +351,11 @@ void OpenGLRenderAPI::DrawWater()
         SetFloat3( "uLightPos", m_DirectionalLight.dir );
         SetFloat3( "uLightColor", m_DirectionalLight.color );
 
-        SendModelMatrix( md.pos, md.rotate, md.scale );
-        DrawMesh( md.mesh );
+        // Material
+        SetFloat3( "uAmbientColor", water.ambientColor );
+
+        SendModelMatrix( water.meshData.pos, water.meshData.rotate, water.meshData.scale );
+        DrawMesh( water.meshData.mesh );
     }
     UnbindShader();
 }

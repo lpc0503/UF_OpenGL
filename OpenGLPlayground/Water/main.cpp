@@ -275,6 +275,8 @@ public:
     float wavelength = 1.0f;
     float direction = 0.f;
 
+    glm::vec3 waterAmbientColor;
+
     Ref<Plane> planeMesh;
 
     void OnUpdate(float dt) override
@@ -347,8 +349,10 @@ public:
 
         ImGui::Separator();
 
-        ImGui::Text("Wave"); ImGui::SameLine();
+        ImGui::Text( "Water Material" );
+        ImGui::ColorEdit3( "Ambient", glm::value_ptr( waterAmbientColor ), ImGuiColorEditFlags_Float );
 
+        ImGui::Text( "Wave" );
         ImGui::DragFloat( "Speed", &speed, 0.1f );
         ImGui::DragFloat( "Amplitude", &amplitude, 0.1f );
         ImGui::DragFloat( "WaveLength", &wavelength, 0.1f );
@@ -369,7 +373,7 @@ public:
 
         Renderer::DrawPoint(g_SunLight, {1.f, 1.f, 1.f, 1.f}, 50);
 
-        Renderer::DrawWater( planeMesh->ToMesh() );
+        Renderer::DrawWater( planeMesh->ToMesh(), waterAmbientColor );
 
         if ( m_DebugNormal )
         {
