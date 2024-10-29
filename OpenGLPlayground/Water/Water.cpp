@@ -220,8 +220,8 @@ glm::vec2 Wave::SineNormal( glm::vec3 v )
     glm::vec2 xz = { v.x, v.z };
     auto DirectionDotxz = glm::dot( direction, xz );
 
-    float dx = frequency * amplitude * direction.x * cos( DirectionDotxz * frequency + t * phase );
-    float dz = frequency * amplitude * direction.y * cos( DirectionDotxz * frequency + t * phase );
+    float dx = frequency * amplitude * direction.x * cos( DirectionDotxz * frequency + t * phase ); // x
+    float dz = frequency * amplitude * direction.y * cos( DirectionDotxz * frequency + t * phase ); // z
 
     return glm::vec2( dx, dz );
 }
