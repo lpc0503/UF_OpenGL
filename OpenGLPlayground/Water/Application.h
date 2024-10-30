@@ -22,7 +22,7 @@ public:
 
     void Run();
 
-    void SetWindowSize(int w, int h) { m_Width = w; m_Height = h; }
+    void SetWindowSize(int w, int h) { m_Window_Width = w; m_Window_Height = h; }
 
     // API
     virtual bool OnInit() = 0;
@@ -44,8 +44,8 @@ public:
     float GetFps() const { return 1000.f / m_FrameTime; }
     int GetFrameCount() const { return m_FrameCount; }
 
-    int GetWidth() const { return m_Width; }
-    int GetHeight() const { return m_Height; }
+    int GetWidth() const { return m_Window_Width; }
+    int GetHeight() const { return m_Window_Height; }
 
     const std::string& GetWindowTitle() const { return m_WindowTitle; }
     void SetWindowTitle(const std::string& title) { m_WindowTitle = title; }
@@ -65,7 +65,7 @@ public:
     virtual bool GetMouseButton(MouseButton btn) = 0;
     virtual int GetKey(int key) = 0; // TODO: Make custom keycode
     virtual glm::vec2 GetWindowSize() = 0;
-    glm::vec2 GetFrameBufferSize() { return {m_Width, m_Height}; }
+    glm::vec2 GetFrameBufferSize() { return {m_Window_Width, m_Window_Height}; }
 
 protected:
     enum Type : uint8_t
@@ -83,7 +83,7 @@ protected:
     float m_FrameTime;
     int m_FrameCount = 0;
 
-    int m_Width, m_Height; // TODO: Remove
+    int m_Window_Width, m_Window_Height;
 
     std::string m_WindowTitle;
 };
