@@ -2,6 +2,7 @@
 #include "Log.h"
 
 #include <glad/glad.h>
+#include <random>
 #include <sstream>
 
 void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity, GLsizei length, const char *message,
@@ -54,6 +55,15 @@ void glDebugOutput(GLenum source, GLenum type, unsigned int id, GLenum severity,
     }
 
 #endif
+}
+
+float randomRange( float a, float b )
+
+{
+    std::random_device rd;
+    std::mt19937 gen( rd() );
+    std::uniform_real_distribution<float> dis( a, b );
+    return dis( gen );
 }
 
 bool ImGui::DragFloat3(const char *label, glm::vec3 *v, float v_speed, float v_min, float v_max, const char *format,

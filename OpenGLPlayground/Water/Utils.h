@@ -44,7 +44,10 @@ void APIENTRY glDebugOutput(GLenum source,
                             const char *message,
                             const void *userParam);
 
-namespace ImGui {
+float randomRange( float a, float b );
+
+namespace ImGui
+{
 
 bool DragFloat3(const char* label, glm::vec3 *v, float v_speed = 1.0f, float v_min = 0.0f, float v_max = 0.0f, const char* format = "%.3f", ImGuiSliderFlags flags = 0);
 
